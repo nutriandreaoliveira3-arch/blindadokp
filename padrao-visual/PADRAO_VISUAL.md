@@ -16,6 +16,12 @@
 - Referência: as capas "JEJUM / INTERMITENTE" e "CANSADA da Balança".
 - A capa entra **embutida nos primeiros 0,3 s do vídeo**. O Meta bloqueia o agendamento quando a capa é enviada como imagem.
 
+## Capa: estilo "JEJUM INTERMITENTE" (preferido)
+- **Palavra-chave enorme** (Bodoni Moda Medium, ~330 px, levemente condensada), alinhada à **esquerda**, colada na margem.
+- **Linha menor logo abaixo** (~90–100 px), alinhada à **direita**.
+- Sem linha em cima. Texto sobre o corpo (blusa), nunca sobre o rosto.
+- Modelo: `modelo_capa_estilo_jejum.ass`.
+
 ## Legendas do vídeo
 - Fonte serifada (Playfair Display), branca, palavra por palavra.
 - A palavra falada cresce 10%, sem mudar de cor.
