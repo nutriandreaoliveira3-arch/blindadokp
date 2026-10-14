@@ -1,0 +1,17 @@
+[Script Info]
+ScriptType: v4.00+
+PlayResX: 1080
+PlayResY: 1920
+ScaledBorderAndShadow: yes
+
+[V4+ Styles]
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV
+Style: Top,Bodoni Moda 11pt,46,&H00FFFFFF,&H00FFFFFF,&H00000000,&H82000000,0,0,0,0,100,100,4,0,1,0,2,5,40,40,0
+Style: Big,Bodoni Moda 11pt,232,&H00FFFFFF,&H00FFFFFF,&H00000000,&H82000000,0,0,0,0,100,100,2,0,1,0,3,5,20,20,0
+Style: Sub,Bodoni Moda 11pt,74,&H00FFFFFF,&H00FFFFFF,&H00000000,&H82000000,0,0,0,0,100,100,3,0,1,0,2,5,40,40,0
+
+[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+Dialogue: 0,0:00:00.00,0:00:05.00,Top,,0,0,0,,{\pos(540,1290)}VOCÊ JÁ PAROU DE SE OLHAR NO
+Dialogue: 0,0:00:00.00,0:00:05.00,Big,,0,0,0,,{\pos(540,1435)}ESPELHO
+Dialogue: 0,0:00:00.00,0:00:05.00,Sub,,0,0,0,,{\pos(540,1590)}DE CORPO INTEIRO?
