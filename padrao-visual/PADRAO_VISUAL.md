@@ -26,6 +26,11 @@
 - Foto da capa: **sempre com ela sorrindo**, com o rosto acolhedor.
 - Mandar a capa para **aprovação antes** de embutir no vídeo final.
 
+## Vídeos repetidos (regra da cliente)
+- Antes de editar, comparar com os envios anteriores (arquivo idêntico ou mesmo roteiro regravado).
+- Se for repetido de um Reels **já publicado**: avisar e sugerir a data para **repostar 3–4 semanas depois** da publicação original, no melhor horário (ter 17h / dom 17h / seg 19h, agendando ~10 min antes).
+- Agendamento só depois da confirmação dela.
+
 ## Legendas do vídeo
 - Fonte serifada (Playfair Display), branca, palavra por palavra.
 - A palavra falada cresce 10%, sem mudar de cor.
