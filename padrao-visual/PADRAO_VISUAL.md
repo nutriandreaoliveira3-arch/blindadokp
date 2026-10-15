@@ -25,6 +25,7 @@
 ## Aprovação da capa (regra da cliente)
 - Foto da capa: **sempre com ela sorrindo**, com o rosto acolhedor.
 - Mandar a capa para **aprovação antes** de embutir no vídeo final.
+- Conferir os **olhos bem abertos** num recorte do rosto em resolução cheia (miniaturas escondem piscadas). Evitar quadros a menos de 0,4 s de uma piscada.
 
 ## Vídeos repetidos (regra da cliente)
 - Antes de editar, comparar com os envios anteriores (arquivo idêntico ou mesmo roteiro regravado).
