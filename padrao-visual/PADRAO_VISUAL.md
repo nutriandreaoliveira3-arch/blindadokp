@@ -44,8 +44,8 @@
 
 ## Modelo "série" (aprovado pela cliente)
 1. Capa estilo JEJUM (0,3 s) → 2. Foto P&B "Nutricionista Andrea Oliveira" (2,9 s) → 3. Logo dourado em fundo preto (2,2 s)
-4. Vídeo com legenda simples embaixo (DejaVu Sans 46, branca, frase inteira)
-5. Tela preta com frase em letra branca (Bodoni) → 6. Fecha com o logo.
+4. Vídeo com legenda simples embaixo (DejaVu Sans 68, branca, frase inteira — letras grandes, leitura num piscar)
+5. Tela preta com frase em letra branca (Bodoni ~118, grande), escolhida conforme o tema do vídeo → 6. Fecha com o logo.
 - Música: ElevenLabs (piano + cordas, instrumental), abaixando sob a voz.
 - **Variar a frase final a cada vídeo** (não repetir em sequência). Ordem de rodízio:
   1. Blindar o corpo é transformar a vida.
