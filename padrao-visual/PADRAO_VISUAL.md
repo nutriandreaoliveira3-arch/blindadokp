@@ -41,3 +41,19 @@
 1. Criar reel → vídeo → Miniatura: escolher o **primeiro quadro** (a capa).
 2. Etapa "Editar": **não mexer em nada**.
 3. Programar.
+
+## Modelo "série" (aprovado pela cliente)
+1. Capa estilo JEJUM (0,3 s) → 2. Foto P&B "Nutricionista Andrea Oliveira" (2,9 s) → 3. Logo dourado em fundo preto (2,2 s)
+4. Vídeo com legenda simples embaixo (DejaVu Sans 46, branca, frase inteira)
+5. Tela preta com frase em letra branca (Bodoni) → 6. Fecha com o logo.
+- Música: ElevenLabs (piano + cordas, instrumental), abaixando sob a voz.
+- **Variar a frase final a cada vídeo** (não repetir em sequência). Ordem de rodízio:
+  1. Blindar o corpo é transformar a vida.
+  2. Mais do que emagrecer. É nunca mais voltar atrás.
+  3. Quem desiste recomeça. Quem cria estratégia permanece.
+  4. Emagrecer é uma decisão. Permanecer é uma estratégia.
+  5. O emagrecimento começa antes da balança.
+  6. Você merece viver no corpo em que se sente bem.
+  7. Disciplina pesa menos que o arrependimento.
+  8. Emagrecimento Blindado. Porque emagrecer é fácil. Difícil é permanecer. Nós ensinamos os dois.
+- Logo oficial: padrao-visual/marca/logo_emagrecimento_blindado.png
