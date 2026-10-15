@@ -22,6 +22,10 @@
 - Sem linha em cima. Texto sobre o corpo (blusa), nunca sobre o rosto.
 - Modelo: `modelo_capa_estilo_jejum.ass`.
 
+## Aprovação da capa (regra da cliente)
+- Foto da capa: **sempre com ela sorrindo**, com o rosto acolhedor.
+- Mandar a capa para **aprovação antes** de embutir no vídeo final.
+
 ## Legendas do vídeo
 - Fonte serifada (Playfair Display), branca, palavra por palavra.
 - A palavra falada cresce 10%, sem mudar de cor.
