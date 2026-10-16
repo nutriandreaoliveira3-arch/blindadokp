@@ -1,0 +1,15 @@
+[Script Info]
+ScriptType: v4.00+
+PlayResX: 1080
+PlayResY: 1920
+ScaledBorderAndShadow: yes
+
+[V4+ Styles]
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV
+Style: Big,Bodoni Moda 11pt Medium,340,&H00FFFFFF,&H00FFFFFF,&H00000000,&H8C000000,0,0,0,0,90,100,0,0,1,0,3,1,0,0,0
+Style: Sub,Bodoni Moda 11pt Medium,124,&H00FFFFFF,&H00FFFFFF,&H00000000,&H8C000000,0,0,0,0,100,100,1,0,1,0,2,3,0,0,0
+
+[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+Dialogue: 0,0:00:00.00,0:00:05.00,Big,,0,0,0,,{\pos(18,1500)}DIETA
+Dialogue: 0,0:00:00.00,0:00:05.00,Sub,,0,0,0,,{\pos(1052,1800)}POR QUE NÃO\NFUNCIONA?

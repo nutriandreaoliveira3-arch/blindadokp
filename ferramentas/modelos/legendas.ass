@@ -1,0 +1,30 @@
+[Script Info]
+ScriptType: v4.00+
+PlayResX: 1080
+PlayResY: 1920
+WrapStyle: 0
+
+[V4+ Styles]
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+Style: Ref,DejaVu Sans,68,&H00FFFFFF,&H00FFFFFF,&H00202020,&H64000000,0,0,0,0,100,100,0,0,1,2.4,0.8,2,50,50,140,1
+
+[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+Dialogue: 0,0:00:00.10,0:00:02.48,Ref,,0,0,0,,Em algum momento você parou de tentar
+Dialogue: 0,0:00:02.48,0:00:04.03,Ref,,0,0,0,,e fingiu que estava tudo bem?
+Dialogue: 0,0:00:04.03,0:00:05.64,Ref,,0,0,0,,Mas não é bem assim, né?
+Dialogue: 0,0:00:05.64,0:00:08.14,Ref,,0,0,0,,De tanto tentar e falhar,
+Dialogue: 0,0:00:08.14,0:00:09.94,Ref,,0,0,0,,uma hora você desiste.
+Dialogue: 0,0:00:09.94,0:00:12.58,Ref,,0,0,0,,Falou pra si mesma: sou assim mesmo,
+Dialogue: 0,0:00:12.58,0:00:15.02,Ref,,0,0,0,,fazer o quê? Só que lá no fundo dói.
+Dialogue: 0,0:00:15.02,0:00:17.51,Ref,,0,0,0,,Você não se aceitou.
+Dialogue: 0,0:00:17.51,0:00:18.64,Ref,,0,0,0,,Você se cansou.
+Dialogue: 0,0:00:18.64,0:00:20.20,Ref,,0,0,0,,E tem uma diferença:
+Dialogue: 0,0:00:20.20,0:00:21.44,Ref,,0,0,0,,aceitar traz paz.
+Dialogue: 0,0:00:21.44,0:00:24.78,Ref,,0,0,0,,E o que você sente é uma resignação triste.
+Dialogue: 0,0:00:24.78,0:00:27.81,Ref,,0,0,0,,Aquela de quem parou de acreditar.
+Dialogue: 0,0:00:27.81,0:00:30.48,Ref,,0,0,0,,E tudo bem ter parado
+Dialogue: 0,0:00:30.48,0:00:32.91,Ref,,0,0,0,,depois de tantas frustrações. Mas não é o fim.
+Dialogue: 0,0:00:32.91,0:00:37.53,Ref,,0,0,0,,É um sinal de que você tentou pelo caminho errado até aqui.
+Dialogue: 0,0:00:37.53,0:00:41.64,Ref,,0,0,0,,Volte a acreditar. Conheça o método Emagrecimento Blindado.
+Dialogue: 0,0:00:41.64,0:00:45.83,Ref,,0,0,0,,Clique em Saiba mais e veja se ele faz sentido pra você.
