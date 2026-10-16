@@ -43,7 +43,7 @@
 3. Programar.
 
 ## Modelo "série" (aprovado pela cliente)
-1. Capa estilo JEJUM (0,3 s) → 2. Foto P&B "Nutricionista Andrea Oliveira" (2,9 s) → 3. Logo dourado em fundo preto (2,2 s)
+1. Capa estilo JEJUM (0,3 s) → 2. Logo dourado em fundo preto (2,2 s). **NÃO usar a foto P&B (cliente pediu para tirar).**
 4. Vídeo com legenda simples embaixo (DejaVu Sans 68, branca, frase inteira — letras grandes, leitura num piscar)
 5. Tela preta com frase em letra branca (Bodoni ~118, grande), escolhida conforme o tema do vídeo → 6. Fecha com o logo.
 - Música: ElevenLabs (piano + cordas, instrumental), abaixando sob a voz.
