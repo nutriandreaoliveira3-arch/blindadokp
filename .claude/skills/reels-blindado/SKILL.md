@@ -30,13 +30,14 @@ Capa (0,3 s) → logo dourado no preto (2,2 s) → corpo com legenda DejaVu Sans
 
 ## 3. Passo a passo de um lote
 1. **Dedupe**: `cmp` entre arquivos e comparar transcrições com envios anteriores. Avisar o que é repetido.
-2. **Áudio**: `ffmpeg -i in.mp4 -ac 1 -ar 16000 a.wav`
-3. **Transcrever**: `python3 ferramentas/asr_fine.py a.wav 0 <dur> fine.json`. Para trechos: `asr_rng.py a.wav 3.2:7.9 ...`
-4. **Escolher a melhor tomada** de cada frase. Ela regrava frases, então descartar repetições e erros.
-5. **Montar o JSON** `{"src":"in.mp4","out":"A_body.mp4","chunks":[[ini,fim,"Texto da legenda"],...]}`. O texto vai corrigido, com frase inteira. Depois rodar `python3 ferramentas/build_body.py spec.json`.
-6. **Capa**: escolher o quadro (sorriso ou autoridade, olhos abertos) e rodar `ferramentas/capa.sh in.mp4 <seg> "PALAVRA" "LINHA MENOR" capa/A.jpg [tam]`. Palavra longa: diminuir tam (ex.: 260). Mandar todas as capas para aprovação.
-7. **Montagem final** (na pasta com `capa/` e `A_body.mp4`): `ferramentas/assemble.sh A A e1 "Frase\\Nem linhas"`. Músicas e1 a e4: alternar entre vídeos. Para vídeo acima de 60 s, a música entra em loop sozinha.
-8. Conferir a duração e quadros de amostra, copiar para `entregas/<lote>/`, fazer commit e push.
+2. **Fundo borrado** (quando ela gravar sem a parede do logo, ou pedir): `python3 ferramentas/fundo_borrado.py in.mp4 in_blur.mp4 [forca=35]`. Leva ~12 s por segundo de vídeo, então rodar em segundo plano. Daí em diante usar `in_blur.mp4` como fonte. Conferir as bordas do cabelo num quadro.
+3. **Áudio**: `ffmpeg -i in.mp4 -ac 1 -ar 16000 a.wav`
+4. **Transcrever**: `python3 ferramentas/asr_fine.py a.wav 0 <dur> fine.json`. Para trechos: `asr_rng.py a.wav 3.2:7.9 ...`
+5. **Escolher a melhor tomada** de cada frase. Ela regrava frases, então descartar repetições e erros.
+6. **Montar o JSON** `{"src":"in.mp4","out":"A_body.mp4","chunks":[[ini,fim,"Texto da legenda"],...]}`. O texto vai corrigido, com frase inteira. Depois rodar `python3 ferramentas/build_body.py spec.json`.
+7. **Capa**: escolher o quadro (sorriso ou autoridade, olhos abertos) e rodar `ferramentas/capa.sh in.mp4 <seg> "PALAVRA" "LINHA MENOR" capa/A.jpg [tam]`. Palavra longa: diminuir tam (ex.: 260). Mandar todas as capas para aprovação.
+8. **Montagem final** (na pasta com `capa/` e `A_body.mp4`): `ferramentas/assemble.sh A A e1 "Frase\\Nem linhas"`. Músicas e1 a e4: alternar entre vídeos. Para vídeo acima de 60 s, a música entra em loop sozinha.
+9. Conferir a duração e quadros de amostra, copiar para `entregas/<lote>/`, fazer commit e push.
 
 ### Frases finais (rodízio)
 1. Blindar o corpo é transformar a vida.
