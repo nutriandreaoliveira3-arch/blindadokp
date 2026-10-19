@@ -63,7 +63,8 @@ CONTRACTIONS_PT = re.compile(r"\b(?:pra|pro|pras|pros|tá|tô|tava|né|cê|num|n
                              re.IGNORECASE)
 PRONOUNS_PT = re.compile(r"\b(?:eu|me|mim|comigo|meu|minha|meus|minhas|nós|nosso|nossa|nossos|"
                          r"nossas|a gente|você|vocês|te|teu|tua|seu|sua|seus|suas)\b", re.IGNORECASE)
-NUMBERS = re.compile(r"\b\d[\d,.]*%?\b|\$\d")
+# A short unit suffix still counts: 21h, 4kg, 30min, 5x.
+NUMBERS = re.compile(r"\b\d[\d,.]*(?:%|[a-z]{1,3}\b)?|\$\d", re.IGNORECASE)
 PROPER = re.compile(r"(?<![.!?]\s)(?<!^)\b[A-ZÀ-Ý][a-zà-ÿ]{2,}\b", re.MULTILINE)
 
 

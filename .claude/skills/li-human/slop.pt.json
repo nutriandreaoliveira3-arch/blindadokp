@@ -850,6 +850,12 @@
       "fix": "Comece pelo Y. A inversão é o que entrega a IA."
     },
     {
+      "id": "nao-e-x-e-y",
+      "regex": "(?i)\\bnão é [^.!?\\n]{2,40}\\.\\s*é [^.!?\\n]{2,60}[.!]",
+      "name": "\"Não é X. É Y.\"",
+      "fix": "Diga direto o Y. A negação antes é o ritmo padrão da IA."
+    },
+    {
       "id": "pergunta-revelacao",
       "regex": "(?im)^\\s*(?:o resultado|a melhor parte|o segredo|o detalhe|a pegadinha|o problema|sabe o que aconteceu)\\?\\s*$",
       "name": "Pergunta retórica sozinha na linha",
