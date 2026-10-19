@@ -25,6 +25,15 @@ plain-English replacements, 17 invisible character classes, 11 typographic
 substitutions, and 11 structural tells. It is meant to be edited. If the user
 has a word they always use that the lexicon strips, remove it from the file.
 
+## Português
+
+Os dois scripts detectam o idioma sozinhos. Texto em português usa
+`slop.pt.json`: clichês de IA comuns no Brasil ("jornada", "potencializar",
+"vale ressaltar que", "fica a reflexão"), estruturas como "Não é só X, é Y" e
+"Você já parou para pensar", e na checagem de VOICE conta pronomes em
+português (eu, a gente, você) e marcas de fala (pra, tá, né). Para forçar um
+idioma, use `--lang pt` ou `--lang en`.
+
 ## What gets fixed automatically
 
 **1. Invisible characters.** Zero-width spaces and joiners, word joiners,

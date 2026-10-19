@@ -35,6 +35,28 @@ import unicodedata
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 LEX = os.path.join(HERE, "slop.json")
+LEX_PT = os.path.join(HERE, "slop.pt.json")
+
+PT_HINTS = re.compile(r"\b(?:não|que|é|para|com|uma|você|isso|também|está|são|mais|dos|das|pra)\b",
+                      re.IGNORECASE)
+EN_HINTS = re.compile(r"\b(?:the|and|is|you|to|of|that|it|with|for|this|are)\b", re.IGNORECASE)
+
+
+def detect_lang(text):
+    """'pt' when Portuguese function words outnumber English ones, else 'en'."""
+    return "pt" if len(PT_HINTS.findall(text)) > len(EN_HINTS.findall(text)) else "en"
+
+
+def lexicon_path(text, lang="auto"):
+    if lang == "auto":
+        lang = detect_lang(text)
+    return LEX_PT if lang == "pt" else LEX
+
+
+def term_pattern(find):
+    """Whole-term match. A trailing \\b only after a word character, so "thoughts?" still matches."""
+    body = re.escape(find).replace(r"\ ", r"\s+")
+    return re.compile(r"\b" + body + (r"\b" if re.match(r"\w", find[-1]) else ""), re.IGNORECASE)
 
 URL_RE = re.compile(r"https?://\S+|www\.\S+|\S+@\S+\.\S+")
 SENT_RE = re.compile(r"[^.!?\n]+[.!?]*")
@@ -133,23 +155,30 @@ def pass_lexical(text, lex):
                      key=lambda e: len(e["find"]), reverse=True)
     for entry in entries:
         find = entry["find"]
-        pattern = re.compile(r"\b" + re.escape(find).replace(r"\ ", r"\s+") + r"\b",
-                             re.IGNORECASE)
+        pattern = term_pattern(find)
         found = pattern.findall(text)
         if not found:
             continue
         hits.append({"find": find, "replace": entry["replace"] or "(deleted)",
                      "count": len(found), "family": entry["family"]})
-        text = pattern.sub(lambda m: _match_case(m.group(0), entry["replace"]), text)
+        # A deletion leaves a \x00 marker so the next word can take the capital.
+        text = pattern.sub(lambda m: _match_case(m.group(0), entry["replace"]) or "\x00", text)
+    text = re.sub(r"(?m)^[ \t]*\x00[ \t]*([^\W\d_])", lambda m: m.group(1).upper(), text)
+    text = re.sub(r"([.!?])[ \t]+\x00[ \t]*([^\W\d_])",
+                  lambda m: m.group(1) + " " + m.group(2).upper(), text)
+    text = text.replace("\x00", "")
     # Clean up after deletions.
     text = re.sub(r"[ \t]{2,}", " ", text)
     text = re.sub(r"(?m)^[ \t]*([,.;:])\s*", "", text)
     text = re.sub(r"\s+([,.;:!?])", r"\1", text)
+    text = re.sub(r"(?<!\.)([.!?])\.(?!\.)", r"\1", text)
     text = re.sub(r"(?m)^[ \t]+$", "", text)
     text = re.sub(r"\n{3,}", "\n\n", text)
     # An em dash that became a comma, followed by a sentence connective, leaves
     # a splice ("is important, also, it's proof"). Promote it to a full stop.
-    text = re.sub(r",\s*(also|so|still|basically|in the end)\s*,\s*",
+    connectives = lex.get("splice_connectives",
+                          ["also", "so", "still", "basically", "in the end"])
+    text = re.sub(r",\s*(" + "|".join(map(re.escape, connectives)) + r")\s*,\s*",
                   lambda m: ". " + m.group(1)[0].upper() + m.group(1)[1:] + ", ", text)
     return text, hits
 
@@ -233,11 +262,13 @@ def main():
     ap.add_argument("-o", "--out", help="write cleaned text here instead of stdout")
     ap.add_argument("--report", action="store_true", help="print what changed, to stderr")
     ap.add_argument("--json", action="store_true", help="emit {text, report} as JSON")
-    ap.add_argument("--lexicon", default=LEX, help="path to slop.json")
+    ap.add_argument("--lexicon", help="path to a lexicon (overrides --lang)")
+    ap.add_argument("--lang", choices=["auto", "en", "pt"], default="auto",
+                    help="pick slop.json or slop.pt.json; auto detects from the text")
     args = ap.parse_args()
 
     raw = sys.stdin.read() if args.input == "-" else open(args.input, encoding="utf-8").read()
-    lex = load_lexicon(args.lexicon)
+    lex = load_lexicon(args.lexicon or lexicon_path(raw, args.lang))
     clean, report = humanize(raw, lex)
 
     if args.json:
