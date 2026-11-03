@@ -4,7 +4,7 @@ IMG=sys.argv[1]; FPS=30; X=0.7
 segs=[
  ("1.jpg", 6, 1.00,1.12,False,""),
  ("4.jpg",11, 1.05,1.20,False,""),
- ("4.jpg", 7, 1.35,1.50,True ,",eq=gamma_r=1.08:gamma_b=0.92:saturation=0.9"),
+ ("8.jpg", 7, 1.00,1.15,False,""),
  ("3.jpg", 8, 1.00,1.14,False,""),
  ("1.jpg", 7, 1.45,1.30,False,",eq=saturation=0.75:brightness=-0.04"),
  ("2.jpg", 6, 1.00,1.15,False,""),
