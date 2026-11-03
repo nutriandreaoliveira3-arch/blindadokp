@@ -1,10 +1,10 @@
 import subprocess, sys
 IMG=sys.argv[1]; FPS=30; X=0.6; TOT=103.7
-cuts=[0,8.98,15.06,22.10,32.90,39.14,50.24,57.90,65.50,74.70,84.30,89.90,TOT]
-seq=[("1.jpg",1.00,1.12,False,""),("4.jpg",1.05,1.18,False,""),("porta.jpg",1.00,1.12,False,""),
-     ("4.jpg",1.40,1.55,True,",eq=saturation=0.7"),("5.jpg",1.00,1.14,False,""),("2.jpg",1.00,1.16,False,""),
-     ("3.jpg",1.00,1.12,False,""),("porta.jpg",1.35,1.20,False,""),("8.jpg",1.00,1.16,False,""),
-     ("1.jpg",1.45,1.30,False,",eq=gamma_r=1.05"),("3.jpg",1.35,1.50,False,""),("5.jpg",1.30,1.00,False,"")]
+cuts=[0,4.95,8.98,15.06,22.10,32.90,39.14,50.24,57.90,65.50,74.70,84.30,89.90,TOT]
+seq=[("15.jpg",1.00,1.12,False,""),("14.jpg",1.00,1.14,False,""),("16.jpg",1.05,1.18,False,""),
+     ("17.jpg",1.00,1.14,False,""),("4.jpg",1.05,1.20,False,""),("5.jpg",1.00,1.14,False,""),
+     ("2.jpg",1.00,1.16,False,""),("15.jpg",1.40,1.25,False,""),("porta.jpg",1.00,1.12,False,""),
+     ("8.jpg",1.00,1.16,False,""),("1.jpg",1.00,1.12,False,""),("18.jpg",1.00,1.12,False,""),("3.jpg",1.00,1.15,False,"")]
 segs=[(f,cuts[i+1]-cuts[i],z0,z1,fl,ex) for i,(f,z0,z1,fl,ex) in enumerate(seq)]
 inputs=[];fc=[]
 for i,(f,d,z0,z1,fl,ex) in enumerate(segs):
