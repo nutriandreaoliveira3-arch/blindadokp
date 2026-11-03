@@ -1,7 +1,7 @@
 import subprocess, sys
 IMG=sys.argv[1]; FPS=30; X=0.6; TOT=42.6
 segs=[("1.jpg",5.0,1.00,1.12,""),("4.jpg",7.4,1.05,1.20,""),("8.jpg",5.2,1.00,1.15,""),
-      ("3.jpg",7.8,1.00,1.14,""),("1.jpg",5.4,1.45,1.30,",eq=saturation=0.75:brightness=-0.04"),
+      ("3.jpg",7.8,1.00,1.14,""),("porta.jpg",5.4,1.00,1.10,""),
       ("2.jpg",3.2,1.00,1.10,""),("5.jpg",8.6,1.18,1.00,"")]
 inputs=[];fc=[]
 for i,(f,d,z0,z1,ex) in enumerate(segs):
