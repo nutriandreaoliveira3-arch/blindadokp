@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { Card, Choice, Field, PageHead } from '../components/ui';
 import { exportBackup, importBackup } from '../db';
+import { isCloud, logout } from '../mode';
 import { download } from '../report';
 import { useStore } from '../store';
 
 export default function SettingsPage() {
-  const { settings, saveSettings, reload, toast } = useStore();
+  const { settings, saveSettings, reload, toast, account, refreshAccount } = useStore();
   const [key, setKey] = useState(settings.apiKey ?? '');
   const [model, setModel] = useState(settings.model);
   const [effort, setEffort] = useState(settings.effort);
@@ -14,6 +15,19 @@ export default function SettingsPage() {
     <>
       <PageHead title="Configurações" />
       <div className="grid2">
+        {isCloud() ? (
+          <Card title="Minha conta">
+            <p>
+              Conectada como <b>{account.email}</b> ({account.role === 'admin' ? 'administradora' : 'assinante'}).
+            </p>
+            <p className="muted sm">
+              Seus produtos e análises ficam salvos na nuvem. A IA já está incluída no plano{account.ai ? '' : ' (ainda não ativada pela administradora)'}.
+            </p>
+            <button type="button" className="btn" onClick={async () => { await logout(); await refreshAccount(); }}>
+              Sair
+            </button>
+          </Card>
+        ) : (
         <Card title="Inteligência artificial (opcional)">
           <p>
             A análise por regras funciona <b>sem IA e sem internet</b>. A IA (Claude, da Anthropic) é um complemento para: achar riscos implícitos,
@@ -44,16 +58,18 @@ export default function SettingsPage() {
             </div>
           </div>
         </Card>
+        )}
         <Card title="Backup dos dados">
           <p>
-            Produtos, políticas, documentos e histórico ficam salvos neste navegador (IndexedDB). Se limpar os dados do navegador ou trocar de
-            computador, eles não vão junto. Exporte um backup com frequência.
+            {isCloud()
+              ? 'Seus dados ficam na nuvem. O backup é uma cópia extra para guardar no seu computador.'
+              : 'Produtos, políticas, documentos e histórico ficam salvos neste navegador. Se limpar os dados do navegador ou trocar de computador, eles não vão junto. Exporte um backup com frequência.'}
           </p>
           <div className="row">
             <button
               type="button"
               className="btn primary"
-              onClick={async () => download(`backup-tiktok-shop-safe-ai-${new Date().toISOString().slice(0, 10)}.json`, JSON.stringify(await exportBackup()), 'application/json')}
+              onClick={async () => download(`backup-vitrine-blindada-ia-${new Date().toISOString().slice(0, 10)}.json`, JSON.stringify(await exportBackup()), 'application/json')}
             >
               Exportar backup
             </button>

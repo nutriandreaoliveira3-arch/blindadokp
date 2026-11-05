@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
 import * as db from './db';
+import { detectMode, getAccount, type Account } from './mode';
 import type { Analysis, ContentInput, Policy, PolicySource, Product, ProductionContext, Settings } from './types';
 
 export type Page =
@@ -15,7 +16,8 @@ export type Page =
   | 'live'
   | 'politicas'
   | 'historico'
-  | 'config';
+  | 'config'
+  | 'admin';
 
 export interface Draft {
   productId?: string;
@@ -26,6 +28,9 @@ export interface Draft {
 
 interface Store {
   ready: boolean;
+  account: Account;
+  refreshAccount: () => Promise<void>;
+  aiReady: boolean;
   products: Product[];
   policies: Policy[];
   sources: PolicySource[];
@@ -58,6 +63,7 @@ function readHash(): { page: Page; param?: string } {
 
 export function StoreProvider({ children }: { children: ReactNode }) {
   const [ready, setReady] = useState(false);
+  const [account, setAccount] = useState<Account>(getAccount());
   const [products, setProducts] = useState<Product[]>([]);
   const [policies, setPolicies] = useState<Policy[]>([]);
   const [sources, setSources] = useState<PolicySource[]>([]);
@@ -86,7 +92,15 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    db.ensureSeed().then(reload).then(() => setReady(true));
+    (async () => {
+      const acc = await detectMode();
+      setAccount(acc);
+      if (acc.loggedIn) {
+        await db.ensureSeed();
+        await reload();
+      }
+      setReady(true);
+    })();
     const onHash = () => setRoute(readHash());
     addEventListener('hashchange', onHash);
     return () => removeEventListener('hashchange', onHash);
@@ -97,8 +111,17 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setTimeout(() => setToast(''), 2600);
   }, []);
 
+  const refreshAccount = useCallback(async () => {
+    const acc = await detectMode();
+    setAccount(acc);
+    if (acc.loggedIn) await reload();
+  }, [reload]);
+
   const value: Store = {
     ready,
+    account,
+    refreshAccount,
+    aiReady: account.mode === 'nuvem' ? !!account.ai : !!settings.apiKey,
     products,
     policies,
     sources,

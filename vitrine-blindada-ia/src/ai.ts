@@ -2,6 +2,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { zodOutputFormat } from '@anthropic-ai/sdk/helpers/zod';
 import { z } from 'zod';
 import { plain } from './engine/normalize';
+import { api, isCloud } from './mode';
 import type { ContentField, ContentInput, Finding, Policy, Product, Settings } from './types';
 
 // Integração OPCIONAL com a API da Anthropic (Claude).
@@ -58,6 +59,7 @@ export async function aiReview(
   policies: Policy[],
   product?: Product,
 ): Promise<{ findings: Finding[]; gaps: string[]; discarded: number }> {
+  if (isCloud()) return api('/api/ai/review', { method: 'POST', body: JSON.stringify({ input, product }) });
   const c = client(s);
   const user = `BASE DE REGRAS:\n${kb(policies)}\n\nPRODUTO:\n${product ? JSON.stringify({ nome: product.name, categoria: product.category, marca: product.brand, descricao: product.description, especificacoes: product.specs, beneficios_comprovaveis: product.benefits }) : 'não informado'}\n\nCONTEÚDO:\nRoteiro/fala: ${input.roteiro}\nTexto na tela: ${input.textoTela}\nLegenda: ${input.legenda}\nHashtags: ${input.hashtags}\nImagem (descrição): ${input.imagemDescricao}\n\nTarefa: aponte riscos que uma análise por palavras-chave poderia perder (sentido implícito, combinação de elementos, promessa indireta). Para cada alerta, copie o trecho exato e proponha a correção.`;
   const r = await c.messages.parse({
@@ -104,7 +106,8 @@ export async function aiReview(
 
 const RewriteSchema = z.object({ texto: z.string(), mudancas: z.array(z.string()) });
 
-export async function aiRewrite(s: Settings, text: string, findings: Finding[], policies: Policy[], product?: Product) {
+export async function aiRewrite(s: Settings, text: string, findings: Finding[], policies: Policy[], product?: Product): Promise<{ texto: string; mudancas: string[] }> {
+  if (isCloud()) return api('/api/ai/rewrite', { method: 'POST', body: JSON.stringify({ text, findings, product }) });
   const c = client(s);
   const issues = findings.map((f) => `- "${f.excerpt ?? ''}" → ${f.title} [${f.policyIds.join(', ')}]`).join('\n');
   const r = await c.messages.parse({
@@ -137,8 +140,11 @@ const ExtractSchema = z.object({
   ),
 });
 
+export type ExtractedRule = z.infer<typeof ExtractSchema>['regras'][number] & { literal: boolean };
+
 /** Sugere regras a partir de um documento. Cada sugestão precisa ser revisada e confirmada pela usuária. */
-export async function aiExtractPolicies(s: Settings, docText: string, categories: string[]) {
+export async function aiExtractPolicies(s: Settings, docText: string, categories: string[]): Promise<ExtractedRule[]> {
+  if (isCloud()) return api('/api/ai/extract', { method: 'POST', body: JSON.stringify({ text: docText }) });
   const c = client(s);
   const r = await c.messages.parse({
     model: s.model,

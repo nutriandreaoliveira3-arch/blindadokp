@@ -25,7 +25,7 @@ const blank = (): Product => ({
   updatedAt: new Date().toISOString(),
 });
 
-async function resize(file: File, max = 1600): Promise<string> {
+async function resize(file: File, max = 1280): Promise<string> {
   const url = URL.createObjectURL(file);
   const img = new Image();
   await new Promise((r, j) => {
@@ -39,7 +39,7 @@ async function resize(file: File, max = 1600): Promise<string> {
   c.height = Math.round(img.height * s);
   c.getContext('2d')!.drawImage(img, 0, 0, c.width, c.height);
   URL.revokeObjectURL(url);
-  return c.toDataURL('image/jpeg', 0.9);
+  return c.toDataURL('image/jpeg', 0.85);
 }
 
 export default function ProductForm() {

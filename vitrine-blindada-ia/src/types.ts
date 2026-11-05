@@ -1,4 +1,4 @@
-// Modelo de dados do TikTok Shop Safe AI
+// Modelo de dados do Vitrine Blindada IA
 
 export type Scope = 'tiktok_shop_br' | 'tiktok_geral';
 export type Applies =

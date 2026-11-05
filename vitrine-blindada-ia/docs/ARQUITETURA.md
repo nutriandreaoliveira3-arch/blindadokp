@@ -1,4 +1,4 @@
-# Arquitetura do TikTok Shop Safe AI
+# Arquitetura do Vitrine Blindada IA
 
 ## Princípio
 **Primeiro conformidade, depois criação e publicação.** Nenhum gerador funciona com produto bloqueado. Toda análise cita a regra e a fonte.
@@ -27,6 +27,17 @@
                                ▼ 🟢
 [6] Exportar relatório → publicar no TikTok (fora do app)
 ```
+
+## Dois modos de uso
+| Modo | Quando | Dados | IA | Base de políticas |
+|---|---|---|---|---|
+| Local | Arquivo `dist/index.html` aberto no computador | No navegador | Chave própria (opcional) | Editável |
+| Nuvem | Site publicado na Cloudflare | Banco D1, por cliente | No servidor, incluída no plano | Central: só a administradora edita, vale para todos |
+
+O app detecta o modo sozinho. O código é o mesmo.
+
+## Servidor (modo nuvem)
+`worker/index.ts` (Cloudflare Worker): login com senha (PBKDF2), sessões, dados por cliente, base global, IA com limite mensal, webhook da Green (`worker/greenn.ts`) e painel de assinantes. Banco: `migrations/0001_inicial.sql`.
 
 ## Camadas
 
@@ -62,17 +73,18 @@
 | Função | Status | O que precisa |
 |---|---|---|
 | Análise por regras, geradores, histórico, relatórios | ✅ Funciona offline | Nada |
-| Análise complementar e reescrita com IA | ✅ Implementado, opcional | Chave da API da Anthropic (paga por uso) |
+| Análise complementar e reescrita com IA | ✅ Implementado, opcional | Local: chave própria. Nuvem: chave da administradora no servidor, com limite mensal por cliente |
 | Extração de regras de documentos com IA | ✅ Implementado, opcional | Mesma chave |
 | Gerar imagens dentro do app | ❌ Não implementado | API de imagem (ex.: Google Gemini/Imagen) + chave + servidor para proteger a chave |
 | Gerar vídeo no Google Flow pelo app | ❌ Não existe API pública do Flow para isso nesta data | O app gera o prompt; a geração é feita no Flow |
 | Ler pixels de imagem/vídeo | ❌ Não implementado | Modelo de visão (possível via Claude com envio da imagem) |
 | Texto de PDF | ❌ Não extrai automaticamente | Biblioteca pdf.js (pode ser adicionada) |
-| Sincronizar entre computadores / equipe | ❌ Dados ficam no navegador | Backend (ex.: Supabase/Firebase) + login |
+| Site com login, dados na nuvem, assinatura | ✅ Implementado (modo nuvem) | Publicar na Cloudflare: ver `PUBLICAR-CLOUDFLARE.md` |
+| Cobrança e liberação automática | ✅ Webhook da Green | Configurar a URL na Green e testar com uma venda real |
 | Consultar status da conta no TikTok | ❌ | API oficial do TikTok Shop (Partner) |
 
 ## Próximas evoluções recomendadas
 1. **Visão computacional:** enviar a foto real + a imagem gerada para a IA comparar e apontar divergências (cor, logo, estampa).
-2. **Backend com login** para equipe e sincronização, guardando a chave de API no servidor.
+2. **Esqueci a senha por e-mail** (serviço de e-mail, ex.: Resend).
 3. **pdf.js** para extrair texto de PDFs de política.
 4. **Integração de geração de imagem** via API, mantendo o portão e a análise obrigatória.

@@ -6,7 +6,7 @@ import { useStore } from '../store';
 export default function ProductLibrary() {
   const { products, policies, kbVersion, go, deleteProduct, saveProduct, toast } = useStore();
   const [q, setQ] = useState('');
-  const list = products.filter((p) => (p.name + p.brand + p.category).toLowerCase().includes(q.toLowerCase()));
+  const list = products.filter((p) => ((p.name ?? "") + (p.brand ?? "") + (p.category ?? "")).toLowerCase().includes(q.toLowerCase()));
   const outdated = products.filter((p) => p.gate && p.gate.kbVersion < kbVersion).length;
 
   return (
@@ -38,7 +38,7 @@ export default function ProductLibrary() {
       <div className="cards">
         {list.map((p) => (
           <Card key={p.id} className="product-card">
-            {p.photos[0] ? <img className="cover" src={p.photos[0].dataUrl} alt="" /> : <div className="cover none">sem foto</div>}
+            {p.photos?.[0] ? <img className="cover" src={p.photos[0].dataUrl} alt="" /> : <div className="cover none">sem foto</div>}
             <h3>{p.name}</h3>
             <p className="muted sm">
               {p.brand} · {p.category}

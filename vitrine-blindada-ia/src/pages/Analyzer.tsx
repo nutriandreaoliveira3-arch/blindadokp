@@ -51,7 +51,7 @@ const QUESTIONS: [string, Q[]][] = [
 ];
 
 export default function Analyzer() {
-  const { draft, setDraft, products, policies, kbVersion, settings, saveAnalysis, go, toast } = useStore();
+  const { draft, setDraft, products, policies, kbVersion, settings, aiReady, saveAnalysis, go, toast } = useStore();
   const [pid, setPid] = useState<string | undefined>();
   const [title, setTitle] = useState('');
   const [input, setInput] = useState<ContentInput>(emptyInput);
@@ -190,7 +190,7 @@ export default function Analyzer() {
                     Ver no histórico / exportar
                   </button>
                 </div>
-                {!settings.apiKey && <p className="hint">A análise com IA é opcional e exige chave da API em Configurações.</p>}
+                {!aiReady && <p className="hint">A análise com IA é opcional e ainda não está configurada.</p>}
                 {aiMsg && <p className="notice">{aiMsg}</p>}
                 {result.findings
                   .slice()

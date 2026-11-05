@@ -1,9 +1,13 @@
-# TikTok Shop Safe AI — Central de Conformidade e Criação
+# Vitrine Blindada IA — Central de Conformidade e Criação
 
 Aplicativo web em português para criar e revisar conteúdo de TikTok Shop com menos risco de violação.
 **Não garante aprovação do TikTok.** Identifica riscos, cita a regra e a fonte, e sugere correção.
 
-## Como abrir (sem instalar nada)
+## Duas formas de usar
+- **Site para assinantes (Cloudflare + Green):** ver `docs/PUBLICAR-CLOUDFLARE.md`.
+- **Arquivo local:** para uso próprio, sem internet.
+
+## Como abrir o arquivo local (sem instalar nada)
 1. Baixe o arquivo `dist/index.html`.
 2. Dê dois cliques. Abre no navegador (Chrome ou Edge recomendados).
 3. Os dados ficam salvos nesse navegador. Faça **Configurações → Exportar backup** com frequência.
@@ -18,6 +22,7 @@ Legenda e hashtags · Analisar conteúdo · Corrigir riscos · Preparar LIVE · 
 - 🔴 **Alto risco:** possível violação. Corrigir antes de publicar.
 
 ## Documentação
+- `docs/PUBLICAR-CLOUDFLARE.md`: passo a passo para publicar e ligar a Green.
 - `docs/ARQUITETURA.md`: fluxo, camadas, o que depende de API.
 - `docs/POLITICAS-ESTRUTURADAS.md`: regras por categoria e por formato.
 - `docs/LACUNAS-E-CONFLITOS.md`: conflitos, documentos que faltam e interpretações.

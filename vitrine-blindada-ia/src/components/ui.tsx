@@ -176,7 +176,8 @@ export function FindingCard({ f, actions }: { f: Finding; actions?: ReactNode })
   );
 }
 
-export function fmtDate(d: string) {
+export function fmtDate(d?: string) {
+  if (!d) return "—";
   const [y, m, day] = d.slice(0, 10).split('-');
   return day ? `${day}/${m}/${y}` : d;
 }

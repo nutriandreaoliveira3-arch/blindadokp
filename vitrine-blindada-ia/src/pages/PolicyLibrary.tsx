@@ -3,6 +3,7 @@ import { aiExtractPolicies } from '../ai';
 import { Card, Choice, Field, PageHead, fmtDate } from '../components/ui';
 import { CATEGORIES } from '../data/policies';
 import * as db from '../db';
+import { isAdmin } from '../mode';
 import { useStore } from '../store';
 import type { Applies, Policy, PolicySource, PolicyStatus, RuleType } from '../types';
 
@@ -47,7 +48,7 @@ export default function PolicyLibrary() {
   const other = list.filter((p) => !CATEGORIES.includes(p.category));
 
   if (selected) return <PolicyEditor policy={selected} onClose={() => go('politicas')} />;
-  if (param === 'nova') return <PolicyEditor onClose={() => go('politicas')} />;
+  if (param === 'nova' && isAdmin()) return <PolicyEditor onClose={() => go('politicas')} />;
 
   return (
     <>
@@ -55,12 +56,19 @@ export default function PolicyLibrary() {
         title="Biblioteca de políticas"
         sub={`Base v${kbVersion} · ${policies.length} regras · ${sources.length} documentos. Cada regra traz o trecho literal, a fonte, a data e a versão.`}
         actions={
-          <button type="button" className="btn primary" onClick={() => go('politicas', 'nova')}>
-            + Nova regra
-          </button>
+          isAdmin() ? (
+            <button type="button" className="btn primary" onClick={() => go('politicas', 'nova')}>
+              + Nova regra
+            </button>
+          ) : undefined
         }
       />
-      <Choice value={tab} onChange={setTab} options={[['regras', 'Regras'], ['fontes', 'Documentos-fonte'], ['documento', 'Enviar novo documento']]} />
+      <Choice
+        value={tab}
+        onChange={setTab}
+        options={isAdmin() ? [['regras', 'Regras'], ['fontes', 'Documentos-fonte'], ['documento', 'Enviar novo documento']] : [['regras', 'Regras'], ['fontes', 'Documentos-fonte']]}
+      />
+      {!isAdmin() && <p className="hint">A base de políticas é mantida e atualizada pela equipe Vitrine Blindada IA.</p>}
 
       {tab === 'regras' && (
         <>
@@ -176,7 +184,7 @@ const toDataUrl = (f: File) =>
 type Candidate = Awaited<ReturnType<typeof aiExtractPolicies>>[number] & { accepted?: boolean };
 
 function NewDocument() {
-  const { sources, settings, saveSource, savePolicy, go, toast } = useStore();
+  const { sources, settings, aiReady, saveSource, savePolicy, go, toast } = useStore();
   const [src, setSrc] = useState({ title: '', date: new Date().toISOString().slice(0, 10), status: 'oficial' as 'oficial' | 'nao_oficial', url: '', notes: '' });
   const [text, setText] = useState('');
   const [file, setFile] = useState<File | null>(null);
@@ -270,7 +278,7 @@ function NewDocument() {
           <button type="button" className="btn" disabled={!savedId || !text || busy} onClick={extract}>{busy ? 'Extraindo…' : 'Sugerir regras com IA'}</button>
         </div>
         {!savedId && <p className="hint">Registre o documento antes de cadastrar regras.</p>}
-        {!settings.apiKey && <p className="hint">Sugestão com IA exige chave da API em Configurações. Sem ela, selecione o trecho e cadastre manualmente.</p>}
+        {!aiReady && <p className="hint">Sugestão com IA não configurada. Selecione o trecho e cadastre manualmente.</p>}
         {cands.map((c, i) => (
           <div key={i} className={`finding ${c.literal ? '' : 'sev-atencao'}`}>
             <b>{c.titulo}</b> <span className="tag">{c.categoria}</span> <span className="tag">{TYPE[c.tipo]}</span>
@@ -358,7 +366,11 @@ function PolicyEditor({ policy, onClose }: { policy?: Policy; onClose: () => voi
             <Field label="Termos de risco (separados por vírgula)" hint="Ao aparecerem no conteúdo, geram alerta ligado a esta regra.">
               <input value={terms} onChange={(e) => setTerms(e.target.value)} placeholder="ex.: renda garantida, frete grátis vitalício" />
             </Field>
-            <button type="button" className="btn primary" disabled={!valid} onClick={save}>{policy ? 'Salvar nova versão' : 'Adicionar à base'}</button>
+            {isAdmin() ? (
+              <button type="button" className="btn primary" disabled={!valid} onClick={save}>{policy ? 'Salvar nova versão' : 'Adicionar à base'}</button>
+            ) : (
+              <p className="hint">Somente leitura.</p>
+            )}
           </div>
         </Card>
         <Card title="Fonte">

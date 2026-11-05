@@ -1,6 +1,8 @@
 import type React from 'react';
 import { useState } from 'react';
+import Admin from './pages/Admin';
 import Analyzer from './pages/Analyzer';
+import Login from './pages/Login';
 import Corrector from './pages/Corrector';
 import Dashboard from './pages/Dashboard';
 import History from './pages/History';
@@ -18,6 +20,7 @@ const NAV: [string, [Page, string, string][]][] = [
   ['Criação', [['imagem', '🖼️', 'Criar imagem'], ['video', '🎬', 'Prompt de vídeo'], ['roteiro', '📝', 'Roteiro de vendas'], ['legenda', '#️⃣', 'Legenda e hashtags']]],
   ['Conformidade', [['analisar', '🔎', 'Analisar conteúdo'], ['corrigir', '🛠️', 'Corrigir riscos'], ['live', '🔴', 'Preparar LIVE']]],
   ['Base', [['politicas', '📚', 'Biblioteca de políticas'], ['historico', '🗂️', 'Histórico'], ['config', '⚙️', 'Configurações']]],
+  ['Administração', [['admin', '👥', 'Assinantes']]],
 ];
 
 const PAGES: Record<Page, () => React.ReactElement> = {
@@ -34,11 +37,14 @@ const PAGES: Record<Page, () => React.ReactElement> = {
   politicas: PolicyLibrary,
   historico: History,
   config: SettingsPage,
+  admin: Admin,
 };
 
 export default function App() {
-  const { ready, page, param, go, toastMsg } = useStore();
+  const { ready, page, param, go, toastMsg, account } = useStore();
   const [menu, setMenu] = useState(false);
+  if (ready && !account.loggedIn) return <Login />;
+  const nav = NAV.filter(([g]) => g !== 'Administração' || (account.mode === 'nuvem' && account.role === 'admin'));
   const P = PAGES[page] ?? Dashboard;
   return (
     <div className={`app ${menu ? 'menu-open' : ''}`}>
@@ -46,12 +52,12 @@ export default function App() {
         <div className="brand">
           <span className="logo">◆</span>
           <div>
-            <b>TikTok Shop Safe AI</b>
-            <small>Central de Conformidade e Criação</small>
+            <b>Vitrine Blindada IA</b>
+            <small>Conformidade e criação para TikTok Shop</small>
           </div>
         </div>
         <nav>
-          {NAV.map(([g, items]) => (
+          {nav.map(([g, items]) => (
             <div key={g || 'top'} className="nav-group">
               {g && <span className="nav-title">{g}</span>}
               {items.map(([p, i, l]) => (
@@ -78,7 +84,7 @@ export default function App() {
           <button type="button" className="btn ghost sm" onClick={() => setMenu(!menu)} aria-label="Menu">
             ☰
           </button>
-          <b>TikTok Shop Safe AI</b>
+          <b>Vitrine Blindada IA</b>
         </div>
         <main className="content">{ready ? <P key={page + (param ?? '')} /> : <p className="muted">Carregando base de conhecimento…</p>}</main>
       </div>
