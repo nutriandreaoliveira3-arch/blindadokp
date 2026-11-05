@@ -37,3 +37,14 @@ O nicho "Emagrecimento Blindado" conflita diretamente com S01 3.15/3.16, S04, S0
 - O nome "Emagrecimento Blindado" em legenda ou texto de um vídeo com produto vinculado gera 🔴.
 
 **Recomendação:** separar conteúdo educativo (Instagram, perfil sem produto vinculado) de conteúdo de venda no Shop. No Shop, vender só produtos sem finalidade de peso (ex.: utensílios de cozinha, garrafas, livros de receitas, equipamentos de treino) e falar de rotina, praticidade e características.
+
+## Evidências da conta (prints de 13/09 a 04/11/2026)
+
+| Fato observado | O que significa | Mudança no app |
+|---|---|---|
+| 19 registros, cerca de 113 pontos em menos de 60 dias (4, 8 e 15 pontos por violação) | A informação "24 pontos = revogação" (fonte não oficial) não bate com a conta, que segue ativa | PV-PEN-1 continua pendente, com nota da evidência |
+| 22/09: vídeo citou "900g", anúncio tinha outro peso → -4, produtos removidos | Peso/quantidade falado ou escrito precisa ser igual ao anúncio | Regra EV-1 + checagem automática de peso, volume e unidades |
+| 23/10: frames "copiados de outro criador" (bermuda) → -15 | Imagens do anúncio, da internet ou como referência para IA são lidas como cópia | Regra EV-2 + pergunta "De onde vieram as fotos e cenas?" |
+| 04/11: vídeos de kits passaram na pré-verificação às 08:15–08:19 e às 09:48 vieram -8 por "promoção de produto inconsistente" | A pré-verificação do TikTok não confere tudo. A revisão depois da publicação compara o vídeo com o anúncio | Regra EV-4 + alerta de kit (mostrar e citar todas as peças) |
+| Recursos negados com "violação válida", mesmo citando a pré-verificação | Recurso só reverte quando há prova de erro do TikTok | Regra EV-3 |
+| 13 violações sem motivo anotado | Falta abrir cada uma e copiar o "Motivo" | Tela "Minhas violações" mostra quais faltam |

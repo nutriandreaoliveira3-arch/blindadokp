@@ -110,4 +110,15 @@ export const SEED_SOURCES: PolicySource[] = [
     addedAt: added,
     version: 1,
   },
+  {
+    id: 'S11',
+    title: 'Notificações de violação recebidas pela conta (Centro do Criador)',
+    date: '2026-10-23',
+    status: 'oficial',
+    scope: 'tiktok_shop_br',
+    notes:
+      'Textos oficiais enviados pelo TikTok Shop à conta da usuária (prints de 22/09 a 23/10/2026). Mostram como as regras são aplicadas na prática. Não são política geral.',
+    addedAt: '2026-11-05',
+    version: 1,
+  },
 ];

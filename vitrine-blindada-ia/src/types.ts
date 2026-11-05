@@ -99,6 +99,7 @@ export interface ProductionContext {
   creatorAdult: 'sim' | 'nao' | '';
   preRecordedInLive: 'sim' | 'nao' | '';
   screenRecording: 'sim' | 'nao' | '';
+  mediaSource?: 'propria' | 'vendedor' | 'terceiros' | 'referencia_ia' | '';
 }
 
 export interface ContentInput {
@@ -163,4 +164,17 @@ export interface Settings {
   apiKey?: string;
   model: string;
   effort: 'low' | 'medium' | 'high';
+}
+
+export interface Violation {
+  id: string;
+  date: string; // AAAA-MM-DD
+  points: number;
+  reason: string; // texto do motivo, como veio do TikTok
+  contentRef: string; // vídeo/LIVE/produto
+  penalties: string; // ex.: redução de visibilidade, remoção dos produtos
+  appeal: 'nao_recorrido' | 'em_analise' | 'aprovado' | 'nao_aprovado';
+  policyIds: string[];
+  lesson: string; // o que fazer diferente
+  createdAt: string;
 }

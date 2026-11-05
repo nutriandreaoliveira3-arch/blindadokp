@@ -23,6 +23,8 @@ const product: Product = {
   brandAuthorization: 'propria', priceMuchLower: 'nao', createdAt: '', updatedAt: '',
 };
 
+const input0 = (): ContentInput => ({ roteiro: '', textoTela: '', legenda: '', hashtags: '', imagemDescricao: '' });
+
 describe('detectores', () => {
   it('todos os detectores apontam para regras existentes', () => {
     const all = new Set(SEED_POLICIES.map((p) => p.id));
@@ -85,6 +87,31 @@ describe('análise completa', () => {
     const t = 'Produto nº 1 do Brasil. Tem 500 ml.';
     const fixed = applyFixes(t, scanText(t, 'roteiro', SEED_POLICIES));
     expect(scanText(fixed, 'roteiro', SEED_POLICIES).map((f) => f.detectorId)).toEqual(['D-PLACEHOLDER']);
+  });
+});
+
+describe('evidências reais (prints)', () => {
+  const sham: Product = { ...product, name: 'Kit Shampoo e Condicionador 300ml', category: 'Cabelos', specs: 'Shampoo 300 ml\nCondicionador 300 ml', description: '' };
+  it('EV-1: peso no vídeo diferente do anúncio = alto', () => {
+    const r = analyzeContent({ ...input0(), roteiro: 'Esse kit tem 900g, rende muito.' }, okCtx, SEED_POLICIES, sham);
+    expect(r.findings.map((f) => f.title)).toContain('Peso ou quantidade diferente do anúncio');
+    expect(r.level).toBe('alto');
+  });
+  it('EV-1: mesma quantidade e conversão 900 g = 1,98 lb não alertam', () => {
+    const p2 = { ...sham, specs: 'Peso 900 g' };
+    const r = analyzeContent({ ...input0(), roteiro: 'São 900 gramas, ou 1,98 lb.' }, okCtx, SEED_POLICIES, p2);
+    expect(r.findings.map((f) => f.title)).not.toContain('Peso ou quantidade diferente do anúncio');
+  });
+  it('kit de 4 peças sem confirmar quantidade = atenção', () => {
+    const kitP = { ...product, name: 'Kit Conjunto Fitness 4 Peças', specs: '' };
+    const r = analyzeContent({ ...input0(), roteiro: 'Olha esse conjunto lindo.' }, okCtx, SEED_POLICIES, kitP);
+    expect(r.findings.some((f) => f.title.startsWith('Kit com 4 itens'))).toBe(true);
+    const ok2 = analyzeContent({ ...input0(), roteiro: 'Kit com 4 peças: top, legging, short e jaqueta.' }, okCtx, SEED_POLICIES, kitP);
+    expect(ok2.findings.some((f) => f.title.startsWith('Kit com 4 itens'))).toBe(false);
+  });
+  it('EV-2: imagens de outro criador = alto', () => {
+    const r = analyzeContent(input0(), { ...okCtx, mediaSource: 'terceiros' }, SEED_POLICIES, product);
+    expect(r.level).toBe('alto');
   });
 });
 

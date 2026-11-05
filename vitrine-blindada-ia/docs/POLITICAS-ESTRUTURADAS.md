@@ -1,4 +1,4 @@
-# Base de políticas estruturada — v1 (05/11/2026) — 64 regras de 10 documentos (3 pendentes de verificação)
+# Base de políticas estruturada — v1 (05/11/2026) — 68 regras de 11 fontes (3 pendentes de verificação)
 
 Escopo: **somente TikTok Shop Brasil**. Nenhum documento das Diretrizes da Comunidade do TikTok (geral) foi enviado.
 Textos integrais: `politicas-fonte/`. Cada regra no app tem trecho literal, fonte, data e versão (`src/data/policies.ts`).
@@ -17,6 +17,7 @@ Textos integrais: `politicas-fonte/`. Cada regra no app tem trecho literal, font
 | S08 | O que é promoção irrelevante? | 14/10/2026 | Oficial | Regra da "maior parte da duração" |
 | S09 | Política de conteúdo 101 (vídeo) | 23/04/2026 | Oficial | Só índice, sem regras |
 | S10 | Pesquisa compilada (TIK_12) | 05/11/2026 | **Não oficial** | Resumo de terceiros. Regras ficam "pendentes" |
+| S11 | Notificações de violação da conta | 22/09 a 04/11/2026 | Oficial (aplicação) | Como as regras são aplicadas na prática (EV-1 a EV-4) |
 
 ## 2. Regras por categoria
 

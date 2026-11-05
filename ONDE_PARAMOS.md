@@ -24,3 +24,5 @@
 - Próximo: Andréa enviar os documentos oficiais de IA, Penalidades, Produtos Proibidos/Restritos e Diretrizes da Comunidade.
 - Modo nuvem pronto (Cloudflare Workers + D1 + webhook da Green). Falta: criar o banco D1, publicar, cadastrar segredos e testar uma venda real (`docs/PUBLICAR-CLOUDFLARE.md`).
 - Andréa vai mandar prints das violações recebidas: ligar cada uma a uma regra e ajustar os detectores.
+- Prints analisados: 19 violações (~113 pts). Regras EV-1 a EV-4, checagem de peso/kit e tela "Minhas violações". Arquivo para importar: violacoes-andrea-importar.json (enviado na conversa).
+- Falta: abrir as 13 violações sem motivo e copiar o texto; informar a nota atual do Índice de qualidade do criador.

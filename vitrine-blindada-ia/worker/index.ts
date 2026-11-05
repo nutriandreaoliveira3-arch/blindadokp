@@ -19,11 +19,11 @@ export interface Env {
 }
 
 const GLOBAL = '__global__';
-const USER_STORES = new Set(['products', 'analyses', 'docs']);
+const USER_STORES = new Set(['products', 'analyses', 'docs', 'violations']);
 const GLOBAL_STORES = new Set(['policies', 'sources']);
 const GLOBAL_META = new Set(['kbVersion', 'kbUpdatedAt', 'seedVersion']);
 const USER_META = new Set(['settings']);
-const SEED_VERSION = 1;
+const SEED_VERSION = 2;
 const SESSION_DAYS = 30;
 const MAX_ROW = 1_900_000; // limite de linha do D1 é ~2 MB
 

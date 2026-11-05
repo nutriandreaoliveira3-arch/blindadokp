@@ -267,6 +267,23 @@ export function checkContext(ctx: ProductionContext, input: ContentInput, produc
     f.push(C('alto', ['CP-3.10.1', 'CP-3.1', 'PR-1.2'], 'Demonstração ilustrativa sem aviso',
       'Uma cena ilustrativa apresentada como uso real pode ser demonstração enganosa.', 'Escreva na tela "Imagem ilustrativa" ou substitua por demonstração real.'));
 
+  // Origem das imagens — evidência EV-2
+  if (ctx.mediaSource === 'terceiros')
+    f.push(C('alto', ['EV-2', 'NO-1', 'CP-3.13.1', 'CP-3.7'], 'Imagens de outro criador ou da internet',
+      'O TikTok já aplicou violação de conteúdo não original anexando frames que pareciam copiados de outro criador. Fotos e vídeos de terceiros, sem permissão, são proibidos.',
+      'Grave ou fotografe o produto você mesma. Use só material próprio.'));
+  if (ctx.mediaSource === 'referencia_ia')
+    f.push(C('alto', ['EV-2', 'NO-2', 'CP-3.1'], 'IA gerada a partir de vídeo/foto de outro criador',
+      'Usar cenas de outro criador como referência para a IA pode reproduzir enquadramento, cenário e poses, e ser detectado como cópia ("recriar o estilo de vídeo de outro criador").',
+      'Use como referência apenas fotos que você mesma fez do produto real.'));
+  if (ctx.mediaSource === 'vendedor')
+    f.push(C('atencao', ['EV-2', 'NO-1', 'PR-1.2'], 'Imagens fornecidas pelo vendedor',
+      'Fotos do anúncio ou do fornecedor podem já ter sido usadas por outros criadores e ser lidas como conteúdo não original.',
+      'Use como apoio e inclua cenas suas com o produto físico. Guarde a autorização do vendedor.', true));
+
+  // Produto x conteúdo: peso/quantidade
+  if (product) f.push(...checkQuantities(input, product));
+
   // Produto x conteúdo: marca e nome mencionados
   if (product) {
     const all = plain([input.roteiro, input.textoTela, input.legenda].join(' '));
@@ -278,6 +295,72 @@ export function checkContext(ctx: ProductionContext, input: ContentInput, produc
         `Cite "${product.name}${product.brand ? ' — ' + product.brand : ''}" na fala ou no texto.`, true));
   }
   return f;
+}
+
+// ───────── Quantidades (peso, volume, unidades) — evidência EV-1
+const UNIT: Record<string, string> = {
+  g: 'g', gr: 'g', grama: 'g', gramas: 'g', kg: 'kg', quilo: 'kg', quilos: 'kg', mg: 'mg',
+  ml: 'ml', l: 'l', litro: 'l', litros: 'l', lb: 'lb', lbs: 'lb', oz: 'oz',
+  un: 'un', und: 'un', unid: 'un', unidade: 'un', unidades: 'un', pecas: 'un', peca: 'un', itens: 'un',
+};
+
+/** Extrai quantidades como "900g", "1,5 l", "kit com 3", "3 unidades". Retorna valores normalizados ("900g"). */
+export function extractQuantities(text: string): string[] {
+  const t = plain(text);
+  const out = new Set<string>();
+  const re = /(\d+(?:[.,]\d+)?)\s?(kg|g|gr|gramas?|quilos?|mg|ml|l|litros?|lbs?|oz|unidades?|unid|und|un|pecas?|itens)\b/g;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(t))) {
+    const n = parseFloat(m[1].replace(',', '.'));
+    if (!isFinite(n) || n === 0) continue;
+    out.add(`${n}${UNIT[m[2]] ?? m[2]}`);
+  }
+  const kit = /\b(?:kit|combo|pack|conjunto)\s+(?:com|de)\s+(\d+)\b/g;
+  while ((m = kit.exec(t))) out.add(`${parseInt(m[1])}un`);
+  return [...out];
+}
+
+function toBase(q: string): [number, string] {
+  const m = q.match(/^([\d.]+)(\w+)$/);
+  if (!m) return [NaN, q];
+  const n = parseFloat(m[1]);
+  const u = m[2];
+  if (u === 'kg') return [n * 1000, 'g'];
+  if (u === 'mg') return [n / 1000, 'g'];
+  if (u === 'l') return [n * 1000, 'ml'];
+  if (u === 'lb') return [n * 453.6, 'g'];
+  if (u === 'oz') return [n * 28.35, 'g'];
+  return [n, u];
+}
+
+/** Uma quantidade do conteúdo bate com alguma do produto (tolerância de 3% para conversões como 900 g = 1,98 lb). */
+function matches(q: string, product: string[]) {
+  const [a, ua] = toBase(q);
+  return product.some((p) => {
+    const [b, ub] = toBase(p);
+    return ua === ub && Math.abs(a - b) <= Math.max(1, b * 0.03);
+  });
+}
+
+export function checkQuantities(input: ContentInput, product: Product): Finding[] {
+  const content = [input.roteiro, input.textoTela, input.legenda, input.imagemDescricao].join('\n');
+  const inContent = extractQuantities(content);
+  const inProduct = extractQuantities([product.name, product.specs, product.description].join('\n'));
+  const kit = inProduct.map(toBase).find(([n, u]) => u === 'un' && n > 1);
+  if (kit && !inContent.some((q) => matches(q, inProduct.filter((x) => x.endsWith('un')))))
+    return [C('atencao', ['EV-4', 'EV-1', 'PR-1.1'], `Kit com ${kit[0]} itens: o conteúdo não confirma a quantidade`,
+      `O anúncio é de ${kit[0]} unidades/peças. Produtos não correspondem quando a quantidade é diferente. Em 04/11/2026 a conta recebeu -8 pontos por "promoção de produto inconsistente" logo após vídeos de kits passarem na pré-verificação.`,
+      `Mostre as ${kit[0]} peças juntas na câmera, uma a uma, na mesma cor da variação vinculada, e diga ou escreva "kit com ${kit[0]} peças: …".`, true)];
+  if (!inContent.length) return [];
+  if (!inProduct.length)
+    return [C('atencao', ['EV-1', 'PR-1.1'], 'Quantidade citada, mas não cadastrada no produto',
+      `O conteúdo cita ${inContent.join(', ')}, mas o cadastro do produto não informa peso, volume ou quantidade. O TikTok já aplicou violação por peso divergente do anúncio.`,
+      'Cadastre peso/volume/quantidade exatamente como está no anúncio do TikTok Shop e analise de novo.', true)];
+  const wrong = inContent.filter((q) => !matches(q, inProduct));
+  if (!wrong.length) return [];
+  return [C('alto', ['EV-1', 'PR-1.1', 'CP-3.13.2', 'CP-3.10.1'], 'Peso ou quantidade diferente do anúncio',
+    `O conteúdo cita ${wrong.join(', ')}, mas o produto cadastrado tem ${inProduct.join(', ')}. Produtos não correspondem quando diferem em tamanho, peso ou quantidade. Já houve violação real por isso (-4 pontos, produtos removidos do vídeo).`,
+    `Use no vídeo, no texto e na legenda exatamente o que está no anúncio: ${inProduct.join(', ')}. Se o produto mostrado for outro tamanho, vincule o anúncio correto.`)];
 }
 
 export function riskLevel(findings: Finding[]): RiskLevel {

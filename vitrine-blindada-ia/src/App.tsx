@@ -11,6 +11,7 @@ import PolicyLibrary from './pages/PolicyLibrary';
 import ProductForm from './pages/ProductForm';
 import ProductLibrary from './pages/ProductLibrary';
 import SettingsPage from './pages/Settings';
+import Violations from './pages/Violations';
 import { CaptionStudio, ImageStudio, ScriptStudio, VideoStudio } from './pages/Studios';
 import { useStore, type Page } from './store';
 
@@ -18,7 +19,7 @@ const NAV: [string, [Page, string, string][]][] = [
   ['', [['painel', '🏠', 'Painel']]],
   ['Produtos', [['produto', '➕', 'Cadastrar produto'], ['produtos', '📦', 'Biblioteca de produtos']]],
   ['Criação', [['imagem', '🖼️', 'Criar imagem'], ['video', '🎬', 'Prompt de vídeo'], ['roteiro', '📝', 'Roteiro de vendas'], ['legenda', '#️⃣', 'Legenda e hashtags']]],
-  ['Conformidade', [['analisar', '🔎', 'Analisar conteúdo'], ['corrigir', '🛠️', 'Corrigir riscos'], ['live', '🔴', 'Preparar LIVE']]],
+  ['Conformidade', [['analisar', '🔎', 'Analisar conteúdo'], ['corrigir', '🛠️', 'Corrigir riscos'], ['live', '🔴', 'Preparar LIVE'], ['violacoes', '⚠️', 'Minhas violações']]],
   ['Base', [['politicas', '📚', 'Biblioteca de políticas'], ['historico', '🗂️', 'Histórico'], ['config', '⚙️', 'Configurações']]],
   ['Administração', [['admin', '👥', 'Assinantes']]],
 ];
@@ -38,6 +39,7 @@ const PAGES: Record<Page, () => React.ReactElement> = {
   historico: History,
   config: SettingsPage,
   admin: Admin,
+  violacoes: Violations,
 };
 
 export default function App() {

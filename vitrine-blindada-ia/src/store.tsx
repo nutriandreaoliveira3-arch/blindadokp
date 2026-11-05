@@ -17,7 +17,8 @@ export type Page =
   | 'politicas'
   | 'historico'
   | 'config'
-  | 'admin';
+  | 'admin'
+  | 'violacoes';
 
 export interface Draft {
   productId?: string;

@@ -12,6 +12,7 @@ export const emptyCtx = (): ProductionContext => ({
   productMostDuration: '', linkMatch: '', presence: '', audio: '', staticContent: '', originality: '', watermark: '', layeredEditing: '',
   beautyFilter: '', thirdPartyBrandOrPerson: '', reviewScreenshot: '', sameContentOtherAccounts: '', creatorAdult: '', preRecordedInLive: '',
   screenRecording: '',
+  mediaSource: '',
 });
 
 type Q = [keyof ProductionContext, string, [string, string][], ('video' | 'live' | 'imagem' | 'anuncio')[]?];
@@ -35,6 +36,7 @@ const QUESTIONS: [string, Q[]][] = [
     ['staticContent', 'Imagens paradas / slides', [['nenhum', 'Nenhum'], ['parcial', 'Alguns trechos'], ['maior_parte', 'Maior parte (ou >50% da tela)']]],
   ]],
   ['Originalidade e direitos', [
+    ['mediaSource', 'De onde vieram as fotos e cenas?', [['propria', 'Gravei/fotografei eu'], ['vendedor', 'Fotos do vendedor'], ['terceiros', 'Internet/outro criador'], ['referencia_ia', 'IA com referência de outro criador']]],
     ['originality', 'Origem do material', [['original', 'Original'], ['repost_proprio', 'Repost meu'], ['terceiro_com_contribuicao', 'Terceiro + minha contribuição'], ['terceiro_sem_edicao', 'Terceiro sem edição'], ['stitch_sem_comentario', 'Costura/Dueto sem comentário']]],
     ['watermark', 'Tem marca d’água de outra plataforma?', YN],
     ['layeredEditing', 'Tem camadas, barras ou quadros inseridos?', YN],
