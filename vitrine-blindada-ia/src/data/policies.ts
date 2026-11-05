@@ -208,7 +208,7 @@ export const SEED_POLICIES: Policy[] = [
     'pendente_verificacao'),
   p('PV-PEN-1', 'Pontos de violação e revogação', 'Penalidades e recursos', 'S10', '5', 'procedimento', ALL,
     '24 pontos acumulados: Revogação do acesso ao TikTok Shop. Os pontos de violação são zerados individualmente após 90 dias corridos, conforme a política brasileira.',
-    'Fonte secundária. Confirmar com o documento oficial "Penalidades e recursos do TikTok Shop". Evidência real (S11): a conta recebeu 4, 8 e 15 pontos por violação ("Penalidade de pontos de violação de CHR"), somando mais de 24 pontos entre 22/09 e 23/10/2026. A regra dos 24 pontos pode estar errada ou usar outra escala.',
+    'Fonte secundária. Confirmar com o documento oficial "Penalidades e recursos do TikTok Shop". Evidência real (S11): a conta recebeu 4, 8 e 15 pontos por violação ("Penalidade de pontos de violação de CHR"), somando mais de 24 pontos entre 22/09 e 23/10/2026. A regra dos 24 pontos pode estar errada ou usar outra escala. Relato da usuária (não é texto oficial): a conta recebeu suspensão de 7 dias, e nesse período os links de venda de TODOS os produtos foram removidos, não só os do produto punido. Depois de removido o link, não dá mais para conferir o anúncio, então é preciso guardar print do anúncio antes de publicar.',
     'pendente_verificacao'),
   p('PV-PEN-2', 'Prazos de recurso', 'Penalidades e recursos', 'S10', '5', 'procedimento', ALL,
     'Primeiro recurso: até 30 dias após a medida. Segundo recurso: até 15 dias depois da rejeição do primeiro. Até dois recursos por caso, apresentados pela Central do Criador. A aprovação prévia do produto não garante a aprovação de todos os vídeos que o promovem.',
