@@ -1,5 +1,6 @@
 import type { Finding, Policy, Product, ProductGate } from '../types';
 import { riskLevel, scanText } from './analyze';
+import { plain } from './normalize';
 
 export const PRODUCT_CATEGORIES = [
   'Moda e acessórios',
@@ -55,6 +56,21 @@ export function checkProduct(p: Product, policies: Policy[], kbVersion: number):
     f.push(g('atencao', ['PR-1.1', 'CP-3.13.2'], 'Cadastro incompleto',
       `Falta: ${missing.join(', ')}. Sem esses dados o app não consegue garantir fidelidade ao produto nem correspondência com o anúncio.`,
       'Complete o cadastro.'));
+  if (!p.listingTitle?.trim())
+    f.push(g('atencao', ['EV-4', 'PR-1.1'], 'Título do anúncio não cadastrado',
+      'O TikTok compara o nome, a marca e o tipo de produto que aparecem no vídeo com o anúncio vinculado. Sem o título, o app não confere isso.',
+      'Copie o título exato do anúncio no cadastro.'));
+  else {
+    const t = plain(p.listingTitle);
+    if (p.brand && !t.includes(plain(p.brand)))
+      f.push(g('atencao', ['EV-4', 'PR-4.1', 'CP-3.10.1'], `A marca "${p.brand}" não está no título do anúncio`,
+        `Se você falar ou mostrar "${p.brand}" no vídeo e o anúncio não tiver essa marca, o TikTok pode entender que é outro produto. Já aconteceu: "Seu conteúdo promove um conjunto da boneca de ferro, que não corresponde ao produto listado: roupas esportivas e moletom" (-8 pontos).`,
+        'Confirme com o vendedor se o anúncio é desta marca. Se for, peça para incluir a marca no título. Se não for, não cite a marca no vídeo.', true));
+    if (p.modelName && !t.includes(plain(p.modelName)))
+      f.push(g('atencao', ['EV-4', 'PR-1.1'], `O nome "${p.modelName}" não está no título do anúncio`,
+        'Nome de modelo que não aparece no anúncio pode ser lido como produto diferente.',
+        `Fale também o tipo do produto como está no título (ex.: "${p.listingTitle}"), e mostre a peça durante o vídeo.`, true));
+  }
   if (p.shopLink && !/tiktok/i.test(p.shopLink))
     f.push(g('atencao', ['CI-4', 'CP-3.12'], 'Link não parece ser do TikTok Shop',
       'O link vinculado deve ser a página do produto no TikTok Shop. Links externos são redirecionamento de tráfego.', 'Use o link do produto no TikTok Shop.'));

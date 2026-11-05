@@ -102,6 +102,7 @@ export interface ProductionContext {
   mediaSource?: 'propria' | 'vendedor' | 'terceiros' | 'referencia_ia' | '';
   educational?: 'sim' | 'nao' | '';
   aiProductCheck?: 'conferido' | 'nao_conferido' | '';
+  nameMatch?: 'sim' | 'nao' | '';
 }
 
 export interface ContentInput {
@@ -145,6 +146,8 @@ export interface Product {
   restrictions: string;
   mandatoryInfo: string;
   shopLink: string;
+  listingTitle?: string; // título exato do anúncio no TikTok Shop
+  modelName?: string; // nome que a loja dá ao modelo/conjunto (ex.: Gaia)
   price: string;
   photos: ProductPhoto[];
   brandAuthorization: 'sim' | 'nao' | 'propria' | '';

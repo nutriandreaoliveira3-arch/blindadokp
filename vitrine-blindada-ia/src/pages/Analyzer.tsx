@@ -15,6 +15,7 @@ export const emptyCtx = (): ProductionContext => ({
   mediaSource: '',
   educational: '',
   aiProductCheck: '',
+  nameMatch: '',
 });
 
 type Q = [keyof ProductionContext, string, [string, string][], ('video' | 'live' | 'imagem' | 'anuncio')[]?];
@@ -24,6 +25,7 @@ const QUESTIONS: [string, Q[]][] = [
     ['productShown', 'O produto aparece de forma clara?', [['claro', 'Claro, em foco'], ['parcial', 'Parcial/fundo'], ['nao', 'Não aparece']]],
     ['educational', 'É um vídeo de dica ou explicação (ex.: nutrição, fome emocional)?', [['nao', 'Não, é sobre o produto'], ['sim', 'Sim, é educativo']], ['video', 'live']],
     ['productMostDuration', 'O produto está presente na maior parte do conteúdo?', [['sim', 'Sim'], ['nao', 'Não']], ['video', 'live']],
+    ['nameMatch', 'A marca e o nome falados/mostrados são os mesmos do título do anúncio?', [['sim', 'Sim'], ['nao', 'Não']]],
     ['linkMatch', 'O produto mostrado é igual ao vinculado?', [['igual', 'Igual'], ['cor_diferente', 'Só a cor muda'], ['diferente', 'Diferente'], ['sem_link', 'Sem link']]],
   ]],
   ['Produção e IA', [

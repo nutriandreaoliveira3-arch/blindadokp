@@ -294,6 +294,21 @@ export function checkContext(ctx: ProductionContext, input: ContentInput, produc
       'Fotos do anúncio ou do fornecedor podem já ter sido usadas por outros criadores e ser lidas como conteúdo não original.',
       'Use como apoio e inclua cenas suas com o produto físico. Guarde a autorização do vendedor.', true));
 
+  // Nome e marca falados x anúncio — evidência EV-4 (Boneca de Ferro)
+  if (ctx.nameMatch === 'nao')
+    f.push(C('alto', ['EV-4', 'PR-4.1', 'CP-3.10.1'], 'Marca ou nome no vídeo diferente do anúncio',
+      'O TikTok lê a marca e o nome do produto no vídeo (fala, texto e etiqueta) e compara com o anúncio vinculado. Exemplo real: "conjunto da boneca de ferro, que não corresponde ao produto listado: roupas esportivas e moletom" (-8 pontos).',
+      'Use no vídeo a mesma marca e o mesmo nome do título do anúncio, ou vincule o anúncio da marca que aparece.'));
+  if (product?.listingTitle) {
+    const said = plain([input.roteiro, input.textoTela, input.legenda].join(' '));
+    const title = plain(product.listingTitle);
+    const bad = [product.brand, product.modelName].filter((x): x is string => !!x && said.includes(plain(x)) && !title.includes(plain(x)));
+    if (bad.length)
+      f.push(C('atencao', ['EV-4', 'PR-1.1'], `"${bad.join('", "')}" é citado no vídeo, mas não está no título do anúncio`,
+        'O TikTok pode não reconhecer esse nome como o produto vinculado.',
+        `Cite também o produto como está no título: "${product.listingTitle}".`, true));
+  }
+
   // Produto x conteúdo: peso/quantidade
   if (product) f.push(...checkQuantities(input, product));
 

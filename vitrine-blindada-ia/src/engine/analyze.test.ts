@@ -67,7 +67,8 @@ describe('análise completa', () => {
     textoTela: 'Garrafa Termik 500 ml', legenda: 'Garrafa Térmica Inox 500ml — Termik', hashtags: '#tiktokshop #garrafatermica', imagemDescricao: '',
   };
   it('conteúdo limpo = baixo risco', () => {
-    const p = { ...product, gate: checkProduct(product, SEED_POLICIES, 1) };
+    const pp = { ...product, listingTitle: 'Garrafa Térmica Inox 500ml Termik' };
+    const p = { ...pp, gate: checkProduct(pp, SEED_POLICIES, 1) };
     const r = analyzeContent(input, okCtx, SEED_POLICIES, p);
     expect(r.findings.map((f) => f.title)).toEqual([]);
     expect(r.level).toBe('baixo');
@@ -109,6 +110,12 @@ describe('evidências reais (prints)', () => {
     const ok2 = analyzeContent({ ...input0(), roteiro: 'Kit com 4 peças: top, legging, short e jaqueta.' }, okCtx, SEED_POLICIES, kitP);
     expect(ok2.findings.some((f) => f.title.startsWith('Kit com 4 itens'))).toBe(false);
   });
+  it('marca citada que não está no título do anúncio', () => {
+    const pz = { ...product, brand: 'Boneca de Ferro', listingTitle: 'Conjunto Roupas Esportivas e Moletom', modelName: 'Gaia' };
+    const r = analyzeContent({ ...input0(), roteiro: 'Olha esse conjunto Gaia da Boneca de Ferro.' }, okCtx, SEED_POLICIES, pz);
+    expect(r.findings.some((f) => f.title.includes('não está no título do anúncio'))).toBe(true);
+    expect(checkProduct(pz, SEED_POLICIES, 1).findings.some((f) => f.title.includes('não está no título'))).toBe(true);
+  });
   it('EV-2: imagens de outro criador = alto', () => {
     const r = analyzeContent(input0(), { ...okCtx, mediaSource: 'terceiros' }, SEED_POLICIES, product);
     expect(r.level).toBe('alto');
@@ -122,7 +129,7 @@ describe('portão do produto', () => {
     expect(gateAllows({ ...product, gate: g }).ok).toBe(false);
   });
   it('produto comum é liberado', () => {
-    const g = checkProduct(product, SEED_POLICIES, 1);
+    const g = checkProduct({ ...product, listingTitle: 'Garrafa Térmica Inox 500ml Termik' }, SEED_POLICIES, 1);
     expect(g.findings.map((f) => f.title)).toEqual([]);
     expect(gateAllows({ ...product, gate: g }).ok).toBe(true);
   });
