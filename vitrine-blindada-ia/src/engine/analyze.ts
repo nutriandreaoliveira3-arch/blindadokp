@@ -302,7 +302,17 @@ export function checkContext(ctx: ProductionContext, input: ContentInput, produc
   if (product?.listingTitle) {
     const said = plain([input.roteiro, input.textoTela, input.legenda].join(' '));
     const title = plain(product.listingTitle);
-    const bad = [product.brand, product.modelName, product.sellerName].filter((x): x is string => !!x && said.includes(plain(x)) && !title.includes(plain(x)));
+    // aceita o nome completo ou o começo dele (ex.: "Boneca de Ferro" para "Boneca de Ferro Moda Fitness")
+    const variants = (x: string) => {
+      const w = plain(x).split(/\s+/).filter(Boolean);
+      const out = [w.join(' ')];
+      for (let n = w.length - 1; n >= 2; n--) out.push(w.slice(0, n).join(' '));
+      return out;
+    };
+    const bad = [product.brand, product.modelName, product.sellerName]
+      .filter((x): x is string => !!x)
+      .map((x) => variants(x).find((v) => said.includes(v) && !title.includes(v)))
+      .filter((x): x is string => !!x);
     if (bad.length)
       f.push(C('atencao', ['EV-4', 'PR-1.1'], `"${bad.join('", "')}" é citado no vídeo, mas não está no título do anúncio`,
         'O TikTok pode não reconhecer esse nome como o produto vinculado. Nome de loja falado no vídeo pode ser lido como marca do produto: aconteceu com "Boneca de Ferro" (nome da loja), lido como "conjunto da boneca de ferro" e punido por não corresponder a "roupas esportivas e moletom".',

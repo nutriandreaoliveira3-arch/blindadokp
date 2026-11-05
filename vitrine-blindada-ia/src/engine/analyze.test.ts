@@ -116,6 +116,11 @@ describe('evidências reais (prints)', () => {
     expect(r.findings.some((f) => f.title.includes('não está no título do anúncio'))).toBe(true);
     expect(checkProduct(pz, SEED_POLICIES, 1).findings.some((f) => f.title.includes('não está no título'))).toBe(true);
   });
+  it('caso real: "este macacão da Boneca de Ferro" com loja Boneca de Ferro Moda Fitness', () => {
+    const m = { ...product, name: 'Macacão Fitness Rosa', brand: '', sellerName: 'Boneca de Ferro Moda Fitness', listingTitle: 'Macacão Fitness Feminino Rosa' };
+    const r = analyzeContent({ ...input0(), roteiro: 'Olha este macacão da Boneca de Ferro, lindo.' }, okCtx, SEED_POLICIES, m);
+    expect(r.findings.some((f) => f.title.includes('"boneca de ferro" é citado no vídeo'))).toBe(true);
+  });
   it('EV-2: imagens de outro criador = alto', () => {
     const r = analyzeContent(input0(), { ...okCtx, mediaSource: 'terceiros' }, SEED_POLICIES, product);
     expect(r.level).toBe('alto');
