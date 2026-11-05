@@ -77,14 +77,13 @@ O app detecta o modo sozinho. O código é o mesmo.
 | Extração de regras de documentos com IA | ✅ Implementado, opcional | Mesma chave |
 | Gerar imagens dentro do app | ❌ Não implementado | API de imagem (ex.: Google Gemini/Imagen) + chave + servidor para proteger a chave |
 | Gerar vídeo no Google Flow pelo app | ❌ Não existe API pública do Flow para isso nesta data | O app gera o prompt; a geração é feita no Flow |
-| Ler pixels de imagem/vídeo | ❌ Não implementado | Modelo de visão (possível via Claude com envio da imagem) |
+| Conferir anúncio x vídeo (imagens) | ✅ Manual grátis (lado a lado + checklist) e automático com IA (Claude Sonnet 5.5, ~R$ 0,15 por conferência) | Para o automático: chave da API |
 | Texto de PDF | ❌ Não extrai automaticamente | Biblioteca pdf.js (pode ser adicionada) |
 | Site com login, dados na nuvem, assinatura | ✅ Implementado (modo nuvem) | Publicar na Cloudflare: ver `PUBLICAR-CLOUDFLARE.md` |
 | Cobrança e liberação automática | ✅ Webhook da Green | Configurar a URL na Green e testar com uma venda real |
 | Consultar status da conta no TikTok | ❌ | API oficial do TikTok Shop (Partner) |
 
 ## Próximas evoluções recomendadas
-1. **Visão computacional:** enviar a foto real + a imagem gerada para a IA comparar e apontar divergências (cor, logo, estampa).
 2. **Esqueci a senha por e-mail** (serviço de e-mail, ex.: Resend).
 3. **pdf.js** para extrair texto de PDFs de política.
 4. **Integração de geração de imagem** via API, mantendo o portão e a análise obrigatória.

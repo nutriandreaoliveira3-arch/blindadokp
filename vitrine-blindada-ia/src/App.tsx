@@ -3,6 +3,7 @@ import { useState } from 'react';
 import Admin from './pages/Admin';
 import Analyzer from './pages/Analyzer';
 import Login from './pages/Login';
+import Compare from './pages/Compare';
 import Corrector from './pages/Corrector';
 import Dashboard from './pages/Dashboard';
 import History from './pages/History';
@@ -19,7 +20,7 @@ const NAV: [string, [Page, string, string][]][] = [
   ['', [['painel', '🏠', 'Painel']]],
   ['Produtos', [['produto', '➕', 'Cadastrar produto'], ['produtos', '📦', 'Biblioteca de produtos']]],
   ['Criação', [['imagem', '🖼️', 'Criar imagem'], ['video', '🎬', 'Prompt de vídeo'], ['roteiro', '📝', 'Roteiro de vendas'], ['legenda', '#️⃣', 'Legenda e hashtags']]],
-  ['Conformidade', [['analisar', '🔎', 'Analisar conteúdo'], ['corrigir', '🛠️', 'Corrigir riscos'], ['live', '🔴', 'Preparar LIVE'], ['violacoes', '⚠️', 'Minhas violações']]],
+  ['Conformidade', [['comparar', '🖼️', 'Conferir anúncio x vídeo'], ['analisar', '🔎', 'Analisar conteúdo'], ['corrigir', '🛠️', 'Corrigir riscos'], ['live', '🔴', 'Preparar LIVE'], ['violacoes', '⚠️', 'Minhas violações']]],
   ['Base', [['politicas', '📚', 'Biblioteca de políticas'], ['historico', '🗂️', 'Histórico'], ['config', '⚙️', 'Configurações']]],
   ['Administração', [['admin', '👥', 'Assinantes']]],
 ];
@@ -40,6 +41,7 @@ const PAGES: Record<Page, () => React.ReactElement> = {
   config: SettingsPage,
   admin: Admin,
   violacoes: Violations,
+  comparar: Compare,
 };
 
 export default function App() {

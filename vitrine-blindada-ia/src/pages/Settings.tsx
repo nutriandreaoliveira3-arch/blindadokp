@@ -9,6 +9,7 @@ export default function SettingsPage() {
   const { settings, saveSettings, reload, toast, account, refreshAccount } = useStore();
   const [key, setKey] = useState(settings.apiKey ?? '');
   const [model, setModel] = useState(settings.model);
+  const [visionModel, setVisionModel] = useState(settings.visionModel ?? 'claude-sonnet-5-5');
   const [effort, setEffort] = useState(settings.effort);
 
   return (
@@ -45,14 +46,21 @@ export default function SettingsPage() {
             <Field label="Modelo">
               <input value={model} onChange={(e) => setModel(e.target.value)} />
             </Field>
+            <Field label="Modelo para comparar imagens" hint="Sonnet 5.5: cerca de R$ 0,15 por conferência. Haiku 5.5: mais barato. Opus 5.5: mais rigoroso.">
+              <select value={visionModel} onChange={(e) => setVisionModel(e.target.value)}>
+                <option value="claude-sonnet-5-5">Claude Sonnet 5.5 (recomendado)</option>
+                <option value="claude-haiku-5-5">Claude Haiku 5.5 (mais barato)</option>
+                <option value="claude-opus-5-5">Claude Opus 5.5 (mais rigoroso)</option>
+              </select>
+            </Field>
             <Field label="Esforço de raciocínio">
               <Choice value={effort} onChange={setEffort} options={[['low', 'Baixo (mais barato)'], ['medium', 'Médio'], ['high', 'Alto']]} />
             </Field>
             <div className="row">
-              <button type="button" className="btn primary" onClick={async () => { await saveSettings({ apiKey: key || undefined, model, effort }); toast('Configurações salvas.'); }}>
+              <button type="button" className="btn primary" onClick={async () => { await saveSettings({ apiKey: key || undefined, model, effort, visionModel }); toast('Configurações salvas.'); }}>
                 Salvar
               </button>
-              <button type="button" className="btn ghost danger" onClick={async () => { setKey(''); await saveSettings({ model, effort }); toast('Chave removida.'); }}>
+              <button type="button" className="btn ghost danger" onClick={async () => { setKey(''); await saveSettings({ model, effort, visionModel }); toast('Chave removida.'); }}>
                 Remover chave
               </button>
             </div>

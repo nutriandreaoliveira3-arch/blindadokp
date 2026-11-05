@@ -126,6 +126,7 @@ export interface Analysis {
   kbVersion: number;
   parentId?: string; // análise anterior (quando é reanálise após correção)
   aiUsed?: boolean;
+  evidence?: { listing: string[]; frames: string[] }; // imagens guardadas como prova (recurso)
 }
 
 export interface ProductPhoto {
@@ -169,6 +170,7 @@ export interface ProductGate {
 export interface Settings {
   apiKey?: string;
   model: string;
+  visionModel?: string;
   effort: 'low' | 'medium' | 'high';
 }
 

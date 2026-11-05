@@ -167,3 +167,49 @@ export async function aiExtractPolicies(s: Settings, docText: string, categories
     literal: doc.includes(plain(x.trecho_literal).replace(/\s+/g, ' ').slice(0, 120)),
   }));
 }
+
+// ───────── Comparação visual anúncio x vídeo
+const CompareSchema = z.object({
+  itens: z.array(
+    z.object({
+      atributo: z.enum(['tipo', 'cor', 'estampa', 'logo_rotulo', 'formato', 'quantidade_pecas', 'detalhes', 'itens_extras', 'texto_na_imagem']),
+      status: z.enum(['igual', 'diferente', 'incerto']),
+      detalhe: z.string(),
+    }),
+  ),
+  veredito: z.enum(['compativel', 'divergente', 'incerto']),
+  resumo: z.string(),
+});
+export type CompareResult = z.infer<typeof CompareSchema>;
+
+const b64 = (dataUrl: string) => {
+  const m = dataUrl.match(/^data:(image\/(?:jpeg|png|webp|gif));base64,(.*)$/);
+  if (!m) throw new Error('Imagem inválida.');
+  return { type: 'image' as const, source: { type: 'base64' as const, media_type: m[1] as 'image/jpeg', data: m[2] } };
+};
+
+/** Compara fotos do anúncio com quadros do vídeo. Não decide aprovação: só aponta diferenças visíveis. */
+export async function aiCompareImages(s: Settings, listing: string[], frames: string[], product?: Product): Promise<CompareResult> {
+  if (isCloud()) return api('/api/ai/compare', { method: 'POST', body: JSON.stringify({ listing, frames, product }) });
+  const c = client(s);
+  const content = [
+    { type: 'text' as const, text: `FOTOS DO ANÚNCIO (referência oficial)${product ? ` — ${product.listingTitle || product.name}` : ''}:` },
+    ...listing.map(b64),
+    { type: 'text' as const, text: 'QUADROS DO VÍDEO:' },
+    ...frames.map(b64),
+    {
+      type: 'text' as const,
+      text: `Compare o produto dos quadros do vídeo com o produto das fotos do anúncio. Para cada atributo (tipo, cor, estampa, logo_rotulo, formato, quantidade_pecas, detalhes como costura/recortes/bolsos/alças, itens_extras que não existem no anúncio, texto_na_imagem), diga igual, diferente ou incerto, com o detalhe observado e em qual quadro. Seja rigoroso: diferença pequena de logo, estampa, costura ou número de peças conta como diferente. Não avalie a qualidade do vídeo nem dê opinião sobre aprovação do TikTok.${product ? ` Dados do anúncio: título "${product.listingTitle ?? ''}", especificações: ${product.specs}.` : ''}`,
+    },
+  ];
+  const r = await c.messages.parse({
+    model: s.visionModel || 'claude-sonnet-5-5',
+    max_tokens: 8000,
+    system: 'Você é um conferente visual de produtos para e-commerce. Responda em português do Brasil, frases curtas, apenas sobre o que é visível.',
+    output_config: { format: zodOutputFormat(CompareSchema) },
+    messages: [{ role: 'user', content }],
+  });
+  guardStop(r);
+  if (!r.parsed_output) throw new Error('A IA não retornou um resultado válido.');
+  return r.parsed_output;
+}

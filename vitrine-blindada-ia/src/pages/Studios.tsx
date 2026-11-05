@@ -115,7 +115,7 @@ export function VideoStudio() {
   const [pid, setPid] = usePid();
   const { product, ok } = useGate(pid);
   const { setDraft, go } = useStore();
-  const [o, setO] = useState<VideoPromptOptions>({ style: 'demonstracao', duration: 8, scene: '', camera: '', lighting: '', person: 'maos', action: '' });
+  const [o, setO] = useState<VideoPromptOptions>({ style: 'pov', duration: 8, scene: '', camera: '', lighting: '', person: 'maos', action: '', noSample: true, variant: '' });
   const out = product && ok ? videoPrompt(product, o) : null;
   return (
     <>
@@ -125,6 +125,14 @@ export function VideoStudio() {
           <ProductPicker value={pid} onChange={setPid} />
           {product && ok && (
             <div className="form">
+              <label className="check">
+                <input type="checkbox" checked={!!o.noSample} onChange={(e) => setO({ ...o, noSample: e.target.checked })} /> Não tenho amostra (vídeo por IA fiel ao anúncio)
+              </label>
+              {o.noSample && (
+                <Field label="Cor/variação vinculada" hint="Exatamente como está na variação do anúncio.">
+                  <input value={o.variant ?? ''} onChange={(e) => setO({ ...o, variant: e.target.value })} placeholder="Ex.: rosa, tamanho M" />
+                </Field>
+              )}
               <Field label="Estilo">
                 <Choice
                   value={o.style}
@@ -176,6 +184,9 @@ export function VideoStudio() {
                 }}
               >
                 Enviar para análise
+              </button>
+              <button type="button" className="btn" onClick={() => go('comparar')}>
+                Conferir anúncio x vídeo
               </button>
             </>
           ) : (

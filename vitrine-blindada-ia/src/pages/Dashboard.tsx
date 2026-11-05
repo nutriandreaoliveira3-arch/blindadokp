@@ -5,7 +5,7 @@ const FLOW: [string, string, Page][] = [
   ['1', 'Cadastrar produto', 'produto'],
   ['2', 'Análise do produto', 'produtos'],
   ['3', 'Criar imagem, vídeo, roteiro ou legenda', 'roteiro'],
-  ['4', 'Analisar conteúdo', 'analisar'],
+  ['4', 'Conferir anúncio x vídeo e analisar', 'comparar'],
   ['5', 'Corrigir riscos', 'corrigir'],
   ['6', 'Publicar (fora do app)', 'historico'],
 ];
@@ -17,6 +17,7 @@ const TILES: [Page, string, string][] = [
   ['video', '🎬', 'Prompt de vídeo (Flow)'],
   ['roteiro', '📝', 'Roteiro de vendas'],
   ['legenda', '#️⃣', 'Legenda e hashtags'],
+  ['comparar', '🖼️', 'Conferir anúncio x vídeo'],
   ['analisar', '🔎', 'Analisar conteúdo'],
   ['corrigir', '🛠️', 'Corrigir riscos'],
   ['live', '🔴', 'Preparar LIVE'],

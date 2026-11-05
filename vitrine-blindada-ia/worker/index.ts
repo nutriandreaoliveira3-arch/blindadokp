@@ -2,7 +2,7 @@
 // Servidor da Vitrine Blindada IA (Cloudflare Workers + D1).
 // Serve o app (pasta dist) e a API: login, dados na nuvem, IA no servidor e webhook da Greenn.
 
-import { aiExtractPolicies, aiReview, aiRewrite } from '../src/ai';
+import { aiCompareImages, aiExtractPolicies, aiReview, aiRewrite } from '../src/ai';
 import { CATEGORIES, SEED_POLICIES } from '../src/data/policies';
 import { SEED_SOURCES } from '../src/data/sources';
 import type { Policy, Settings } from '../src/types';
@@ -16,6 +16,7 @@ export interface Env {
   ANTHROPIC_API_KEY?: string;
   AI_MODEL?: string;
   AI_MONTHLY_LIMIT?: string;
+  AI_VISION_MODEL?: string;
 }
 
 const GLOBAL = '__global__';
@@ -140,6 +141,13 @@ async function handleAI(req: Request, env: Env, user: User, kind: string) {
     if (kind === 'review') return json(await aiReview(settings, body.input, policies, body.product));
     if (kind === 'rewrite') return json(await aiRewrite(settings, body.text, body.findings, policies, body.product));
     if (kind === 'extract') return json(await aiExtractPolicies(settings, body.text, CATEGORIES));
+    if (kind === 'compare') {
+      const vs = { ...settings, visionModel: env.AI_VISION_MODEL || 'claude-sonnet-5-5' };
+      const l = (body.listing as unknown as string[]) ?? [];
+      const fr = (body.frames as unknown as string[]) ?? [];
+      if (!l.length || !fr.length || l.length + fr.length > 10) return err(400, 'Envie de 1 a 4 fotos do anúncio e de 1 a 6 quadros.');
+      return json(await aiCompareImages(vs, l, fr, body.product));
+    }
   } catch (e) {
     return err(502, (e as Error).message);
   }

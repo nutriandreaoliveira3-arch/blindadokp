@@ -1,5 +1,6 @@
 import type { Product } from '../types';
 import { plain } from './normalize';
+import { extractQuantities } from './analyze';
 
 // Geradores determinísticos. Usam SOMENTE dados cadastrados do produto.
 // Nenhum benefício é inventado: se não houver benefício cadastrado, o texto fica em características.
@@ -70,6 +71,8 @@ export interface VideoPromptOptions {
   lighting: string;
   person: 'nenhuma' | 'maos' | 'modelo_virtual';
   action: string;
+  noSample?: boolean; // produto sem amostra: IA fiel ao anúncio
+  variant?: string; // cor/variação vinculada
 }
 
 const STYLE: Record<VideoStyle, { en: string; pt: string }> = {
@@ -86,8 +89,20 @@ export function videoPrompt(p: Product, o: VideoPromptOptions) {
     maos: 'Only hands appear, handling the product naturally; no face.',
     modelo_virtual: 'A realistic virtual model handles the product (this is AI-generated and must be labeled as AI).',
   }[o.person];
+  const kit = extractQuantities([p.name, p.listingTitle ?? '', p.specs].join(' ')).find((q) => q.endsWith('un') && parseFloat(q) > 1);
+  const sample = o.noSample
+    ? [
+        `Exact product: "${p.listingTitle || p.name}". Use ALL attached listing photos (front, back, details) together as the single source of truth for the product.`,
+        o.variant ? `Variant shown: ${o.variant} only (same color and print as the listing photo of this variant).` : '',
+        kit ? `This is a set of ${parseFloat(kit)} pieces: all ${parseFloat(kit)} pieces must be clearly visible together at least once, none missing, none added.` : '',
+        'Create a NEW original scene: do NOT reproduce the composition, background, model, pose or framing of the listing photos.',
+        'Only show logos, labels or text that are visible on the product in the reference photos; never invent or change them.',
+        'Keep the product moving and in use the whole time (no still frames, no slow zoom on a static image).',
+      ].filter(Boolean)
+    : [];
   const en = [
     `Vertical 9:16 video, ${o.duration} seconds, single continuous shot, photorealistic.`,
+    ...sample,
     `${STYLE[o.style].en}.`,
     `Product: "${p.name}"${p.brand ? ` (${p.brand})` : ''}. Use the attached reference image(s) as the exact product.`,
     o.action ? `Action: ${o.action}.` : 'Action: the product is picked up, rotated slowly to show its main details, then placed back.',
@@ -113,8 +128,15 @@ export function videoPrompt(p: Product, o: VideoPromptOptions) {
   if (o.style === 'afiliado')
     warn.push('• Afiliado: o vídeo comprável precisa mostrar o produto e explicar como funciona. Só vincule o produto que aparece (VC-1).');
 
+  if (o.noSample)
+    warn.unshift(
+      '• MODO SEM AMOSTRA: depois de gerar, use "Conferir anúncio x vídeo" antes de publicar. "Produto inconsistente" foi a causa de 62 dos 136 pontos da conta.',
+      '• Estrutura mais segura (híbrida): [0–3s] você na câmera, ambiente real → [3–12s] cenas de IA do produto + SUA voz → [final] você: "toque no link do produto aqui no vídeo".',
+      `• Fale o produto com as palavras do título do anúncio${p.listingTitle ? `: "${p.listingTitle}"` : ''}. Não diga "da [nome da loja]" logo depois do produto.`,
+      '• Não fale preço nem desconto: diga "confira o preço no link".',
+    );
   const pt = [
-    `ESTILO: ${STYLE[o.style].pt} · ${o.duration}s · 9:16`,
+    `ESTILO: ${STYLE[o.style].pt} · ${o.duration}s · 9:16${o.noSample ? ' · SEM AMOSTRA' : ''}`,
     '',
     'NARRAÇÃO SUGERIDA (grave com sua voz)',
     narration(p, o.duration),
@@ -130,7 +152,7 @@ function narration(p: Product, seconds: number) {
   const f = facts(p);
   const items = [...f.benefits, ...f.specs].slice(0, seconds <= 8 ? 2 : 4);
   const body = items.length ? items.join('. ') + '.' : '[Diga 1 ou 2 características reais do produto.]';
-  return `Esse é o ${p.name}${p.brand ? ', da ' + p.brand : ''}. ${body} O link do produto está aqui no vídeo.`;
+  return `Esse é o ${p.listingTitle || p.name}. ${body} Toque no link do produto aqui no vídeo para ver os detalhes.`;
 }
 
 // ───────────────────────── Roteiro de vendas

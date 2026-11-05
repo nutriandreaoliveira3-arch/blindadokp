@@ -53,6 +53,14 @@ export default function History() {
             ))}
           </Card>
         )}
+        {a.evidence && (
+          <Card title="Prova visual: anúncio x vídeo">
+            <span className="field-label">Anúncio</span>
+            <div className="evidence">{a.evidence.listing.map((x, i) => <img key={i} src={x} alt="" />)}</div>
+            <span className="field-label">Quadros do vídeo</span>
+            <div className="evidence">{a.evidence.frames.map((x, i) => <img key={i} src={x} alt="" />)}</div>
+          </Card>
+        )}
         <div className="grid2">
           <Card title="Alertas">
             {a.findings.map((f) => <FindingCard key={f.id} f={f} />)}

@@ -19,6 +19,7 @@ migrations_dir = "migrations"
 [vars]
 ADMIN_EMAIL = "nutriandreaoliveira3@gmail.com"
 AI_MODEL = "claude-opus-5-5"
+AI_VISION_MODEL = "claude-sonnet-5-5"
 AI_MONTHLY_LIMIT = "200"
 
 # Segredos (NÃO colocar aqui). Cadastrar no painel da Cloudflare ou com:

@@ -38,6 +38,7 @@ ${f.humanReview ? '<p><b>Revisão humana recomendada.</b></p>' : ''}<p><b>Origem
 <p>${new Date(a.createdAt).toLocaleString('pt-BR')} · Produto: ${esc(a.productName ?? '—')} · Tipo: ${a.context.contentType} · Base de regras v${a.kbVersion}</p>
 <p class="lvl">${L.emoji} ${L.label}</p><p>${L.desc}</p>
 <h2>Alertas (${a.findings.length})</h2>${rows || '<p>Nenhum alerta.</p>'}
+${a.evidence ? `<h2>Prova visual: anúncio x vídeo</h2><p><b>Anúncio:</b></p><div>${a.evidence.listing.map((x) => `<img src="${x}" style="height:220px;margin:4px;border:1px solid #ccc;border-radius:6px">`).join('')}</div><p><b>Quadros do vídeo:</b></p><div>${a.evidence.frames.map((x) => `<img src="${x}" style="height:220px;margin:4px;border:1px solid #ccc;border-radius:6px">`).join('')}</div>` : ''}
 <h2>Conteúdo analisado</h2>${field('Roteiro e fala', a.input.roteiro)}${field('Texto na tela', a.input.textoTela)}${field('Legenda', a.input.legenda)}${field('Hashtags', a.input.hashtags)}${field('Imagem', a.input.imagemDescricao)}
 <p class="disc">${esc(DISCLAIMER)}</p></body></html>`;
 }

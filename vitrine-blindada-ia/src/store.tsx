@@ -18,7 +18,8 @@ export type Page =
   | 'historico'
   | 'config'
   | 'admin'
-  | 'violacoes';
+  | 'violacoes'
+  | 'comparar';
 
 export interface Draft {
   productId?: string;
