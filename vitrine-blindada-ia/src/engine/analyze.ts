@@ -226,7 +226,7 @@ export function checkContext(ctx: ProductionContext, input: ContentInput, produc
   if (o === 'terceiro_com_contribuicao')
     f.push(C('atencao', ['NO-5', 'NO-1'], 'Usa conteúdo de terceiros', 'Exige contribuição significativa e crédito ao criador original.', 'Dê crédito e garanta que sua parte seja a principal.', true));
   if (ctx.watermark === 'sim')
-    f.push(C('alto', ['CP-3.13.1', 'NO-1'], 'Marca d’água de outra plataforma', 'Marca d’água, adesivo ou logotipo de outra plataforma indica conteúdo não original.', 'Exporte o vídeo original sem marca d’água.'));
+    f.push(C('alto', ['CP-3.13.1', 'NO-1'], 'Marca d’água de outra plataforma', 'Marca d’água, adesivo ou logotipo de outra plataforma (inclusive da ferramenta de IA usada, comum em planos gratuitos) indica conteúdo não original.', 'Exporte sem marca d’água (plano pago da ferramenta) ou não publique. Cortar ou borrar a marca não resolve e pode ser visto como disfarce.'));
   if (ctx.layeredEditing === 'sim')
     f.push(C('alto', ['PR-3'], 'Edição em camadas ou quadros inseridos',
       'Vídeos em camadas, quadros sanduíche ou disfarce de formato são táticas evasivas e podem gerar ação disciplinar.', 'Publique o vídeo em formato único e contínuo.'));

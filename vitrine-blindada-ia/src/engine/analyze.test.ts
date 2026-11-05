@@ -53,6 +53,9 @@ describe('detectores', () => {
     expect(ids('Produto nº 1 do Brasil, 100% natural')).toContain('D-ABSOLUTO');
     expect(ids('Inspirado no perfume da marca X')).toContain('D-IMITACAO');
   });
+  it('avatar de IA em LIVE', () => {
+    expect(scanText('Hoje a live vai ser com meu avatar do HeyGen', 'live', SEED_POLICIES).map((f) => f.detectorId)).toContain('D-VOZ-IA-LIVE');
+  });
   it('texto neutro não gera alertas', () => {
     expect(ids('Essa garrafa tem 500 ml e tampa com trava. Eu levo para o trabalho todo dia.')).toEqual([]);
   });

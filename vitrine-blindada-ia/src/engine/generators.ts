@@ -62,6 +62,19 @@ export function imagePrompt(p: Product, o: ImagePromptOptions) {
 
 // ───────────────────────── Vídeo (Google Flow)
 export type VideoStyle = 'pov' | 'demonstracao' | 'apresentacao' | 'afiliado';
+export type VideoTool = 'flow' | 'gemini' | 'kling' | 'runway' | 'hailuo' | 'higgsfield' | 'heygen' | 'youtube' | 'outra';
+
+export const VIDEO_TOOLS: Record<VideoTool, { label: string; negativeField: boolean; tip: string }> = {
+  flow: { label: 'Google Flow', negativeField: false, tip: 'Anexe as fotos do anúncio como referência (ingredientes/quadros), escolha 9:16 e cole o prompt.' },
+  gemini: { label: 'Gemini (vídeo)', negativeField: false, tip: 'Anexe as fotos do anúncio na conversa, peça vídeo vertical 9:16 e cole o prompt. Peça sem fala e sem música.' },
+  kling: { label: 'Kling AI', negativeField: true, tip: 'Use o modo imagem para vídeo com a foto principal do anúncio. Se houver campo de prompt negativo, cole lá as restrições.' },
+  runway: { label: 'Runway', negativeField: false, tip: 'Comece pela imagem de referência e descreva o movimento. Prefira frases afirmativas ("mantém o logo idêntico") a negações.' },
+  hailuo: { label: 'Hailuo AI', negativeField: false, tip: 'Use imagem para vídeo com a foto do anúncio. Descreva movimento de câmera e da cena de forma simples.' },
+  higgsfield: { label: 'Higgsfield', negativeField: false, tip: 'Use imagem para vídeo com as fotos do anúncio como referência. Evite presets de efeito chamativo: o produto precisa continuar idêntico.' },
+  heygen: { label: 'HeyGen (avatar)', negativeField: false, tip: 'ATENÇÃO: avatar com voz de IA. Em LIVE é proibido (NO-4, CI-2). Em vídeo, o guia lista "áudio não humano (voz de IA)" como "o que não fazer" (CI-1), e o avatar precisa ser rotulado como IA e não pode dar depoimento de uso. Prefira usar só para cenas do produto, com a sua voz.' },
+  youtube: { label: 'YouTube Create', negativeField: false, tip: 'Ferramenta pensada para o YouTube. Confira se o vídeo sai sem marca d’água ou selo visível antes de usar no TikTok.' },
+  outra: { label: 'Outra IA', negativeField: true, tip: 'Use imagem para vídeo com as fotos do anúncio. Se a ferramenta tiver campo de prompt negativo, use a parte de restrições nele.' },
+};
 
 export interface VideoPromptOptions {
   style: VideoStyle;
@@ -72,6 +85,7 @@ export interface VideoPromptOptions {
   person: 'nenhuma' | 'maos' | 'modelo_virtual';
   action: string;
   noSample?: boolean; // produto sem amostra: IA fiel ao anúncio
+  tool?: VideoTool;
   variant?: string; // cor/variação vinculada
 }
 
@@ -100,7 +114,7 @@ export function videoPrompt(p: Product, o: VideoPromptOptions) {
         'Keep the product moving and in use the whole time (no still frames, no slow zoom on a static image).',
       ].filter(Boolean)
     : [];
-  const en = [
+  const en: string[] = [
     `Vertical 9:16 video, ${o.duration} seconds, single continuous shot, photorealistic.`,
     ...sample,
     `${STYLE[o.style].en}.`,
@@ -110,14 +124,26 @@ export function videoPrompt(p: Product, o: VideoPromptOptions) {
     `Camera: ${o.camera || 'handheld but stable, slow push-in, eye level, shallow depth of field'}.`,
     `Lighting: ${o.lighting || 'soft natural window light, true-to-life colors'}.`,
     person,
-    'Natural, physically plausible motion at real-world speed. No morphing, no sudden transitions, no flashy effects, no speed ramps.',
-    'PRODUCT FIDELITY (mandatory): exact shape, size, proportions, colors, print/pattern, materials, label text, logo and packaging as in the reference. Do not add accessories, parts, extra units or features. Do not change the label.',
-    'Do NOT depict results, before/after, body changes, glowing skin effects, weight changes or any exaggerated effect.',
-    'No on-screen text, no prices, no logos of other brands, no watermarks, no QR codes, no social handles.',
+    'Natural, physically plausible motion at real-world speed.',
+    'PRODUCT FIDELITY (mandatory): exact shape, size, proportions, colors, print/pattern, materials, label text, logo and packaging as in the reference.',
     'Audio: none (voiceover will be recorded separately by a real person).',
-  ].join('\n');
+  ];
+  const negatives = [
+    'morphing, sudden transitions, flashy effects, speed ramps, still frames',
+    'added accessories, extra parts, extra units, missing pieces, changed or invented logos, changed label text, changed colors or print',
+    'results on the body, before/after, body changes, weight changes, glowing skin, exaggerated effects',
+    'on-screen text, prices, logos of other brands, watermarks, QR codes, social media handles, subtitles',
+    'copying the listing photo composition, background, model or pose',
+  ];
+  const tool = VIDEO_TOOLS[o.tool ?? 'flow'];
+  const negative = tool.negativeField ? negatives.join(', ') : '';
+  const enText = tool.negativeField
+    ? en.join('\n')
+    : [...en, `Avoid: ${negatives.join('; ')}.`].join('\n');
 
   const warn: string[] = [
+    `• ${tool.label}: ${tool.tip}`,
+    '• Marca d’água: planos gratuitos de várias IAs colocam marca d’água ou logo no vídeo. No TikTok Shop, marca d’água ou logo de outra plataforma indica conteúdo não original (CP-3.13.1). Use plano sem marca d’água ou não publique.',
     '• Marque "Conteúdo gerado por IA" ao publicar e inclua "Vídeo gerado por IA" no texto ou legenda (PV-IA-1, pendente de confirmação oficial; CP-3.1).',
     '• Vídeo 100% IA, sem você aparecendo ou falando, tem risco de ser lido como "sem engajamento ativo" (CP-3.13.1, CI-1). Recomendado: use este clipe como apoio e grave sua voz explicando o produto, ou uma cena sua com o produto real.',
     '• Não use voz de IA. O guia de vídeos lista "áudio não humano (voz de IA, ASMR)" em "o que não fazer" (CI-1).',
@@ -136,7 +162,7 @@ export function videoPrompt(p: Product, o: VideoPromptOptions) {
       '• Não fale preço nem desconto: diga "confira o preço no link".',
     );
   const pt = [
-    `ESTILO: ${STYLE[o.style].pt} · ${o.duration}s · 9:16${o.noSample ? ' · SEM AMOSTRA' : ''}`,
+    `FERRAMENTA: ${tool.label} · ESTILO: ${STYLE[o.style].pt} · ${o.duration}s · 9:16${o.noSample ? ' · SEM AMOSTRA' : ''}`,
     '',
     'NARRAÇÃO SUGERIDA (grave com sua voz)',
     narration(p, o.duration),
@@ -145,7 +171,7 @@ export function videoPrompt(p: Product, o: VideoPromptOptions) {
     ...warn,
     f.mandatory.length ? `\nINFORMAÇÕES OBRIGATÓRIAS DO PRODUTO\n${f.mandatory.map((x) => '• ' + x).join('\n')}` : '',
   ].join('\n');
-  return { en, pt };
+  return { en: enText, negative, pt, tool: tool.label };
 }
 
 function narration(p: Product, seconds: number) {
@@ -242,7 +268,7 @@ export function liveScript(products: Product[], minutes: number) {
   );
   const rules = [
     'NUNCA NA LIVE',
-    '• Voz de IA, vídeo gravado, gravação de tela, slides ou imagem parada cobrindo mais de 50% da tela (NO-4, CI-2).',
+    '• Voz de IA, avatar de IA (HeyGen ou similar), vídeo gravado, gravação de tela, slides ou imagem parada cobrindo mais de 50% da tela (NO-4, CI-2).',
     '• Sair da frente da câmera sem usar "pausar" (CI-2).',
     '• Citar Instagram, WhatsApp, DM, link externo ou QR code (CP-3.12, LV-1).',
     '• Produto para emagrecimento ou queima de gordura (LV-1, CP-3.15).',
@@ -273,6 +299,7 @@ export const LIVE_CHECKLIST: ChecklistItem[] = [
   { id: 'l11', group: 'Durante a LIVE', text: 'Uso "pausar" quando preciso sair.', policyIds: ['CI-2'] },
   { id: 'l12', group: 'Durante a LIVE', text: 'O produto ocupa a maior parte da LIVE.', policyIds: ['PI-1'] },
   { id: 'l13', group: 'Proibido', text: 'Não uso voz de IA, áudio ou clipe pré-gravado.', policyIds: ['NO-4', 'CI-2'] },
+  { id: 'l13b', group: 'Proibido', text: 'Não uso avatar de IA (HeyGen ou similar) no lugar de uma pessoa real ao vivo.', policyIds: ['NO-4', 'CI-2', 'CP-3.13.1'] },
   { id: 'l14', group: 'Proibido', text: 'Não uso gravação de tela, slides ou imagem parada em mais de 50% da tela.', policyIds: ['CI-2', 'NO-4'] },
   { id: 'l15', group: 'Proibido', text: 'Não cito outras plataformas, DM, WhatsApp, link na bio ou QR code.', policyIds: ['CP-3.12', 'CI-3', 'LV-1'] },
   { id: 'l16', group: 'Proibido', text: 'Não exagero nem invento benefícios. Sem "menor preço", "nº 1", "100%".', policyIds: ['CP-3.10.2', 'CP-3.10.3'] },

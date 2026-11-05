@@ -364,8 +364,8 @@ export const DETECTORS: Detector[] = [
     policyIds: ['NO-4', 'CI-2'],
     severity: 'alto',
     fields: ['live'],
-    patterns: [/\b(voz (de|da) ia|narracao (de|da|por) ia|voz sintetica|audio gerado|video (pre-?)?gravado|clipe gravado|soltar (o )?video|passar (o )?video gravado)\b/],
-    explanation: 'Em LIVE não se usa áudio ou narração de IA, nem clipes pré-gravados.',
+    patterns: [/\b(voz (de|da) ia|narracao (de|da|por) ia|voz sintetica|audio gerado|video (pre-?)?gravado|clipe gravado|soltar (o )?video|passar (o )?video gravado|avatar|heygen|hey gen|apresentador(a)? virtual|clone de voz|voz clonada)\b/],
+    explanation: 'Em LIVE não se usa áudio ou narração de IA, nem clipes pré-gravados. Avatar de IA (ex.: HeyGen) apresentando a LIVE junta as duas proibições e não tem interação real.',
     fix: { mode: 'sentence', replacement: '[Faça este trecho ao vivo, com sua voz, mostrando o produto em tempo real.]' },
   },
   {

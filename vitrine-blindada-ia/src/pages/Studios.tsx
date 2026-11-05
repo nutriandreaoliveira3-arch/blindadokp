@@ -9,6 +9,8 @@ import {
   type Hook,
   type ImagePromptOptions,
   type VideoPromptOptions,
+  type VideoTool,
+  VIDEO_TOOLS,
 } from '../engine/generators';
 import { useStore } from '../store';
 
@@ -115,16 +117,23 @@ export function VideoStudio() {
   const [pid, setPid] = usePid();
   const { product, ok } = useGate(pid);
   const { setDraft, go } = useStore();
-  const [o, setO] = useState<VideoPromptOptions>({ style: 'pov', duration: 8, scene: '', camera: '', lighting: '', person: 'maos', action: '', noSample: true, variant: '' });
+  const [o, setO] = useState<VideoPromptOptions>({ style: 'pov', duration: 8, scene: '', camera: '', lighting: '', person: 'maos', action: '', noSample: true, variant: '', tool: 'flow' });
   const out = product && ok ? videoPrompt(product, o) : null;
   return (
     <>
-      <PageHead title="Gerar prompt de vídeo — Google Flow" sub="Vertical 9:16, movimento natural, fidelidade total ao produto." />
+      <PageHead title="Gerar prompt de vídeo" sub="Google Flow, Gemini, Kling, Runway, Hailuo, YouTube Create ou outra IA. Vertical 9:16, movimento natural, fidelidade total ao produto." />
       <div className="grid2 wide-left">
         <Card title="Configuração">
           <ProductPicker value={pid} onChange={setPid} />
           {product && ok && (
             <div className="form">
+              <Field label="Ferramenta de vídeo">
+                <select value={o.tool} onChange={(e) => setO({ ...o, tool: e.target.value as VideoTool })}>
+                  {Object.entries(VIDEO_TOOLS).map(([k, v]) => (
+                    <option key={k} value={k}>{v.label}</option>
+                  ))}
+                </select>
+              </Field>
               <label className="check">
                 <input type="checkbox" checked={!!o.noSample} onChange={(e) => setO({ ...o, noSample: e.target.checked })} /> Não tenho amostra (vídeo por IA fiel ao anúncio)
               </label>
@@ -168,7 +177,8 @@ export function VideoStudio() {
         <Card title="Prompt para o Flow">
           {out ? (
             <>
-              <Output title="Prompt (inglês)" text={out.en} />
+              <Output title={`Prompt principal (inglês) — ${out.tool}`} text={out.en} />
+              {out.negative && <Output title="Prompt negativo / restrições" text={out.negative} />}
               <Output title="Narração e avisos" text={out.pt} />
               <button
                 type="button"
