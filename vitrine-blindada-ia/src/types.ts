@@ -100,6 +100,8 @@ export interface ProductionContext {
   preRecordedInLive: 'sim' | 'nao' | '';
   screenRecording: 'sim' | 'nao' | '';
   mediaSource?: 'propria' | 'vendedor' | 'terceiros' | 'referencia_ia' | '';
+  educational?: 'sim' | 'nao' | '';
+  aiProductCheck?: 'conferido' | 'nao_conferido' | '';
 }
 
 export interface ContentInput {

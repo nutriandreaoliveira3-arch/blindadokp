@@ -13,6 +13,8 @@ export const emptyCtx = (): ProductionContext => ({
   beautyFilter: '', thirdPartyBrandOrPerson: '', reviewScreenshot: '', sameContentOtherAccounts: '', creatorAdult: '', preRecordedInLive: '',
   screenRecording: '',
   mediaSource: '',
+  educational: '',
+  aiProductCheck: '',
 });
 
 type Q = [keyof ProductionContext, string, [string, string][], ('video' | 'live' | 'imagem' | 'anuncio')[]?];
@@ -20,6 +22,7 @@ const YN: [string, string][] = [['nao', 'Não'], ['sim', 'Sim']];
 const QUESTIONS: [string, Q[]][] = [
   ['Produto', [
     ['productShown', 'O produto aparece de forma clara?', [['claro', 'Claro, em foco'], ['parcial', 'Parcial/fundo'], ['nao', 'Não aparece']]],
+    ['educational', 'É um vídeo de dica ou explicação (ex.: nutrição, fome emocional)?', [['nao', 'Não, é sobre o produto'], ['sim', 'Sim, é educativo']], ['video', 'live']],
     ['productMostDuration', 'O produto está presente na maior parte do conteúdo?', [['sim', 'Sim'], ['nao', 'Não']], ['video', 'live']],
     ['linkMatch', 'O produto mostrado é igual ao vinculado?', [['igual', 'Igual'], ['cor_diferente', 'Só a cor muda'], ['diferente', 'Diferente'], ['sem_link', 'Sem link']]],
   ]],
@@ -28,6 +31,7 @@ const QUESTIONS: [string, Q[]][] = [
     ['aiDisclosure', 'Vai marcar como "Conteúdo gerado por IA"?', [['sim', 'Sim'], ['nao', 'Não']]],
     ['virtualModel', 'Tem modelo virtual realista?', YN],
     ['aiAlteredProduct', 'A IA mudou cor, estampa, formato, logo ou acessórios?', YN],
+    ['aiProductCheck', 'Comparou o vídeo, quadro a quadro, com a foto do anúncio (logo, rótulo, peças, cor)?', [['conferido', 'Sim, conferi'], ['nao_conferido', 'Não conferi']]],
     ['demonstration', 'A demonstração é…', [['real', 'Real'], ['ilustrativa_rotulada', 'Ilustrativa com aviso'], ['ilustrativa_sem_rotulo', 'Ilustrativa sem aviso'], ['nenhuma', 'Não há']]],
   ]],
   ['Presença e áudio', [
@@ -71,6 +75,11 @@ export default function Analyzer() {
     setResult(null);
     setDraft(null);
   }, [draft, setDraft]);
+
+  // Resultado antigo some quando o conteúdo muda (evita confundir com a análise nova)
+  useEffect(() => {
+    setResult((r) => (r && (r.input !== input || r.context !== ctx || r.productId !== product?.id) ? null : r));
+  }, [input, ctx, pid]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const product = products.find((p) => p.id === pid);
   const set = (k: keyof ContentInput) => ({ value: input[k], onChange: (e: { target: { value: string } }) => setInput({ ...input, [k]: e.target.value }) });

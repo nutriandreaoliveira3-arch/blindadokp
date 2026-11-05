@@ -26,3 +26,4 @@
 - Andréa vai mandar prints das violações recebidas: ligar cada uma a uma regra e ajustar os detectores.
 - Prints analisados: 19 violações (~113 pts). Regras EV-1 a EV-4, checagem de peso/kit e tela "Minhas violações". Arquivo para importar: violacoes-andrea-importar.json (enviado na conversa).
 - Falta: abrir as 13 violações sem motivo e copiar o texto; informar a nota atual do Índice de qualidade do criador.
+- 30 prints analisados (doc CLAUDE_BLINDADA): 21 registros, 136 pts. Regras EV-5 a EV-8 e checagens de vídeo educativo, IA x anúncio, ofertas. 72 regras na base.

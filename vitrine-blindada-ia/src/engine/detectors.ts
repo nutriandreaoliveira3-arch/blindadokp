@@ -49,7 +49,7 @@ export const DETECTORS: Detector[] = [
   {
     id: 'D-GLP1',
     title: 'Referência a GLP-1 ou medicamentos para obesidade',
-    policyIds: ['CP-3.16'],
+    policyIds: ['CP-3.16', 'EV-8'],
     severity: 'alto',
     patterns: [/\b(glp-?1|ozempic|mounjaro|wegovy|saxenda|semaglutid\w*|tirzepatid\w*|liraglutid\w*|efeito (ozempic|mounjaro)|ozempic natural|caneta (emagrecedora|para emagrecer))/],
     explanation:
@@ -177,11 +177,11 @@ export const DETECTORS: Detector[] = [
   },
   {
     id: 'D-DESCONTO',
-    title: 'Preço, desconto ou urgência citados',
-    policyIds: ['CP-3.10.1', 'CP-3.10.5'],
+    title: 'Preço, oferta ou brinde citados',
+    policyIds: ['CP-3.10.1', 'CP-3.10.5', 'EV-4'],
     severity: 'atencao',
-    patterns: [/(\d+ ?% (de )?(off|desconto)|de r\$ ?\d+[\d.,]* por r\$ ?\d+|r\$ ?\d+[\d.,]*|frete gratis|so hoje|ultimas unidades|ultimas horas|estoque acabando|acaba (hoje|em \d+))/],
-    explanation: 'Preço, desconto, frete e urgência precisam bater exatamente com o que está no TikTok Shop no momento da publicação ou da LIVE.',
+    patterns: [/(\d+ ?% (de )?(off|desconto)|de r\$ ?\d+[\d.,]* por r\$ ?\d+|r\$ ?\d+[\d.,]*|frete gratis|so hoje|ultimas unidades|ultimas horas|estoque acabando|acaba (hoje|em \d+)|compre \d+,? (ganhe|leve) \d+|leve \d+,? pague \d+|brinde|de presente|ganhe (um|uma|1))/],
+    explanation: 'Preço, desconto, frete, brinde e ofertas como "compre 1, ganhe 1" precisam bater exatamente com o anúncio vinculado no momento da publicação ou da LIVE. O TikTok cita ofertas promocionais como motivo de "promoção de produto inconsistente".',
     fix: { mode: 'manual' },
     humanReview: true,
   },

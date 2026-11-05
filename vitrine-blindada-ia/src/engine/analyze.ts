@@ -203,14 +203,14 @@ export function checkContext(ctx: ProductionContext, input: ContentInput, produc
         'Música protegida por direitos autorais só é permitida nas exceções da política.', 'Use músicas da biblioteca comercial do TikTok.', true));
   }
   if (ctx.staticContent === 'maior_parte')
-    f.push(C('alto', isLive ? ['CI-2', 'CP-3.13.1'] : ['CI-1', 'VC-1', 'CP-3.13.1'],
+    f.push(C('alto', isLive ? ['CI-2', 'CP-3.13.1'] : ['CI-1', 'VC-1', 'CP-3.13.1', 'EV-5'],
       isLive ? 'Elementos estáticos em mais de 50% da tela' : 'Vídeo feito de imagens estáticas',
       isLive
         ? 'Não permita que elementos visuais estáticos cubram mais de 50% da tela; não use slides, imagens paradas ou figuras animadas.'
         : 'Vídeos inteiros de imagens estáticas, slideshows ou rolagens são citados como não permitidos.',
       'Grave o produto em movimento, em ambiente real.'));
   if (ctx.staticContent === 'parcial')
-    f.push(C('atencao', ['CI-1', 'VC-1'], 'Trechos com imagem parada',
+    f.push(C('atencao', ['CI-1', 'VC-1', 'EV-5'], 'Trechos com imagem parada',
       'Imagens paradas e slideshows devem ser evitados. Use só como apoio curto.', 'Substitua trechos parados por cenas do produto em uso.', true));
 
   // Originalidade
@@ -241,6 +241,9 @@ export function checkContext(ctx: ProductionContext, input: ContentInput, produc
 
   // LIVE
   if (isLive) {
+    f.push(C('atencao', ['EV-7', 'LV-1'], 'LIVE: produto o tempo todo',
+      'A conta já foi punida em LIVE por conversa fora do produto ("experiências com transmissões ao vivo e preferências musicais", "pedi a opinião dos espectadores... e não demonstrei nem descrevi" o produto).',
+      'Sempre com um produto vinculado na mão. Responda comentários trazendo o assunto de volta para o produto. O título da LIVE deve combinar com os produtos (ex.: não usar "Achadinhas Fitness" com kit de shampoo).', true));
     if (ctx.preRecordedInLive === 'sim')
       f.push(C('alto', ['NO-4', 'NO-2'], 'Trecho pré-gravado na LIVE', 'Não pré-grave nem insira clipes pré-gravados na LIVE.', 'Faça tudo ao vivo. Use o recurso "pausar" ao se ausentar.'));
     if (ctx.screenRecording === 'sim')
@@ -267,6 +270,16 @@ export function checkContext(ctx: ProductionContext, input: ContentInput, produc
     f.push(C('alto', ['CP-3.10.1', 'CP-3.1', 'PR-1.2'], 'Demonstração ilustrativa sem aviso',
       'Uma cena ilustrativa apresentada como uso real pode ser demonstração enganosa.', 'Escreva na tela "Imagem ilustrativa" ou substitua por demonstração real.'));
 
+  // Vídeo educativo com produto — evidência EV-6
+  if (ctx.educational === 'sim' && ctx.linkMatch !== 'sem_link')
+    f.push(C(ctx.productMostDuration === 'sim' ? 'atencao' : 'alto', ['EV-6', 'PI-1', 'PI-3', 'CP-3.13.2'], 'Vídeo educativo com produto vinculado',
+      'A conta já recebeu 3 violações em um dia por vídeos educativos ("fome emocional") com suplemento vinculado: "Parece que seu vídeo não apresentou nenhum produto promovido."',
+      'Duas opções: (1) publique o vídeo educativo SEM link de produto; ou (2) faça um vídeo sobre o produto: mostre, use, explique tipo, tamanho e ingredientes durante a maior parte do vídeo.'));
+  // IA: conferência com o anúncio — evidência EV-4
+  if ((ctx.origem === 'ia_total' || ctx.origem === 'ia_parcial' || ctx.origem === 'misto') && ctx.aiProductCheck !== 'conferido')
+    f.push(C('alto', ['EV-4', 'PR-1.1', 'CP-3.1'], 'Vídeo com IA sem conferência com o anúncio',
+      '"Promoção de produto inconsistente" é a violação mais frequente da conta (de 8 a 15 pontos). O TikTok compara tipo, tamanho, peso, imagens e logotipos do vídeo com o anúncio vinculado. Vídeos com IA costumam alterar logo, rótulo, cor ou número de peças.',
+      'Antes de publicar, pause o vídeo em 3 ou 4 momentos e compare com a foto principal do anúncio: logo, rótulo, cor, formato e quantidade de peças. Qualquer diferença: gere de novo ou grave com o produto real.'));
   // Origem das imagens — evidência EV-2
   if (ctx.mediaSource === 'terceiros')
     f.push(C('alto', ['EV-2', 'NO-1', 'CP-3.13.1', 'CP-3.7'], 'Imagens de outro criador ou da internet',
