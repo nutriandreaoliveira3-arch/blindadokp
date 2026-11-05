@@ -16,3 +16,9 @@
 - Resposta automática no direct para BLINDADA, PLANO, VAGA e PROTEÍNA (ManyChat ou Meta)
 - Criar a lista grátis do CTA PROTEÍNA antes de postar os roteiros 26 e 27
 - Preencher os [colchetes] dos roteiros 4, 11, 29 e 30 com dados reais
+
+## TikTok Shop Safe AI (05/11/2026)
+- App em `tiktok-shop-safe-ai/`. Abrir: `tiktok-shop-safe-ai/dist/index.html` (duplo clique).
+- Base v1: 64 regras de 10 documentos (TIK1–TIK12). 3 regras pendentes de verificação (vieram do TIK_12, não oficial).
+- Lacunas e conflitos: `tiktok-shop-safe-ai/docs/LACUNAS-E-CONFLITOS.md`.
+- Próximo: Andréa enviar os documentos oficiais de IA, Penalidades, Produtos Proibidos/Restritos e Diretrizes da Comunidade.
