@@ -111,7 +111,7 @@ describe('evidências reais (prints)', () => {
     expect(ok2.findings.some((f) => f.title.startsWith('Kit com 4 itens'))).toBe(false);
   });
   it('marca citada que não está no título do anúncio', () => {
-    const pz = { ...product, brand: 'Boneca de Ferro', listingTitle: 'Conjunto Roupas Esportivas e Moletom', modelName: 'Gaia' };
+    const pz = { ...product, brand: 'Boneca de Ferro', listingTitle: 'Conjunto Roupas Esportivas e Moletom', modelName: 'Gaia', sellerName: 'Pozze' };
     const r = analyzeContent({ ...input0(), roteiro: 'Olha esse conjunto Gaia da Boneca de Ferro.' }, okCtx, SEED_POLICIES, pz);
     expect(r.findings.some((f) => f.title.includes('não está no título do anúncio'))).toBe(true);
     expect(checkProduct(pz, SEED_POLICIES, 1).findings.some((f) => f.title.includes('não está no título'))).toBe(true);

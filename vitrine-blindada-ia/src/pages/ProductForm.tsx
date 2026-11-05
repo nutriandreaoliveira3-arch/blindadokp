@@ -105,6 +105,9 @@ export default function ProductForm() {
             <Field label="Título exato do anúncio no TikTok Shop" hint="Copie o título como aparece no anúncio vinculado. O TikTok compara o que você fala e mostra com ele.">
               <input value={p.listingTitle ?? ''} onChange={(e) => set('listingTitle', e.target.value)} placeholder="Ex.: Conjunto Fitness Top e Short Estampado com Bolso" />
             </Field>
+            <Field label="Nome da loja que vende (opcional)" hint='Ex.: "Boneca de Ferro", "Pozze". Nome da loja NÃO é a marca do produto: no vídeo, o TikTok pode ler o nome da loja como marca.'>
+              <input value={p.sellerName ?? ''} onChange={(e) => set('sellerName', e.target.value)} />
+            </Field>
             <Field label="Nome do modelo dado pela loja (opcional)" hint='Ex.: "Gaia". Se esse nome não estiver no título do anúncio, evite usar só ele no vídeo.'>
               <input value={p.modelName ?? ''} onChange={(e) => set('modelName', e.target.value)} />
             </Field>

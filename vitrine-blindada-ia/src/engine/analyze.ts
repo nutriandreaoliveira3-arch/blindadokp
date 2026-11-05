@@ -302,10 +302,10 @@ export function checkContext(ctx: ProductionContext, input: ContentInput, produc
   if (product?.listingTitle) {
     const said = plain([input.roteiro, input.textoTela, input.legenda].join(' '));
     const title = plain(product.listingTitle);
-    const bad = [product.brand, product.modelName].filter((x): x is string => !!x && said.includes(plain(x)) && !title.includes(plain(x)));
+    const bad = [product.brand, product.modelName, product.sellerName].filter((x): x is string => !!x && said.includes(plain(x)) && !title.includes(plain(x)));
     if (bad.length)
       f.push(C('atencao', ['EV-4', 'PR-1.1'], `"${bad.join('", "')}" é citado no vídeo, mas não está no título do anúncio`,
-        'O TikTok pode não reconhecer esse nome como o produto vinculado.',
+        'O TikTok pode não reconhecer esse nome como o produto vinculado. Nome de loja falado no vídeo pode ser lido como marca do produto: aconteceu com "Boneca de Ferro" (nome da loja), lido como "conjunto da boneca de ferro" e punido por não corresponder a "roupas esportivas e moletom".',
         `Cite também o produto como está no título: "${product.listingTitle}".`, true));
   }
 

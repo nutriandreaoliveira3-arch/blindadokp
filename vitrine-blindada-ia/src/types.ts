@@ -148,6 +148,7 @@ export interface Product {
   shopLink: string;
   listingTitle?: string; // título exato do anúncio no TikTok Shop
   modelName?: string; // nome que a loja dá ao modelo/conjunto (ex.: Gaia)
+  sellerName?: string; // nome da loja que vende (ex.: Boneca de Ferro, Pozze)
   price: string;
   photos: ProductPhoto[];
   brandAuthorization: 'sim' | 'nao' | 'propria' | '';
