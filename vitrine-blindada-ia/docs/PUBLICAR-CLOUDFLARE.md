@@ -39,6 +39,7 @@ No Worker publicado → **Settings → Variables and Secrets → Add** (tipo **S
 |---|---|---|
 | `GREENN_TOKEN` | Uma senha longa inventada por você (ex.: 30 letras e números) | Sim |
 | `ANTHROPIC_API_KEY` | Sua chave da API da Anthropic (IA incluída no plano dos clientes) | Não. Sem ela, o app funciona sem IA |
+| `GEMINI_API_KEY` | Alternativa: chave do Google Gemini (usada se não houver chave da Anthropic) | Não |
 
 ## Passo 4 — Ligar a Green
 1. Na Green, abra **o produto da assinatura** → área de integrações/webhook. Configure em **cada produto ou plano**.

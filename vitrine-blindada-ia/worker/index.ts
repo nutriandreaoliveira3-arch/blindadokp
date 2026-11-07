@@ -14,6 +14,8 @@ export interface Env {
   ADMIN_EMAIL: string;
   GREENN_TOKEN: string;
   ANTHROPIC_API_KEY?: string;
+  GEMINI_API_KEY?: string;
+  GEMINI_MODEL?: string;
   AI_MODEL?: string;
   AI_MONTHLY_LIMIT?: string;
   AI_VISION_MODEL?: string;
@@ -131,10 +133,12 @@ async function aiQuota(env: Env, user: User) {
 }
 
 async function handleAI(req: Request, env: Env, user: User, kind: string) {
-  if (!env.ANTHROPIC_API_KEY) return err(503, 'IA não configurada no servidor.');
+  if (!env.ANTHROPIC_API_KEY && !env.GEMINI_API_KEY) return err(503, 'IA não configurada no servidor.');
   if (kind === 'extract' && user.role !== 'admin') return err(403, 'Somente a administradora atualiza a base de políticas.');
   if (!(await aiQuota(env, user))) return err(429, 'Limite mensal de uso da IA atingido no seu plano.');
-  const settings: Settings = { apiKey: env.ANTHROPIC_API_KEY, model: env.AI_MODEL || 'claude-opus-5-5', effort: 'medium' };
+  const settings: Settings = env.ANTHROPIC_API_KEY
+    ? { provider: 'anthropic', apiKey: env.ANTHROPIC_API_KEY, model: env.AI_MODEL || 'claude-opus-5-5', effort: 'medium' }
+    : { provider: 'gemini', geminiKey: env.GEMINI_API_KEY, geminiModel: env.GEMINI_MODEL || 'gemini-2.5-flash', model: '', effort: 'medium' };
   const body = (await req.json()) as Record<string, never>;
   const policies = await globalPolicies(env);
   try {
@@ -238,7 +242,7 @@ export default {
       if (!user) return err(401, 'Faça login.');
       if (!(await hasAccess(env, user.email))) return err(403, 'Assinatura inativa.');
 
-      if (path === '/api/me') return json({ email: user.email, role: user.role, ai: !!env.ANTHROPIC_API_KEY });
+      if (path === '/api/me') return json({ email: user.email, role: user.role, ai: !!(env.ANTHROPIC_API_KEY || env.GEMINI_API_KEY) });
 
       // ── dados
       const m = path.match(/^\/api\/data\/(\w+)(?:\/(.+))?$/);

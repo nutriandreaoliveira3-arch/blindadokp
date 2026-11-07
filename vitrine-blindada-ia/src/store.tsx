@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
 import * as db from './db';
+import { aiConfigured } from './ai';
 import { detectMode, getAccount, type Account } from './mode';
 import type { Analysis, ContentInput, Policy, PolicySource, Product, ProductionContext, Settings } from './types';
 
@@ -123,7 +124,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     ready,
     account,
     refreshAccount,
-    aiReady: account.mode === 'nuvem' ? !!account.ai : !!settings.apiKey,
+    aiReady: account.mode === 'nuvem' ? !!account.ai : aiConfigured(settings),
     products,
     policies,
     sources,

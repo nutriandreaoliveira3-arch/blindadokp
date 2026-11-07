@@ -7,6 +7,9 @@ import { useStore } from '../store';
 
 export default function SettingsPage() {
   const { settings, saveSettings, reload, toast, account, refreshAccount } = useStore();
+  const [provider, setProvider] = useState<'anthropic' | 'gemini'>(settings.provider ?? 'anthropic');
+  const [gKey, setGKey] = useState(settings.geminiKey ?? '');
+  const [gModel, setGModel] = useState(settings.geminiModel ?? 'gemini-2.5-flash');
   const [key, setKey] = useState(settings.apiKey ?? '');
   const [model, setModel] = useState(settings.model);
   const [visionModel, setVisionModel] = useState(settings.visionModel ?? 'claude-sonnet-5-5');
@@ -31,15 +34,29 @@ export default function SettingsPage() {
         ) : (
         <Card title="Inteligência artificial (opcional)">
           <p>
-            A análise por regras funciona <b>sem IA e sem internet</b>. A IA (Claude, da Anthropic) é um complemento para: achar riscos implícitos,
+            A análise por regras funciona <b>sem IA e sem internet</b>. A IA (Claude, da Anthropic, ou Gemini, do Google) é um complemento para: achar riscos implícitos,
             reescrever textos e sugerir regras a partir de documentos novos.
           </p>
           <ul className="sm">
-            <li>Exige uma chave própria da API da Anthropic (console.anthropic.com), com custo por uso.</li>
+            <li>Exige uma chave própria: Anthropic (console.anthropic.com) ou Google Gemini (aistudio.google.com). O custo é por uso.</li>
             <li>A chave fica salva só neste navegador. As chamadas vão direto do navegador para a API.</li>
             <li>A IA só pode citar regras da biblioteca. Alertas com regra inexistente são descartados.</li>
           </ul>
           <div className="form">
+            <Field label="Qual IA usar">
+              <Choice value={provider} onChange={setProvider} options={[['anthropic', 'Claude (Anthropic)'], ['gemini', 'Gemini (Google)']]} />
+            </Field>
+            {provider === 'gemini' ? (
+              <>
+                <Field label="Chave do Gemini" hint="Crie em aistudio.google.com → Get API key. Fica salva só neste navegador.">
+                  <input type="password" value={gKey} onChange={(e) => setGKey(e.target.value)} placeholder="AIza…" autoComplete="off" />
+                </Field>
+                <Field label="Modelo do Gemini" hint="Use um modelo com visão disponível na sua conta (ex.: gemini-2.5-flash). Se der erro de modelo, troque pelo nome que aparece no AI Studio.">
+                  <input value={gModel} onChange={(e) => setGModel(e.target.value)} />
+                </Field>
+              </>
+            ) : (
+              <>
             <Field label="Chave da API">
               <input type="password" value={key} onChange={(e) => setKey(e.target.value)} placeholder="sk-ant-…" autoComplete="off" />
             </Field>
@@ -56,12 +73,14 @@ export default function SettingsPage() {
             <Field label="Esforço de raciocínio">
               <Choice value={effort} onChange={setEffort} options={[['low', 'Baixo (mais barato)'], ['medium', 'Médio'], ['high', 'Alto']]} />
             </Field>
+              </>
+            )}
             <div className="row">
-              <button type="button" className="btn primary" onClick={async () => { await saveSettings({ apiKey: key || undefined, model, effort, visionModel }); toast('Configurações salvas.'); }}>
+              <button type="button" className="btn primary" onClick={async () => { await saveSettings({ provider, apiKey: key || undefined, geminiKey: gKey || undefined, geminiModel: gModel, model, effort, visionModel }); toast('Configurações salvas.'); }}>
                 Salvar
               </button>
-              <button type="button" className="btn ghost danger" onClick={async () => { setKey(''); await saveSettings({ model, effort, visionModel }); toast('Chave removida.'); }}>
-                Remover chave
+              <button type="button" className="btn ghost danger" onClick={async () => { setKey(''); setGKey(''); await saveSettings({ provider, geminiModel: gModel, model, effort, visionModel }); toast('Chaves removidas.'); }}>
+                Remover chaves
               </button>
             </div>
           </div>

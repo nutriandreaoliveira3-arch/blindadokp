@@ -168,7 +168,10 @@ export interface ProductGate {
 }
 
 export interface Settings {
+  provider?: 'anthropic' | 'gemini';
   apiKey?: string;
+  geminiKey?: string;
+  geminiModel?: string;
   model: string;
   visionModel?: string;
   effort: 'low' | 'medium' | 'high';
