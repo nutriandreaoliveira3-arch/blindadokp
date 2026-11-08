@@ -113,13 +113,7 @@ async function bloqueado(db, l) {
 
 async function duplicado(db, l) {
   if (l.email) { const r = await db.prepare('SELECT id FROM leads WHERE lower(email) = lower(?)').bind(l.email).first(); if (r) return r.id; }
-  if (l.whatsapp) {
-    const d = soDigitos(l.whatsapp).slice(-9);
-    if (d.length >= 8) {
-      const rows = (await db.prepare('SELECT id, whatsapp FROM leads WHERE whatsapp IS NOT NULL').all()).results;
-      const r = rows.find((x) => soDigitos(x.whatsapp).slice(-9) === d); if (r) return r.id;
-    }
-  }
+  // Telefone igual NÃO é duplicata: sócias do mesmo escritório costumam dividir o número.
   if (l.nome) {
     const rows = (await db.prepare('SELECT id, nome, empresa FROM leads WHERE lower(nome) = lower(?)').bind(l.nome).all()).results;
     const r = rows.find((x) => norm(x.empresa) === norm(l.empresa)); if (r) return r.id;
