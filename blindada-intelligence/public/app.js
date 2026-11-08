@@ -1,4 +1,5 @@
 // Blindada Intelligence v2 — interface (sem build, JS puro)
+import { PASSOS, REGRAS, passoAtual, ganchoDe } from './mensagens.js';
 const $ = (s, el = document) => el.querySelector(s);
 const esc = (s) => (s ?? '').toString().replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const state = { meta: null, view: 'hoje', testes: false, leadsModo: 'lista' };
@@ -42,9 +43,10 @@ async function viewHoje() {
   const { data: leads } = await api('leads?x=1' + qs());
   const hoje = new Date().toISOString().slice(0, 10);
   const ativos = leads.filter((l) => !['Cliente', 'Sem interesse', 'Perdido'].includes(l.etapa));
-  const vencidas = ativos.filter((l) => l.data_proxima && l.data_proxima <= hoje);
-  const quentes = ativos.filter((l) => l.score >= 55 && ['Novo lead', 'Aquecendo'].includes(l.etapa)).slice(0, 10);
-  const aquecer = ativos.filter((l) => l.sinais.length === 0 && l.etapa === 'Novo lead' && (l.instagram || l.linkedin)).slice(0, 5);
+  const vencidas = ativos.filter((l) => l.data_proxima && l.data_proxima <= hoje).slice(0, 10);
+  const idsV = new Set(vencidas.map((l) => l.id));
+  const quentes = ativos.filter((l) => !idsV.has(l.id) && l.score >= 55 && l.etapa === 'Novo lead').slice(0, Math.max(0, 10 - vencidas.length));
+  const aquecer = ativos.filter((l) => !idsV.has(l.id) && l.score < 55 && l.etapa === 'Novo lead' && (l.instagram || l.linkedin)).slice(0, 5);
   const card = (l, acao) => `<tr class="click" data-lead="${l.id}"><td class="pessoa"><b>${esc(l.nome)}${l.teste ? '<span class="tag-teste">teste</span>' : ''}</b><small>${esc([l.cargo, l.empresa].filter(Boolean).join(' · '))}</small></td>
     <td>${scoreBadge(l.score)}</td><td class="hide-m">${esc(l.etapa)}</td><td><b>${esc(acao)}</b></td></tr>`;
   const tabela = (lista, acao, vazio) => lista.length ? `<table><tbody>${lista.map((l) => card(l, typeof acao === 'function' ? acao(l) : acao)).join('')}</tbody></table>` : `<div class="vazio">${vazio}</div>`;
@@ -57,8 +59,8 @@ async function viewHoje() {
       <div class="metric"><b>${aquecer.length}</b><span>Para aquecer hoje</span></div>
       <div class="metric"><b>${ativos.length}</b><span>Leads ativos</span></div>
     </div>
-    <div class="card"><h2>1. Follow-ups de hoje</h2>${tabela(vencidas, (l) => l.proxima_acao || 'Fazer follow-up', 'Nenhum follow-up vencido. 👏')}</div>
-    <div class="card"><h2>2. Abordar hoje (score ≥ 55)</h2>${tabela(quentes, 'Enviar mensagem contextual', 'Ninguém pronto ainda. Marque sinais nos leads (segue, interagiu…) para subir o score.')}</div>
+    <div class="card"><h2>1. Próximos passos vencidos</h2>${tabela(vencidas, (l) => passoAtual(l)?.titulo || l.proxima_acao || 'Fazer follow-up', 'Nada vencido. 👏')}</div>
+    <div class="card"><h2>2. Começar hoje (score ≥ 55)</h2><p class="muted">Abra a lead e siga o "Próximo passo": seguir, comentar e só depois a mensagem.</p>${tabela(quentes, 'Iniciar aquecimento', 'Ninguém pronto ainda. Marque sinais nos leads (segue, interagiu…) para subir o score.')}</div>
     <div class="card"><h2>3. Aquecer (seguir e interagir)</h2><p class="muted">Siga e curta 2 posts recentes. Não fale de corpo ou peso.</p>${tabela(aquecer, 'Seguir + curtir 2 posts', 'Nada para aquecer agora.')}</div>`;
 }
 
@@ -197,10 +199,17 @@ async function abrirLead(id) {
     <h1 style="margin-top:14px">${esc(l.nome)}${l.teste ? '<span class="tag-teste">teste</span>' : ''}</h1>
     <p class="sub">${esc([l.cargo, l.profissao, l.empresa].filter(Boolean).join(' · ') || 'Dados profissionais não informados')} — ${local(l)}</p>
     <div class="card"><div class="row"><h2 style="margin:0">Score Blindada</h2><span class="spacer"></span>${scoreBadge(l.score)}</div>
-      <p class="muted">${c.e} ${c.r}. <b>Próxima ação:</b> ${esc(a.proximaAcao)}</p>
+      <p class="muted">${c.e} ${c.r}. <b>Próxima ação:</b> ${esc(passoAtual(l)?.titulo || a.proximaAcao)}</p>
       ${a.criterios.map((k) => `<div class="crit"><div class="top"><span>${k.nome}</span><span>${k.pontos}/${k.max}</span></div>
         <div class="bar"><i style="width:${(k.pontos / k.max) * 100}%"></i></div><small>${k.motivos.map(esc).join(' · ')}</small></div>`).join('')}
       <p class="muted">Não estima renda pessoal, saúde, peso ou necessidade de emagrecimento.</p></div>
+    ${(() => { const p = passoAtual(l); if (!p) return `<div class="card"><h2>Sequência</h2><p class="muted">${l.etapa === 'Contatado' ? 'Sem resposta depois do follow-up. Sugestão: mover para "Follow-up futuro" ou "Sem interesse".' : 'Nenhum passo automático nesta etapa.'}</p></div>`;
+      return `<div class="card" style="border-color:var(--dourado)"><div class="row"><h2 style="margin:0">Próximo passo: ${esc(p.titulo)}</h2></div>
+      <p class="muted">${esc(p.instrucao)}</p>
+      ${p.texto ? `<textarea id="d-msg" style="min-height:150px">${esc(p.texto(l, state.meta.config))}</textarea>` : ''}
+      <div class="row" style="margin-top:8px">${p.texto ? '<button class="btn sec" id="b-copiar">📋 Copiar mensagem</button>' : ''}
+        <button class="btn" id="b-passo">✓ Feito, avançar</button></div>
+      <p class="muted">Ao marcar como feito, o app agenda o próximo passo para daqui a ${p.dias} dia(s).</p></div>`; })()}
     <div class="card"><h2>Sinais de proximidade</h2><p class="muted">Clique para marcar o que você observou. É isso que transforma lead frio em quente.</p>
       <div>${Object.entries(state.meta.sinais).map(([k, d]) => `<button class="chip ${sinaisOn.has(k) ? 'on' : ''}" data-sinal="${k}" style="cursor:pointer;padding:6px 12px">${sinaisOn.has(k) ? '✓ ' : '+ '}${esc(d.label)} (+${d.pontos})</button>`).join('')}</div></div>
     <div class="card"><h2>Etapa e próxima ação</h2><div class="form">
@@ -235,6 +244,16 @@ async function abrirLead(id) {
     await api('leads/' + id, { method: 'PUT', body: { etapa, data_proxima: d.toISOString().slice(0, 10), proxima_acao: tipo === 'contato' ? 'Follow-up se não responder' : 'Enviar formulário de aplicação' } });
     toast('Registrado ✅'); abrirLead(id); recarregar();
   };
+  const passo = passoAtual(l);
+  if (passo) {
+    if ($('#b-copiar')) $('#b-copiar').onclick = () => copiar($('#d-msg').value);
+    $('#b-passo').onclick = async () => {
+      const d = new Date(); d.setDate(d.getDate() + passo.dias);
+      await api(`leads/${id}/atividades`, { method: 'POST', body: { tipo: passo.id, descricao: passo.titulo } });
+      await api('leads/' + id, { method: 'PUT', body: { etapa: passo.etapa, proxima_acao: passo.proxima, data_proxima: d.toISOString().slice(0, 10) } });
+      toast(`Feito ✅ Próximo: ${passo.proxima}`); abrirLead(id); recarregar();
+    };
+  }
   $('#b-contato').onclick = () => registrar('contato', 'Contatado', 4);
   $('#b-resp').onclick = () => registrar('resposta', 'Respondeu', 1);
   $('#b-editar').onclick = () => abrirForm(l);
@@ -317,9 +336,22 @@ async function importarCSV(file) {
 
 // ---------- MENSAGENS (Fase 3) ----------
 async function viewMensagens() {
+  const exemplo = { nome: 'Helena Exemplo', cargo: 'Sócia-fundadora', profissao: 'Advogada', empresa: 'Exemplo & Associadas' };
   $('#view').innerHTML = `<div class="kicker">Abordagens que geram conversa</div><h1>Mensagens</h1>
-    <div class="card aviso">🚧 <b>Fase 3.</b> Biblioteca de mensagens por profissão, com botão copiar e sequência de aquecimento.</div>
-    <div class="card"><h2>Regras fixas</h2><ul><li>Nunca citar peso, corpo ou aparência no primeiro contato.</li><li>Nunca falar o preço por mensagem: o valor só aparece na call.</li><li>Sempre oferecer a opção de não receber mais mensagens.</li></ul></div>`;
+    <p class="sub">A sequência completa, do primeiro "seguir" até a call. Dentro de cada lead, o app já preenche o nome, a empresa e a rotina da profissão.</p>
+    <div class="card"><h2>Regras fixas</h2><ul>${REGRAS.map((r) => `<li>${esc(r)}</li>`).join('')}</ul></div>
+    <p class="muted">Exemplo com uma lead fictícia (${esc(exemplo.cargo)}, ${esc(exemplo.profissao)}). Rotina usada: “${esc(ganchoDe(exemplo))}”.</p>
+    ${PASSOS.map((p) => `<div class="card"><div class="row"><h2 style="margin:0">${esc(p.titulo)}</h2><span class="spacer"></span><span class="chip">etapa: ${esc(p.etapa)}</span></div>
+      <p class="muted">${esc(p.instrucao)}</p>
+      ${p.texto ? `<textarea readonly style="min-height:120px">${esc(p.texto(exemplo, state.meta.config))}</textarea>
+      <div class="row" style="margin-top:8px"><button class="btn sm sec" data-copiar="${p.id}">Copiar modelo</button></div>` : ''}</div>`).join('')}`;
+  document.querySelectorAll('[data-copiar]').forEach((b) => (b.onclick = () => {
+    const p = PASSOS.find((x) => x.id === b.dataset.copiar); copiar(p.texto(exemplo, state.meta.config));
+  }));
+}
+async function copiar(txt) {
+  try { await navigator.clipboard.writeText(txt); toast('Copiado ✅ Agora cole no Instagram/WhatsApp'); }
+  catch { prompt('Copie o texto abaixo:', txt); }
 }
 
 // ---------- PAINEL ----------
