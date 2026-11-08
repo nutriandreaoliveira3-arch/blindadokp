@@ -6,8 +6,9 @@ const norm = (s) => (s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCa
 
 const CARGOS = ['socia-fundadora', 'socia fundadora', 'cofundadora', 'co-fundadora', 'fundadora', 'socia', 'proprietaria', 'ceo',
   'diretora', 'presidente', 'founder', 'partner', 'gerente', 'head', 'coordenadora', 'superintendente', 'executiva', 'dona'];
-const PROFISSOES = ['advogada', 'arquiteta', 'engenheira', 'medica', 'dentista', 'empresaria', 'psicologa', 'contadora', 'economista',
-  'designer', 'consultora', 'corretora', 'fisioterapeuta', 'dermatologista', 'juiza', 'promotora'];
+// Radicais: pegam "arquiteta", "arquitetos", "arquitetura"… (a revisão humana confirma)
+const PROFISSOES = ['advogad', 'arquitet', 'engenheir', 'medic', 'dentista', 'empresari', 'psicolog', 'contador', 'economista',
+  'designer', 'consultor', 'corretor', 'fisioterapeut', 'dermatolog', 'juiza', 'promotor', 'nutricionist', 'publicitari', 'jornalist'];
 const DOMINIOS_FONTE = ['g1.globo', 'globo.com', 'exame.com', 'forbes', 'folha.uol', 'uol.com', 'estadao', 'valor.globo', 'infomoney',
   'cnnbrasil', 'terra.com', 'r7.com', 'metropoles', 'veja.abril', 'wikipedia', 'youtube.com', 'gov.br', 'jusbrasil'];
 const CAMINHOS_FONTE = ['/noticia', '/noticias', '/news', '/blog/', '/artigo', '/materia', '/ranking', '/lista', '/tag/', '/categoria'];
@@ -16,7 +17,9 @@ const CAMINHOS_PESSOA = ['/equipe', '/team', '/sobre', '/about', '/quem-somos', 
 // Nome: 2 a 4 palavras capitalizadas (aceita "da", "de", "dos")
 const RE_NOME = /\b([A-ZÁÉÍÓÚÂÊÔÃÕÇ][a-záéíóúâêôãõç]+(?: +(?:d[aeo]s? +)?[A-ZÁÉÍÓÚÂÊÔÃÕÇ][a-záéíóúâêôãõç]+){1,3})\b/g;
 const PALAVRAS_ORG = ['escritorio', 'equipe', 'nossa', 'nosso', 'clinica', 'estudio', 'advocacia', 'arquitetura', 'engenharia', 'ltda',
-  'associados', 'associadas', 'consultoria', 'grupo', 'instituto', 'empresa', 'servicos', 'projetos', 'imoveis', 'contato', 'sobre', 'quem'];
+  'associados', 'associadas', 'consultoria', 'grupo', 'instituto', 'empresa', 'servicos', 'projetos', 'imoveis', 'contato', 'sobre', 'quem',
+  'studio', 'atelier', 'atelie', 'design', 'interiores', 'escola', 'academia', 'agencia', 'clinic', 'odontologia', 'advogados', 'arquitetos',
+  'instagram', 'pinterest', 'facebook', 'linkedin', 'youtube', 'whatsapp', 'tiktok', 'twitter', 'home', 'menu', 'projetos', 'portfolio'];
 const RE_EMAIL = /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b/g;
 const RE_TEL = /(?:\+?55\s?)?\(?\b\d{2}\)?\s?9?\d{4}[-\s]?\d{4}\b/g;
 const RE_IG = /(?:instagram\.com\/|(?<![A-Za-z0-9._%+-])@)([A-Za-z0-9._]{3,30})/g;
@@ -33,8 +36,8 @@ export function classificarFonte(url = '', titulo = '', conteudo = '') {
   if (/\b(\d+|top)\s+(mulheres|empresarias|executivas|lideres)\b/.test(t)) return 'fonte';
   if (/\b(mulheres sao|pesquisa|estudo|levantamento|ranking)\b/.test(t)) return 'fonte';
   if (CAMINHOS_PESSOA.some((c) => u.includes(c))) return 'pessoa';
-  const c = norm(conteudo);
-  if (CARGOS.some((k) => c.includes(k))) return 'pessoa';
+  const c = norm(`${titulo} ${conteudo}`);
+  if (CARGOS.some((k) => c.includes(k)) || PROFISSOES.some((k) => c.includes(k))) return 'pessoa';
   return 'fonte';
 }
 
@@ -43,7 +46,14 @@ function acharCargo(texto) {
   const cargo = CARGOS.find((k) => t.includes(k));
   const prof = PROFISSOES.find((k) => t.includes(k));
   const cap = (s) => s && s.split(/[\s-]/).map((w) => w[0].toUpperCase() + w.slice(1)).join(' ');
-  return { cargo: cap(cargo), profissao: cap(prof) };
+  let profissao;
+  if (prof) { // pega a palavra como está escrita na página
+    const w = texto.split(/[^A-Za-zÀ-ÿ]+/).find((x) => norm(x).startsWith(prof));
+    profissao = w ? w[0].toUpperCase() + w.slice(1).toLowerCase() : undefined;
+  }
+  const ACENTO = { socia: 'sócia', proprietaria: 'proprietária', 'co-fundadora': 'cofundadora' };
+  const cargoTxt = cargo && cap(cargo.split(/([\s-])/).map((w) => ACENTO[w] || w).join(''));
+  return { cargo: cargoTxt, profissao };
 }
 
 export function extrairPessoas(url = '', titulo = '', conteudo = '') {
@@ -65,10 +75,14 @@ export function extrairPessoas(url = '', titulo = '', conteudo = '') {
   // Páginas: procura nomes perto de cargos (janela de 80 caracteres)
   const vistos = new Set();
   for (const m of texto.matchAll(RE_NOME)) {
-    const nome = m[1].trim();
+    // remove palavras de organização/profissão no começo ("Arquitetos Carolina Guimarães" → "Carolina Guimarães")
+    let toks = m[1].trim().split(/ +/);
+    const ruim = (w) => PALAVRAS_ORG.includes(norm(w)) || PROFISSOES.some((k) => norm(w).startsWith(k)) || CARGOS.includes(norm(w));
+    while (toks.length && ruim(toks[0])) toks.shift();
+    const nome = toks.join(' ');
     const nn = norm(nome);
-    if (PALAVRAS_RUINS.has(nn) || vistos.has(nn) || nome.split(' ').length < 2) continue;
-    if (nn.split(' ').some((w) => PALAVRAS_ORG.includes(w))) continue;
+    if (toks.length < 2 || PALAVRAS_RUINS.has(nn) || vistos.has(nn)) continue;
+    if (toks.some(ruim)) continue;
     const janela = norm(texto.slice(Math.max(0, m.index - 60), m.index + nome.length + 80));
     if (!CARGOS.some((k) => janela.includes(k)) && !PROFISSOES.some((k) => janela.includes(k))) continue;
     vistos.add(nn);

@@ -37,3 +37,20 @@ test('processar resultados separa pessoas e fontes', () => {
   assert.equal(itens[1].tipo, 'pessoa');
   assert.equal(itens[1].nome, 'Paula Modelo');
 });
+
+test('nome do estúdio não vira pessoa; a fundadora sim', () => {
+  const ps = extrairPessoas('https://estudio.com.br/quem-somos', 'Quem somos | Studio Exemplar', 'Studio Exemplar. Renata Exemplar é arquiteta e fundadora do escritório.');
+  assert.deepEqual(ps.map((p) => p.nome), ['Renata Exemplar']);
+  assert.equal(ps[0].profissao, 'Arquiteta'); // palavra exata da página
+});
+
+test('post com nome e cargo no título é aproveitado', () => {
+  const it = processarResultados([{ url: 'https://www.instagram.com/p/abc', title: 'Quem somos. Paula Fictícia, sócia fundadora do BM ...', content: 'Fundou em 2014 o escritório.' }], 't');
+  assert.equal(it[0].tipo, 'pessoa');
+  assert.equal(it[0].nome, 'Paula Fictícia');
+});
+
+test('profissão no plural ("Arquitetos") também identifica pessoas', () => {
+  const ps = extrairPessoas('https://x.com.br/quem-somos', 'Quem somos', 'Arquitetos Carolina Exemplo, Brasileira (RS), se conheceram em Barcelona.');
+  assert.equal(ps[0].nome, 'Carolina Exemplo');
+});
