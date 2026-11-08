@@ -1,0 +1,261 @@
+<title>Kit de Gravação Blindada</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,650&family=Source+Sans+3:wght@400;500;600&display=swap">
+<style>
+/* Layout: uma coluna de leitura (≈ 640px), abas por roteiro, cartões só onde há uma cena; modo teleprompter em tela cheia. */
+:root {
+  --bg: #F4F6F3; --surface: #FFFFFF; --fg: #1B2620; --muted: #5E6B63; --line: #DCE3DD;
+  --accent: #9A7B3F; --accent-soft: #F1E9D8; --brand: #1F2A24; --on-brand: #F3EBDD;
+  --ok: #2E7D4F;
+  --display: 'Fraunces', Georgia, 'Times New Roman', serif;
+  --body: 'Source Sans 3', 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #121815; --surface: #1A221D; --fg: #E9EEE9; --muted: #A3B0A7; --line: #2C3831;
+  --accent: #D2B178; --accent-soft: #2C2718; --brand: #0E1411; --on-brand: #EADFC8; --ok: #6FC08E; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #121815; --surface: #1A221D; --fg: #E9EEE9; --muted: #A3B0A7; --line: #2C3831;
+  --accent: #D2B178; --accent-soft: #2C2718; --brand: #0E1411; --on-brand: #EADFC8; --ok: #6FC08E; color-scheme: dark }
+
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font: 17px/1.6 var(--body); margin: 0; }
+.wrap { max-width: 680px; margin: 0 auto; padding-block: 0 64px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+
+header.topo { background: var(--brand); color: var(--on-brand); }
+header.topo .wrap { padding-block: 28px 22px; }
+.selo { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); }
+h1 { font: 650 clamp(28px, 7vw, 40px)/1.1 var(--display); margin: 6px 0 8px; text-wrap: balance; }
+.topo p { margin: 0; color: color-mix(in srgb, var(--on-brand) 80%, transparent); max-width: 52ch; }
+
+nav.abas { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); border-bottom: 1px solid var(--line); }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+nav.abas .wrap { display: flex; gap: 6px; overflow-x: auto; padding-block: 10px; scrollbar-width: none; }
+.aba { flex: 0 0 auto; border: 1px solid var(--line); background: var(--surface); color: var(--fg); border-radius: 999px;
+  padding: 8px 14px; font: 600 15px var(--body); cursor: pointer; }
+.aba[aria-selected="true"] { background: var(--brand); color: var(--on-brand); border-color: var(--brand); }
+.aba:focus-visible, button:focus-visible, input:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+section.painel { padding-top: 22px; display: grid; gap: 28px; }
+h2 { font: 650 26px/1.2 var(--display); margin: 0; text-wrap: balance; }
+h3 { font: 600 13px var(--body); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin: 0 0 10px; }
+.meta { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.chip { font-size: 14px; border-radius: 999px; padding: 3px 10px; background: var(--accent-soft); color: var(--fg); }
+
+.texto { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 18px 18px 6px; }
+.texto p { margin: 0 0 14px; font-size: 19px; line-height: 1.55; }
+.acoes { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.btn { border: 0; border-radius: 10px; padding: 11px 16px; font: 600 15px var(--body); cursor: pointer; background: var(--brand); color: var(--on-brand); }
+.btn.sec { background: transparent; color: var(--fg); border: 1px solid var(--line); }
+
+ol.cenas { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; counter-reset: cena; }
+ol.cenas li { counter-increment: cena; display: grid; grid-template-columns: 30px 1fr; gap: 10px; align-items: start;
+  padding: 12px 0; border-bottom: 1px solid var(--line); }
+ol.cenas li::before { content: counter(cena); font: 650 18px var(--display); color: var(--accent); text-align: center; }
+.fala { font-style: italic; color: var(--muted); font-size: 15px; }
+.tela { margin-top: 2px; }
+.tipos { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.tipo { font-size: 12.5px; font-weight: 600; letter-spacing: .02em; border-radius: 6px; padding: 2px 8px; border: 1px solid var(--line); color: var(--muted); }
+.tipo.voce { border-color: var(--line); }
+.tipo.anim { background: var(--accent-soft); color: var(--fg); border-color: transparent; }
+.tipo.grava { background: var(--brand); color: var(--on-brand); border-color: var(--brand); }
+.tipo.banco { border-style: dashed; }
+
+ul.check { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+ul.check label { display: flex; gap: 12px; align-items: flex-start; padding: 10px 12px; border-radius: 10px; cursor: pointer; }
+ul.check label:hover { background: var(--surface); }
+ul.check input { width: 22px; height: 22px; margin-top: 2px; accent-color: var(--ok); flex: 0 0 auto; }
+ul.check input:checked + span { color: var(--muted); text-decoration: line-through; }
+.opc { color: var(--muted); font-size: 14px; }
+
+.legenda { display: flex; flex-wrap: wrap; gap: 8px 14px; font-size: 14px; color: var(--muted); }
+.legenda span { display: inline-flex; gap: 6px; align-items: center; }
+.nota { background: var(--accent-soft); border-radius: 12px; padding: 14px 16px; font-size: 16px; }
+.passos { margin: 0; padding-left: 22px; display: grid; gap: 6px; }
+
+/* Teleprompter */
+#tp { position: fixed; inset: 0; z-index: 50; background: #0B0F0D; color: #F5F1E8; display: flex; flex-direction: column;
+  padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+#tp .barra { display: flex; gap: 8px; align-items: center; justify-content: space-between; flex-wrap: wrap;
+  padding: 10px max(16px, env(safe-area-inset-right, 0px)) 10px max(16px, env(safe-area-inset-left, 0px)); background: #151B18; }
+#tp .barra button { background: #26302B; color: #F5F1E8; border: 0; border-radius: 8px; padding: 9px 13px; font: 600 15px var(--body); cursor: pointer; }
+#tp .rolo { flex: 1; overflow-y: auto; padding: 30vh max(20px, env(safe-area-inset-right, 0px)) 60vh max(20px, env(safe-area-inset-left, 0px)); scroll-behavior: auto; }
+#tp .rolo p { font: 500 var(--tp, 34px)/1.45 var(--body); margin: 0 auto 0.9em; max-width: 26ch; }
+#tp .guia { position: absolute; left: 0; right: 0; top: 34%; height: 2px; background: rgba(210,177,120,.55); pointer-events: none; }
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+</style>
+
+<header class="topo"><div class="wrap">
+  <div class="selo">Emagrecimento Blindado · estilo Rony</div>
+  <h1>Kit de Gravação</h1>
+  <p>Três roteiros prontos para gravar. Em cada um: o texto, o que aparece na tela em cada frase e as cenas curtas que você precisa filmar.</p>
+</div></header>
+
+<nav class="abas" aria-label="Roteiros"><div class="wrap" role="tablist" id="abas"></div></nav>
+
+<main class="wrap" id="conteudo"></main>
+
+<div id="tp" hidden role="dialog" aria-label="Teleprompter">
+  <div class="barra">
+    <button id="tp-sair">✕ Fechar</button>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button id="tp-menos" aria-label="Diminuir letra">A−</button>
+      <button id="tp-mais" aria-label="Aumentar letra">A+</button>
+      <button id="tp-lento" aria-label="Mais devagar">🐢</button>
+      <button id="tp-play">▶ Rolar</button>
+      <button id="tp-rapido" aria-label="Mais rápido">🐇</button>
+    </div>
+  </div>
+  <div class="rolo" id="tp-rolo"></div>
+  <div class="guia"></div>
+</div>
+
+<script>
+const ROTEIROS = [
+  { id: 'r01', num: '01', titulo: 'As 5 leis de quem emagrece depois dos 35', cta: 'BLINDADA', duracao: '45 a 55 s',
+    texto: [
+      'Presta atenção aqui em mim, porque isso vale mais que qualquer dieta.',
+      'Eu atendo mulher acima de 35 todo dia. E tudo que eu aprendi cabe em cinco leis.',
+      'Lei um. Seu corpo não é o de 25. Parar de comparar já é metade do caminho.',
+      'Lei dois. Músculo é seu seguro. Sem ele, você emagrece e volta.',
+      'Lei três. Fome emocional não se resolve com força de vontade. Se resolve com estratégia.',
+      'Ah, nutri, mas eu não tenho disciplina. Calma, linda, calma. Ninguém tem. Quem emagrece tem um plano.',
+      'Lei quatro. Dormir mal aumenta a fome. Não é desculpa, é hormônio.',
+      'Lei cinco. Emagrecer é fácil. Difícil é permanecer. É isso que eu ensino.',
+      'Se você quer o passo a passo, comenta BLINDADA aqui embaixo que eu te mando no direct. Blindou.' ],
+    cenas: [
+      ['Presta atenção aqui em mim…', 'Zoom leve no seu rosto e “5 LEIS” surgindo em dourado', ['voce', 'anim']],
+      ['Eu atendo mulher acima de 35…', 'Você no consultório, de lado, escrevendo ou atendendo', ['grava']],
+      ['Lei um. Seu corpo não é o de 25…', 'Cartão “LEI 1” com “Pare de comparar”', ['voce', 'anim']],
+      ['Lei dois. Músculo é seu seguro…', '“LEI 2” e suas mãos pegando um halter', ['anim', 'grava']],
+      ['Lei três. Fome emocional…', '“LEI 3” e a geladeira abrindo à noite', ['anim', 'grava']],
+      ['Ah, nutri, mas eu não tenho disciplina…', 'A frase “não tenho disciplina” sendo riscada', ['anim']],
+      ['Calma, linda, calma…', 'Você sorrindo, corte seco', ['voce']],
+      ['Lei quatro. Dormir mal…', '“LEI 4” e relógio marcando 2h (ou celular aceso na cama)', ['anim', 'grava', 'banco']],
+      ['Lei cinco. Emagrecer é fácil…', '“LEI 5” e o seu logo surgindo', ['anim']],
+      ['Comenta BLINDADA…', 'Faixa “COMENTE BLINDADA” pulsando, com seta para baixo', ['voce', 'anim']] ],
+    clipes: [ ['Você no consultório, de perfil, escrevendo ou conversando'], ['Mãos pegando um halter (pode ser em casa)'],
+      ['Geladeira abrindo à noite, cozinha escura'], ['Celular aceso na cama, de madrugada', true] ] },
+  { id: 'r02', num: '02', titulo: 'Comer menos pode estar te travando', cta: 'BLINDADA', duracao: '35 a 45 s',
+    texto: [
+      'Comer cada vez menos depois dos 35 pode ser exatamente o que te trava.',
+      'Parece o contrário do que todo mundo fala, né?',
+      'Quando você corta demais, perde músculo junto com a gordura. E músculo é o que mantém seu gasto lá em cima.',
+      'Aí vem o efeito sanfona. Você culpa você. Mas o erro era a estratégia.',
+      'Corpo blindado come o suficiente, com proteína em toda refeição, e treina força.',
+      'Escuta a nutri: não é sobre comer menos. É sobre comer certo.',
+      'Se você quer o passo a passo, comenta BLINDADA aqui embaixo que eu te mando no direct. Blindou.' ],
+    cenas: [
+      ['Comer cada vez menos…', 'Prato quase vazio, visto de cima, com “COMER MENOS?”', ['grava', 'anim']],
+      ['Parece o contrário…', 'Você levantando a sobrancelha, zoom rápido', ['voce']],
+      ['Quando você corta demais…', 'Bateria descarregando e “músculo ↓”', ['anim']],
+      ['Aí vem o efeito sanfona…', 'Gráfico subindo e descendo', ['anim']],
+      ['Você culpa você. Mas o erro era a estratégia.', 'A palavra “ESTRATÉGIA” grifada', ['voce', 'anim']],
+      ['Corpo blindado come o suficiente…', 'Prato montado e colorido, de cima', ['grava']],
+      ['Escuta a nutri…', 'Você, firme, com “COMER CERTO”', ['voce', 'anim']],
+      ['Comenta BLINDADA…', 'Faixa “COMENTE BLINDADA”', ['voce', 'anim']] ],
+    clipes: [ ['Prato quase vazio (uma folha de alface), visto de cima'], ['Prato montado e colorido, de cima (frango, peixe ou ovos + legumes)'],
+      ['Você colocando a comida no prato', true] ] },
+  { id: 'r14', num: '14', titulo: 'Eu não tenho tempo', cta: 'PLANO', duracao: '35 a 45 s',
+    texto: [
+      'Você administra equipe, casa e agenda lotada. Mas diz que não tem tempo de cuidar do corpo.',
+      'Ah, nutri, minha rotina é uma loucura. Calma, linda, calma. Não vou te pedir duas horas de academia.',
+      'Vou te pedir três coisas.',
+      'Um: proteína no café da manhã. Cinco minutos.',
+      'Dois: prato certo no restaurante ou marmita.',
+      'Três: vinte minutos de força, três vezes por semana.',
+      'Quem bate meta no trabalho bate meta no corpo. Só faltava o plano.',
+      'Comenta PLANO que eu te mando como funciona na sua rotina. Blindou.' ],
+    cenas: [
+      ['Você administra equipe…', 'Agenda lotada no notebook ou no celular', ['grava', 'banco']],
+      ['Ah, nutri, minha rotina é uma loucura…', 'Balão de fala “minha rotina é uma loucura”', ['voce', 'anim']],
+      ['Vou te pedir três coisas.', '“3 COISAS” grande', ['anim']],
+      ['Um: proteína no café…', '“1”, ovos mexidos ou iogurte, e “5 MIN”', ['anim', 'grava']],
+      ['Dois: prato certo…', '“2” e prato executivo ou marmita', ['anim', 'grava']],
+      ['Três: vinte minutos de força…', '“3” e cronômetro 20:00 contando', ['anim', 'grava']],
+      ['Quem bate meta no trabalho…', 'Você, firme, com “META NO CORPO”', ['voce', 'anim']],
+      ['Comenta PLANO…', 'Faixa “COMENTE PLANO”', ['voce', 'anim']] ],
+    clipes: [ ['Tela do notebook ou celular com a agenda cheia (pode ser uma agenda de exemplo)'], ['Ovos mexidos na frigideira ou pote de iogurte, de perto'],
+      ['Marmita aberta ou prato de restaurante'], ['Você fazendo agachamento ou com elástico/halter (5 segundos bastam)'] ] },
+];
+const TIPOS = { voce: ['voce', 'Você falando'], anim: ['anim', 'Animação (eu faço)'], grava: ['grava', 'Você grava'], banco: ['banco', 'Banco grátis, se faltar'] };
+const ANTES = ['Celular em pé (vertical), na altura dos olhos', 'Luz de frente (janela ou ring light), nada de janela atrás', 'Microfone de lapela, se tiver; senão, lugar silencioso',
+  'Roupa lisa, de cor sólida', 'Câmera traseira, 1080p ou 4K, 30 fps', 'Olhar na lente, não na tela', 'Pausa de 1 segundo entre cada bloco',
+  'Errou? Repita a frase inteira. Eu fico com a última versão', 'Cada roteiro em um arquivo só, do começo ao fim'];
+
+const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const ler = (k) => { try { return JSON.parse(localStorage.getItem(k) || '{}'); } catch { return {}; } };
+const gravar = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} };
+const marcados = ler('kit-check');
+
+function painelRoteiro(r) {
+  const cenas = r.cenas.map(([fala, tela, tipos]) => `<li><div><div class="fala">“${esc(fala)}”</div><div class="tela">${esc(tela)}</div>
+    <div class="tipos">${tipos.map((t) => `<span class="tipo ${TIPOS[t][0]}">${TIPOS[t][1]}</span>`).join('')}</div></div></li>`).join('');
+  const clipes = r.clipes.map(([c, opc], i) => { const id = `${r.id}-c${i}`;
+    return `<li><label for="${id}"><input type="checkbox" id="${id}" ${marcados[id] ? 'checked' : ''}><span>${esc(c)}${opc ? ' <span class="opc">(opcional)</span>' : ''}</span></label></li>`; }).join('');
+  return `<div><h2>${r.num} · ${esc(r.titulo)}</h2>
+      <div class="meta"><span class="chip">CTA: comente ${r.cta}</span><span class="chip">Duração: ${r.duracao}</span></div></div>
+    <div><h3>Texto para ler ou decorar</h3>
+      <div class="texto">${r.texto.map((p) => `<p>${esc(p)}</p>`).join('')}</div>
+      <div class="acoes"><button class="btn" data-tp="${r.id}">📱 Abrir teleprompter</button><button class="btn sec" data-copiar="${r.id}">Copiar texto</button></div></div>
+    <div><h3>Cenas de apoio para gravar (3 a 5 segundos cada)</h3><ul class="check">${clipes}</ul></div>
+    <div><h3>O que aparece na tela, frase por frase</h3>
+      <div class="legenda">${Object.values(TIPOS).map(([c, n]) => `<span><span class="tipo ${c}">${n}</span></span>`).join('')}</div>
+      <ol class="cenas">${cenas}</ol>
+      <p class="nota">Durante as cenas de apoio, a sua voz continua. A imagem entra por cima por 2 ou 3 segundos e volta para você.</p></div>`;
+}
+function painelAntes() {
+  return `<div><h2>Antes de gravar</h2></div>
+    <div><ul class="check">${ANTES.map((t, i) => { const id = `antes-${i}`;
+      return `<li><label for="${id}"><input type="checkbox" id="${id}" ${marcados[id] ? 'checked' : ''}><span>${esc(t)}</span></label></li>`; }).join('')}</ul></div>
+    <div><h3>Como me enviar</h3><ol class="passos"><li>Os 3 vídeos principais (um por roteiro) e os clipes de apoio.</li>
+      <li>Nomeie assim: <b>01_principal.mp4</b>, <b>01_apoio_halter.mp4</b>, <b>02_apoio_prato_vazio.mp4</b>…</li>
+      <li>Anexe no chat. Se o arquivo for grande, mande um de cada vez.</li></ol></div>
+    <div><h3>O que eu faço depois</h3><ol class="passos"><li>Corto erros, repetições e silêncios (fico com a sua última tentativa).</li>
+      <li>Te mostro o storyboard de cada vídeo e espero o seu ok.</li>
+      <li>Entrego em 1080 × 1920, com legenda palavra por palavra, animações, cenas de apoio, capa, logo e música.</li>
+      <li>Nenhum número aparece na tela se você não tiver falado.</li></ol></div>`;
+}
+
+const ABAS = [{ id: 'antes', nome: 'Antes de gravar' }, ...ROTEIROS.map((r) => ({ id: r.id, nome: `${r.num} · ${r.titulo.split(' ').slice(0, 3).join(' ')}…` }))];
+function mostrar(id) {
+  if (!ABAS.some((a) => a.id === id)) id = 'antes';
+  document.querySelectorAll('.aba').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.aba === id)));
+  const r = ROTEIROS.find((x) => x.id === id);
+  document.getElementById('conteudo').innerHTML = `<section class="painel" role="tabpanel">${r ? painelRoteiro(r) : painelAntes()}</section>`;
+  if (location.hash.slice(1) !== id) history.replaceState(null, '', '#' + id);
+}
+document.getElementById('abas').innerHTML = ABAS.map((a) => `<button class="aba" role="tab" data-aba="${a.id}">${esc(a.nome)}</button>`).join('');
+document.addEventListener('click', async (e) => {
+  const aba = e.target.closest('[data-aba]'); if (aba) { mostrar(aba.dataset.aba); window.scrollTo(0, 0); return; }
+  const tp = e.target.closest('[data-tp]'); if (tp) return abrirTP(tp.dataset.tp);
+  const cp = e.target.closest('[data-copiar]');
+  if (cp) { const r = ROTEIROS.find((x) => x.id === cp.dataset.copiar); const t = r.texto.join('\n\n');
+    try { await navigator.clipboard.writeText(t); cp.textContent = 'Copiado ✓'; } catch { cp.textContent = 'Selecione o texto acima'; }
+    setTimeout(() => (cp.textContent = 'Copiar texto'), 2000); }
+});
+document.addEventListener('change', (e) => { if (e.target.type === 'checkbox') { marcados[e.target.id] = e.target.checked; gravar('kit-check', marcados); } });
+window.addEventListener('hashchange', () => mostrar(location.hash.slice(1)));
+
+// Teleprompter
+let tam = 34, vel = 40, rodando = false, raf = null, ultimo = 0, wake = null;
+const rolo = document.getElementById('tp-rolo');
+function abrirTP(id) {
+  const r = ROTEIROS.find((x) => x.id === id);
+  rolo.innerHTML = r.texto.map((p) => `<p>${esc(p)}</p>`).join('');
+  rolo.style.setProperty('--tp', tam + 'px'); rolo.scrollTop = 0;
+  document.getElementById('tp').hidden = false;
+  navigator.wakeLock?.request('screen').then((w) => (wake = w)).catch(() => {});
+}
+function passo(t) { if (!rodando) return; if (ultimo) rolo.scrollTop += (vel * (t - ultimo)) / 1000; ultimo = t; raf = requestAnimationFrame(passo); }
+function play(on) { rodando = on; ultimo = 0; document.getElementById('tp-play').textContent = on ? '❚❚ Pausar' : '▶ Rolar'; if (on) raf = requestAnimationFrame(passo); else cancelAnimationFrame(raf); }
+document.getElementById('tp-play').onclick = () => play(!rodando);
+document.getElementById('tp-sair').onclick = () => { play(false); document.getElementById('tp').hidden = true; wake?.release?.(); };
+document.getElementById('tp-mais').onclick = () => { tam = Math.min(60, tam + 4); rolo.style.setProperty('--tp', tam + 'px'); };
+document.getElementById('tp-menos').onclick = () => { tam = Math.max(22, tam - 4); rolo.style.setProperty('--tp', tam + 'px'); };
+document.getElementById('tp-rapido').onclick = () => (vel = Math.min(140, vel + 10));
+document.getElementById('tp-lento').onclick = () => (vel = Math.max(10, vel - 10));
+
+mostrar(location.hash.slice(1) || 'antes');
+</script>
