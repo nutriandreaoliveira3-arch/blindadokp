@@ -1,0 +1,8 @@
+name = "blindada-intelligence"
+compatibility_date = "2026-10-01"
+pages_build_output_dir = "public"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "blindada"
+database_id = "local-dev"   # trocar pelo ID real ao criar o banco no Cloudflare (Fase 4)

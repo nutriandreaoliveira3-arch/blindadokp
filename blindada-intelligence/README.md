@@ -1,0 +1,44 @@
+# Blindada Intelligence™ v2
+
+Máquina de prospecção própria do Emagrecimento Blindado: sem mensalidade e sem Apollo, Clay ou Origami.
+Especificação completa: [`../entregas/maquina-prospeccao/especificacao.md`](../entregas/maquina-prospeccao/especificacao.md).
+
+## O que já funciona (Fase 1)
+- **Hoje**: follow-ups vencidos, quem abordar hoje (score ≥ 55) e quem aquecer.
+- **Leads**: lista e pipeline, busca, filtro por prioridade e etapa.
+- **Score Blindada (0–100)**: Poder de compra (40) + Proximidade e intenção (35) + Contato (25), explicado critério por critério.
+- **Sinais com 1 clique**: segue, interagiu, respondeu, indicação, bem-estar.
+- **Revisar**: fila que separa pessoa × fonte. Só pessoa vira lead.
+- **Importar CSV** (vírgula ou ponto e vírgula; colunas reconhecidas automaticamente). Duplicados e "Não contatar" são ignorados.
+- **Exportar**: formato da planilha do funil ou backup completo.
+- **Privacidade**: fonte e data registradas, retenção configurável (90 dias), "Remover e não contatar mais".
+- **Painel** e **Configurações** (link do formulário, retenção, limpar dados de teste).
+
+## Próximas fases
+2. Descobrir: busca grátis (Tavily) + separação automática pessoa × matéria.
+3. Mensagens por profissão + sequência de aquecimento.
+4. Publicação no Cloudflare com login (Cloudflare Access).
+
+## Rodar localmente
+```bash
+npm install
+npx wrangler d1 execute blindada --local --file=schema.sql
+npx wrangler d1 execute blindada --local --file=seed.sql   # dados fictícios (opcional)
+npm run dev        # http://localhost:8788
+npm test           # testes do score
+```
+
+## Estrutura
+| Caminho | O que é |
+|---|---|
+| `public/` | Interface (HTML, CSS e JS puro, sem build) |
+| `functions/api/[[path]].js` | API (Cloudflare Pages Functions) |
+| `functions/lib/score.js` | Regra única do Score Blindada |
+| `schema.sql` / `seed.sql` | Banco (D1/SQLite) e dados fictícios |
+| `tests/` | Testes automáticos do score |
+
+## Regras que o código garante
+- Não infere saúde, peso, aparência, idade, gênero ou renda pessoal.
+- Dados ausentes valem zero no score.
+- Nenhum envio automático de mensagens.
+- Nenhuma chave ou senha fica no código: segredos vão para as variáveis seguras do Cloudflare.

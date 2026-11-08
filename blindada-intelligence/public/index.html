@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Blindada Intelligence</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <div class="brand-mark">B</div>
+        <div><div class="brand-name">BLINDADA</div><div class="brand-sub">INTELLIGENCE™</div></div>
+      </div>
+      <div class="workspace">Emagrecimento Blindado<br><small>Workspace · Elite</small></div>
+      <nav>
+        <a data-view="hoje">☀️ <span>Hoje</span></a>
+        <a data-view="descobrir">🔎 <span>Descobrir</span></a>
+        <a data-view="revisar">✅ <span>Revisar</span> <b class="badge" id="badge-revisar"></b></a>
+        <a data-view="leads">👥 <span>Leads</span></a>
+        <a data-view="mensagens">💬 <span>Mensagens</span></a>
+        <a data-view="painel">📊 <span>Painel</span></a>
+        <a data-view="config">⚙️ <span>Configurações</span></a>
+      </nav>
+      <div class="privacy">🔒 Workspace privado<br><small>Sem inferências sobre saúde, corpo ou renda.</small></div>
+    </aside>
+
+    <main>
+      <header class="topbar">
+        <button class="menu-btn" id="menu-btn" aria-label="Menu">☰</button>
+        <div class="crumb" id="crumb">Hoje</div>
+        <label class="testes"><input type="checkbox" id="chk-testes"> Incluir dados de teste</label>
+      </header>
+      <section id="view"></section>
+    </main>
+  </div>
+
+  <div class="drawer" id="drawer" hidden>
+    <div class="drawer-bg" data-close></div>
+    <div class="drawer-panel" id="drawer-panel"></div>
+  </div>
+  <div class="toast" id="toast" hidden></div>
+
+  <script type="module" src="/app.js"></script>
+</body>
+</html>
