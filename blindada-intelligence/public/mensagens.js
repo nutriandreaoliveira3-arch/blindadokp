@@ -45,7 +45,7 @@ export function primeiroNome(l) { return (l.nome || '').trim().split(/\s+/)[0] |
 export function passoAtual(lead) {
   const pa = lead.proxima_acao || '';
   const ordem = {
-    'Novo lead': 'aquecer1',
+    'Novo lead': (lead.instagram || lead.linkedin) ? 'aquecer1' : 'contato1', // sem rede social: vai direto à mensagem
     'Aquecendo': pa.startsWith('Enviar a primeira') ? 'contato1' : 'aquecer2',
     'Contatado': pa.startsWith('Encerrar') ? null : 'contato2',
     'Respondeu': pa.startsWith('Enviar o formulário') ? 'formulario' : 'resposta',

@@ -60,7 +60,7 @@ async function viewHoje() {
       <div class="metric"><b>${ativos.length}</b><span>Leads ativos</span></div>
     </div>
     <div class="card"><h2>1. Próximos passos vencidos</h2>${tabela(vencidas, (l) => passoAtual(l)?.titulo || l.proxima_acao || 'Fazer follow-up', 'Nada vencido. 👏')}</div>
-    <div class="card"><h2>2. Começar hoje (score ≥ 55)</h2><p class="muted">Abra a lead e siga o "Próximo passo": seguir, comentar e só depois a mensagem.</p>${tabela(quentes, 'Iniciar aquecimento', 'Ninguém pronto ainda. Marque sinais nos leads (segue, interagiu…) para subir o score.')}</div>
+    <div class="card"><h2>2. Começar hoje (score ≥ 55)</h2><p class="muted">Abra a lead e siga o "Próximo passo". Com Instagram/LinkedIn: seguir e comentar antes. Só com WhatsApp/e-mail: mensagem direta.</p>${tabela(quentes, (l) => passoAtual(l)?.titulo || 'Primeira mensagem', 'Ninguém com score ≥ 55 ainda. Use Descobrir para buscar perfis com cargo de decisão e contato publicado.')}</div>
     <div class="card"><h2>3. Aquecer (seguir e interagir)</h2><p class="muted">Siga e curta 2 posts recentes. Não fale de corpo ou peso.</p>${tabela(aquecer, 'Seguir + curtir 2 posts', 'Nada para aquecer agora.')}</div>`;
 }
 
@@ -169,10 +169,10 @@ async function viewLeads() {
   const lista = $('#lista');
   if (!leads.length) lista.innerHTML = '<div class="card vazio">Nenhum lead encontrado. Importe sua base ou adicione o primeiro.</div>';
   else if (state.leadsModo === 'lista') {
-    lista.innerHTML = `<div class="card" style="padding:6px 10px"><table><thead><tr><th>Prospect</th><th>Score</th><th class="hide-m">Local</th><th class="hide-m">Sinais</th><th>Etapa</th></tr></thead><tbody>
+    lista.innerHTML = `<div class="card" style="padding:6px 10px"><table><thead><tr><th>Prospect</th><th>Score</th><th class="hide-m">Local</th><th class="hide-m">Contato</th><th>Etapa</th></tr></thead><tbody>
       ${leads.map((l) => `<tr class="click" data-lead="${l.id}"><td class="pessoa"><b>${esc(l.nome)}${l.teste ? '<span class="tag-teste">teste</span>' : ''}</b><small>${esc([l.cargo, l.empresa].filter(Boolean).join(' · ') || 'Cargo não informado')}</small></td>
         <td>${scoreBadge(l.score)}</td><td class="hide-m">${local(l)}</td>
-        <td class="hide-m">${l.sinais.length ? l.sinais.map((s) => `<span class="chip on">${esc(state.meta.sinais[s]?.label.split(' ')[0] || s)}</span>`).join('') : '<span class="muted">frio</span>'}</td>
+        <td class="hide-m">${[l.whatsapp && '📱', l.email && '✉️', (l.instagram || l.linkedin) && '🔗'].filter(Boolean).join(' ') || '<span class="muted">sem contato</span>'}</td>
         <td>${esc(l.etapa)}</td></tr>`).join('')}</tbody></table></div><p class="muted">${leads.length} lead(s), ordenados pelo score.</p>`;
   } else {
     const usadas = etapas.filter((e) => leads.some((l) => l.etapa === e) || ['Novo lead', 'Aquecendo', 'Contatado', 'Respondeu', 'Call agendada', 'Proposta', 'Cliente'].includes(e));
@@ -210,7 +210,7 @@ async function abrirLead(id) {
       <div class="row" style="margin-top:8px">${p.texto ? '<button class="btn sec" id="b-copiar">📋 Copiar mensagem</button>' : ''}
         <button class="btn" id="b-passo">✓ Feito, avançar</button></div>
       <p class="muted">Ao marcar como feito, o app agenda o próximo passo para daqui a ${p.dias} dia(s).</p></div>`; })()}
-    <div class="card"><h2>Sinais de proximidade</h2><p class="muted">Clique para marcar o que você observou. É isso que transforma lead frio em quente.</p>
+    <div class="card"><h2>Bônus (opcional)</h2><p class="muted">Só se acontecer. A prospecção fria funciona sem isso.</p>
       <div>${Object.entries(state.meta.sinais).map(([k, d]) => `<button class="chip ${sinaisOn.has(k) ? 'on' : ''}" data-sinal="${k}" style="cursor:pointer;padding:6px 12px">${sinaisOn.has(k) ? '✓ ' : '+ '}${esc(d.label)} (+${d.pontos})</button>`).join('')}</div></div>
     <div class="card"><h2>Etapa e próxima ação</h2><div class="form">
       <label class="f">Etapa<select id="d-etapa">${state.meta.etapas.map((e) => `<option ${e === l.etapa ? 'selected' : ''}>${e}</option>`).join('')}</select></label>
@@ -381,12 +381,17 @@ async function viewConfig() {
       <label class="f">Seu Instagram<input type="text" id="c-ig" value="${esc(cfg.instagram_proprio)}"></label>
       <label class="f">Retenção de dados (dias)<select id="c-ret">${['30', '60', '90', '180', '365'].map((d) => `<option ${cfg.retencao_dias === d ? 'selected' : ''}>${d}</option>`).join('')}</select></label>
       <label class="f">Limite de buscas por mês<input type="number" id="c-lim" value="${esc(cfg.limite_buscas_mes)}"></label></div>
+      <h2 style="margin-top:18px">Seu público-alvo</h2>
+      <p class="muted">Usado no score (Aderência ao público-alvo). Separe por vírgula. Pode escrever só o começo da palavra: "advogad" pega advogada e advogado.</p>
+      <div class="form">
+        <label class="f">Profissões-alvo<textarea id="c-prof">${esc(cfg.profissoes_alvo)}</textarea></label>
+        <label class="f">Regiões-alvo (cidades ou UFs; vazio = Brasil inteiro)<textarea id="c-reg" placeholder="SP, RJ, Curitiba">${esc(cfg.regioes_alvo)}</textarea></label></div>
       <p class="muted">Leads coletados há mais tempo que a retenção saem da lista e da exportação.</p>
       <button class="btn" id="c-salvar">Salvar</button></div>
     <div class="card"><h2>Dados de demonstração</h2><p class="muted">Remova os perfis fictícios antes de usar com dados reais.</p><button class="btn ghost" id="c-demo">Remover dados de teste</button></div>
     <div class="card"><h2>Backup</h2><a class="btn sec" href="/api/exportar?formato=completo">⬇ Exportar backup completo (CSV)</a></div>`;
   $('#c-salvar').onclick = async () => {
-    await api('config', { method: 'PUT', body: { link_formulario: $('#c-form').value, instagram_proprio: $('#c-ig').value, retencao_dias: $('#c-ret').value, limite_buscas_mes: $('#c-lim').value } });
+    await api('config', { method: 'PUT', body: { link_formulario: $('#c-form').value, instagram_proprio: $('#c-ig').value, retencao_dias: $('#c-ret').value, limite_buscas_mes: $('#c-lim').value, profissoes_alvo: $('#c-prof').value, regioes_alvo: $('#c-reg').value } });
     state.meta = (await api('meta')).data; toast('Configurações salvas ✅');
   };
   $('#c-demo').onclick = async () => { if (!confirm('Remover todos os dados de teste?')) return; const { data } = await api('demo', { method: 'DELETE' }); toast(`${data.removidos} perfis de teste removidos`); };

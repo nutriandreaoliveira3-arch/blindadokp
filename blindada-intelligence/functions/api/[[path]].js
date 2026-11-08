@@ -1,5 +1,5 @@
 // API da Blindada Intelligence v2 (Cloudflare Pages Functions + D1)
-import { calcularScore, SINAIS } from '../lib/score.js';
+import { calcularScore, SINAIS, parseAlvo } from '../lib/score.js';
 import { processarResultados } from '../lib/extrair.js';
 
 const json = (data, status = 200) => new Response(JSON.stringify(data), {
@@ -43,11 +43,16 @@ async function sinaisDe(db, id) {
   return (await db.prepare('SELECT * FROM sinais WHERE lead_id = ? ORDER BY criado_em').bind(id).all()).results;
 }
 
+async function alvoDe(db) {
+  const rows = (await db.prepare("SELECT chave, valor FROM config WHERE chave IN ('profissoes_alvo','regioes_alvo')").all()).results;
+  return parseAlvo(Object.fromEntries(rows.map((r) => [r.chave, r.valor])));
+}
+
 async function recalcular(db, id) {
   const lead = await db.prepare('SELECT * FROM leads WHERE id = ?').bind(id).first();
   if (!lead) return null;
   const sinais = await sinaisDe(db, id);
-  const s = calcularScore(lead, sinais);
+  const s = calcularScore(lead, sinais, await alvoDe(db));
   await db.prepare('UPDATE leads SET score = ?, atualizado_em = datetime(\'now\') WHERE id = ?').bind(s.total, id).run();
   return { ...lead, score: s.total, sinais, analise: s };
 }
@@ -139,9 +144,10 @@ export async function onRequest({ request, env, params }) {
         for (const s of sinais) (porLead[s.lead_id] ||= []).push(s.tipo);
         // Recalcula o score (regra única) e corrige o que estiver desatualizado no banco
         const desatualizados = [];
+        const alvo = await alvoDe(db);
         rows = rows.map((r) => {
           const sg = porLead[r.id] || [];
-          const total = calcularScore(r, sg).total;
+          const total = calcularScore(r, sg, alvo).total;
           if (total !== r.score) desatualizados.push(db.prepare('UPDATE leads SET score = ? WHERE id = ?').bind(total, r.id));
           return { ...r, score: total, sinais: sg };
         });
@@ -326,8 +332,9 @@ export async function onRequest({ request, env, params }) {
       let cab, linha;
       if (formato === 'funil') {
         cab = ['Data 1º contato', 'Nome', '@ Instagram', 'WhatsApp', 'Cidade/UF', 'Profissão', 'Origem', 'Etapa', 'Pontuação', 'Classificação', 'Próxima ação', 'Data próxima ação', 'Observações'];
+        const alvo = await alvoDe(db);
         linha = (r) => {
-          const s = calcularScore(r, []);
+          const s = calcularScore(r, [], alvo);
           return [r.coletado_em, r.nome, r.instagram, r.whatsapp, [r.cidade, r.uf].filter(Boolean).join('/'), r.profissao || r.cargo, r.origem, r.etapa, r.score, s.classe.rotulo, r.proxima_acao, r.data_proxima, r.anotacoes];
         };
       } else {
@@ -340,7 +347,7 @@ export async function onRequest({ request, env, params }) {
 
     // ----- Configurações -----
     if (rec === 'config' && m === 'PUT') {
-      const permitidas = ['retencao_dias', 'link_formulario', 'instagram_proprio', 'limite_buscas_mes'];
+      const permitidas = ['retencao_dias', 'link_formulario', 'instagram_proprio', 'limite_buscas_mes', 'profissoes_alvo', 'regioes_alvo'];
       for (const [k, v] of Object.entries(body)) if (permitidas.includes(k)) {
         await db.prepare('INSERT INTO config (chave, valor) VALUES (?, ?) ON CONFLICT(chave) DO UPDATE SET valor = excluded.valor').bind(k, String(v ?? '')).run();
       }
