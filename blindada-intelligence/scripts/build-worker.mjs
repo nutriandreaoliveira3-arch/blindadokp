@@ -9,6 +9,7 @@ const arquivos = {
   '/styles.css': ['styles.css', 'text/css; charset=utf-8'],
   '/app.js': ['app.js', 'text/javascript; charset=utf-8'],
   '/mensagens.js': ['mensagens.js', 'text/javascript; charset=utf-8'],
+  '/favicon.svg': ['favicon.svg', 'image/svg+xml'],
 };
 const estaticos = Object.fromEntries(Object.entries(arquivos).map(([rota, [f, tipo]]) => [rota, { tipo, corpo: readFileSync(`public/${f}`, 'utf8') }]));
 
@@ -24,8 +25,10 @@ export default {
       const path = url.pathname.slice(5).split('/').filter(Boolean).map(decodeURIComponent);
       return onRequest({ request, env, params: { path } });
     }
+    if (url.pathname === '/favicon.ico') return Response.redirect(new URL('/favicon.svg', url), 301);
     const f = ESTATICOS[url.pathname] || ESTATICOS['/'];
-    return new Response(f.corpo, { headers: { 'content-type': f.tipo, 'cache-control': 'no-cache', ...SEG } });
+    const cache = url.pathname === '/favicon.svg' ? 'public, max-age=86400' : 'no-cache';
+    return new Response(f.corpo, { headers: { 'content-type': f.tipo, 'cache-control': cache, ...SEG } });
   },
 };
 `);
