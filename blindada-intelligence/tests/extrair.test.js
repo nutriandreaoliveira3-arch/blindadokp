@@ -12,7 +12,7 @@ test('perfil do LinkedIn é pessoa e extrai nome, cargo e empresa', () => {
   assert.equal(ps.length, 1);
   assert.equal(ps[0].nome, 'Ana Exemplo');
   assert.equal(ps[0].empresa, 'Exemplo Advocacia');
-  assert.match(ps[0].cargo, /Socia/i);
+  assert.match(ps[0].cargo, /S[óo]cia/i);
 });
 
 test('página de equipe extrai a pessoa perto do cargo e o e-mail nominal', () => {
