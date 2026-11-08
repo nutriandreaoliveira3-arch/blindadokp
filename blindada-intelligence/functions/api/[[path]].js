@@ -19,7 +19,8 @@ async function rotasAuth(db, request, sub, body, m) {
   if (sub === 'setup' && m === 'POST') {
     if (temSenha) return erro('A senha já foi criada. Use a tela de entrar.', 409);
     const codHash = await getCfg(db, 'setup_codigo_hash');
-    if (!codHash || !igual(await sha256(String(body.codigo || '').trim()), codHash)) return erro('Código de primeiro acesso inválido.', 403);
+    const cod = String(body.codigo || '').toUpperCase().replace(/[^A-Z0-9]/g, ''); // aceita minúsculas, espaços e sem traços
+    if (!codHash || !igual(await sha256(cod), codHash)) return erro('Código de primeiro acesso inválido. Confira letra por letra (pode digitar sem os traços).', 403);
     const fraca = senhaForte(body.senha || ''); if (fraca) return erro(fraca);
     const sal = aleatorio(16); const seg = aleatorio(32);
     await setCfg(db, 'senha_sal', sal);
