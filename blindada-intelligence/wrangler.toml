@@ -5,4 +5,4 @@ pages_build_output_dir = "public"
 [[d1_databases]]
 binding = "DB"
 database_name = "blindada"
-database_id = "local-dev"   # trocar pelo ID real ao criar o banco no Cloudflare (Fase 4)
+database_id = "262ad7df-0be2-4736-a30f-ce46de5a0061"

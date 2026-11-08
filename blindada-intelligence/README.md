@@ -45,3 +45,9 @@ npm test           # testes do score
 - Dados ausentes valem zero no score.
 - Nenhum envio automático de mensagens.
 - Nenhuma chave ou senha fica no código: segredos vão para as variáveis seguras do Cloudflare.
+
+## Publicação (Cloudflare Pages)
+- Site: https://blindada-intelligence.pages.dev · Banco D1: `blindada`.
+- Publicar uma nova versão: `node scripts/build-worker.mjs` gera `dist/_worker.js` (API + interface num arquivo só), enviado ao projeto Pages pelo modo avançado.
+- Segredo `TAVILY_API_KEY`: configurado no painel do Cloudflare (Settings → Variables and Secrets), nunca no código.
+- Login: Cloudflare Access (Zero Trust), liberado só para o e-mail autorizado.
