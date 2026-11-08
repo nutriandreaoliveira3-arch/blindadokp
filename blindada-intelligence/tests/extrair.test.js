@@ -54,3 +54,21 @@ test('profissão no plural ("Arquitetos") também identifica pessoas', () => {
   const ps = extrairPessoas('https://x.com.br/quem-somos', 'Quem somos', 'Arquitetos Carolina Exemplo, Brasileira (RS), se conheceram em Barcelona.');
   assert.equal(ps[0].nome, 'Carolina Exemplo');
 });
+
+test('LinkedIn: título que começa pelo cargo usa o nome do endereço do perfil', () => {
+  const ps = extrairPessoas('https://br.linkedin.com/in/larissa-exemplo-adv-1234', 'Sócia Fundadora do escritório Larissa Exemplo Advocacia', '');
+  assert.equal(ps[0].nome, 'Larissa Exemplo');
+  assert.match(ps[0].cargo, /Sócia Fundadora/);
+});
+
+test('LinkedIn: cargo vem do título do perfil, não de qualquer lugar do texto', () => {
+  const ps = extrairPessoas('https://br.linkedin.com/in/joyce-x', 'Joyce Exemplo - Advogada Cível e Trabalhista | LinkedIn', 'Head de projetos no passado, sócia de um amigo');
+  assert.equal(ps[0].cargo, 'Advogada Cível e Trabalhista');
+});
+
+test('Instagram: perfil vira pessoa com o @', () => {
+  const it = processarResultados([{ url: 'https://www.instagram.com/dra.anaexemplo/', title: 'Ana Exemplo (@dra.anaexemplo) • Instagram photos and videos', content: 'Médica dermatologista | Fundadora da Clínica X' }], 't');
+  assert.equal(it[0].tipo, 'pessoa');
+  assert.equal(it[0].nome, 'Ana Exemplo');
+  assert.equal(it[0].instagram, '@dra.anaexemplo');
+});

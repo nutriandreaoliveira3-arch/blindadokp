@@ -61,13 +61,39 @@ export function extrairPessoas(url = '', titulo = '', conteudo = '') {
   const tn = norm(texto);
   const pessoas = [];
 
-  // LinkedIn: o título costuma ser "Nome Sobrenome – Cargo – Empresa | LinkedIn"
+  // LinkedIn: o título costuma ser "Nome Sobrenome – Título do perfil – Empresa | LinkedIn"
   if (norm(url).includes('linkedin.com/in/')) {
-    const partes = titulo.split(/\s[-–|]\s/).map((s) => s.trim());
-    const nome = partes[0];
-    if (nome && nome.split(' ').length >= 2) {
-      const { cargo, profissao } = acharCargo(texto);
-      pessoas.push({ nome, cargo: cargo || partes[1] || null, profissao, empresa: partes[2] && !/linkedin/i.test(partes[2]) ? partes[2] : null, linkedin: url });
+    const limpo = titulo.replace(/\s*[|–-]\s*LinkedIn\s*$/i, '').replace(/\s*\.\.\.\s*$|…$/, '').trim();
+    const partes = limpo.split(/\s[-–|]\s/).map((s) => s.trim()).filter(Boolean);
+    const temCargo = (s) => CARGOS.some((k) => norm(s).includes(k)) || PROFISSOES.some((k) => norm(s).includes(k));
+    let nome = partes[0]; let headline = partes.slice(1).join(' – ');
+    if (!nome || nome.split(' ').length < 2 || temCargo(nome)) { // título começa pelo cargo: nome vem do endereço do perfil
+      headline = limpo;
+      const slug = decodeURIComponent((url.split('/in/')[1] || '').split(/[/?#]/)[0]);
+      const LIXO = ['adv', 'advogada', 'advocacia', 'dra', 'dr', 'oab', 'arq', 'arquiteta', 'med', 'nutri', 'psi', 'ceo', 'oficial', 'br'];
+      const palavras = slug.split('-').filter((w) => /^[a-zà-ÿ]{2,}$/i.test(w) && !LIXO.includes(w.toLowerCase()));
+      nome = palavras.length >= 2 ? palavras.slice(0, 4).map((w) => w[0].toUpperCase() + w.slice(1)).join(' ') : null;
+    }
+    if (nome) {
+      const { profissao } = acharCargo(headline || texto);
+      let emp = (headline.match(/\b(?:do|da|no|na|at|@)\s+(?:escrit[óo]rio\s+)?([A-ZÁÉÍÓÚÂÊÔÃÕÇ][\wÀ-ÿ&.'’ ]{2,50})/) || [])[1];
+      emp = emp && emp.replace(/[\s.,&]+$/, '').trim();
+      const GENERICO = ['escritorio', 'empresa', 'grupo', 'brasil', 'familia', 'direito'];
+      if (emp && (emp.split(' ').length === 1 && GENERICO.includes(norm(emp)) || emp.length < 3)) emp = null;
+      const emp2 = partes[2] && partes[2].replace(/[\s.,&]+$/, '').trim();
+      pessoas.push({ nome, cargo: headline ? headline.replace(/[\s,&]+$/, '').slice(0, 90) : null, profissao, empresa: emp2 || emp || null, linkedin: url.split('?')[0] });
+    }
+    return pessoas.map((p) => completar(p, texto));
+  }
+
+  // Instagram: o título costuma ser "Nome (@usuario) • Instagram photos and videos"
+  const ig = url.match(/instagram\.com\/([A-Za-z0-9._]{3,30})\/?(?:\?|$)/);
+  if (ig && !['p', 'reel', 'reels', 'explore', 'stories', 'tv'].includes(ig[1].toLowerCase())) {
+    const m = titulo.match(/^(.+?)\s*\(@([A-Za-z0-9._]+)\)/);
+    const nome = m ? m[1].trim() : null;
+    if (nome && nome.split(' ').length >= 2 && !PALAVRAS_ORG.some((w) => norm(nome).split(' ').includes(w))) {
+      const { cargo, profissao } = acharCargo(conteudo);
+      pessoas.push({ nome, cargo, profissao, instagram: '@' + (m[2] || ig[1]) });
     }
     return pessoas.map((p) => completar(p, texto));
   }
@@ -101,7 +127,7 @@ function completar(p, texto) {
   const tel = (texto.match(RE_TEL) || [])[0] || null;
   const ig = [...texto.matchAll(RE_IG)].map((x) => x[1]).find((h) => !/^(p|reel|explore|stories)$/i.test(h));
   const uf = UFS.find((u) => new RegExp(`[\\s/,-]${u}\\b`).test(texto)) || null;
-  return { ...p, email: emailNominal, whatsapp: tel, instagram: ig ? '@' + ig : null, uf };
+  return { ...p, email: emailNominal, whatsapp: tel, instagram: p.instagram || (ig ? '@' + ig : null), uf };
 }
 
 export function processarResultados(resultados = [], consulta = '') {

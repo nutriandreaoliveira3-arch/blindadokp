@@ -363,11 +363,14 @@ export async function onRequest({ request, env, params }) {
     }
     if (rec === 'descobrir' && m === 'POST') {
       const consulta = (body.consulta || '').toString().trim().slice(0, 300);
+      const modo = ['linkedin', 'instagram'].includes(body.modo) ? body.modo : 'web';
+      const dominios = { linkedin: ['linkedin.com'], instagram: ['instagram.com'] }[modo];
+      const chaveCache = modo === 'web' ? consulta : `${modo}:${consulta}`;
       if (consulta.length < 3) return erro('Descreva quem você quer encontrar.');
       const chaveTavily = await tavilyKey(env, db);
       if (!chaveTavily) return erro('A busca ainda não está configurada. Cole a chave da Tavily em Configurações.', 503);
       // Cache de 24 h: repetir a mesma busca não gasta crédito
-      const cache = await db.prepare("SELECT resultado FROM buscas WHERE lower(consulta) = lower(?) AND criado_em >= datetime('now', '-1 day') ORDER BY criado_em DESC").bind(consulta).first();
+      const cache = await db.prepare("SELECT resultado FROM buscas WHERE lower(consulta) = lower(?) AND criado_em >= datetime('now', '-1 day') ORDER BY criado_em DESC").bind(chaveCache).first();
       let itens;
       let doCache = false;
       if (cache) { itens = JSON.parse(cache.resultado || '[]'); doCache = true; }
@@ -380,7 +383,7 @@ export async function onRequest({ request, env, params }) {
           r = await fetch('https://api.tavily.com/search', {
             method: 'POST',
             headers: { 'content-type': 'application/json', authorization: `Bearer ${chaveTavily}` },
-            body: JSON.stringify({ query: consulta, search_depth: 'basic', max_results: 10, country: 'brazil', include_answer: false }),
+            body: JSON.stringify({ query: consulta, search_depth: 'basic', max_results: modo === 'web' ? 10 : 20, country: 'brazil', include_answer: false, ...(dominios ? { include_domains: dominios } : {}) }),
           });
         } catch {
           return erro('Não consegui conectar ao serviço de busca. Verifique a internet e tente de novo (nenhum crédito foi gasto).', 502);
@@ -389,7 +392,7 @@ export async function onRequest({ request, env, params }) {
         if (!r.ok) return erro(`A busca falhou (Tavily ${r.status}). Tente de novo em instantes.`, 502);
         const dados = await r.json();
         itens = processarResultados(dados.results || [], consulta);
-        await db.prepare('INSERT INTO buscas (consulta, resultado, qtd) VALUES (?, ?, ?)').bind(consulta, JSON.stringify(itens), itens.length).run();
+        await db.prepare('INSERT INTO buscas (consulta, resultado, qtd) VALUES (?, ?, ?)').bind(chaveCache, JSON.stringify(itens), itens.length).run();
       }
       // Coloca na fila de revisão (sem repetir a mesma URL+nome pendente, sem quem está em "Não contatar")
       let novos = 0, pessoas = 0, fontes = 0, ignorados = 0;

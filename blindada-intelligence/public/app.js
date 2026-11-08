@@ -66,8 +66,8 @@ async function viewHoje() {
 }
 
 // ---------- DESCOBRIR (Fase 2) ----------
-const SUGESTOES = ['advogada sócia fundadora escritório equipe', 'arquiteta fundadora estúdio quem somos', 'médica proprietária clínica equipe',
-  'empresária fundadora CEO empresa Brasil', 'diretora executiva LinkedIn São Paulo', 'dentista proprietária clínica sobre'];
+const SUGESTOES = ['advogada sócia fundadora São Paulo', 'médica dermatologista sócia clínica', 'arquiteta fundadora estúdio',
+  'empresária fundadora CEO', 'diretora executiva São Paulo', 'dentista proprietária clínica'];
 async function viewDescobrir() {
   const { data: st } = await api('descobrir');
   const pct = Math.min(100, (st.usadas / st.limite) * 100);
@@ -76,10 +76,14 @@ async function viewDescobrir() {
     <p class="sub">Busca grátis na internet. O robô separa <b>pessoas</b> de <b>matérias</b> e pré-preenche o dossiê. Tudo vai para <b>Revisar</b> antes de virar lead.</p>
     ${st.configurada ? '' : '<div class="card aviso">⚠️ A chave da busca ainda não está configurada neste ambiente.</div>'}
     <div class="card">
-      <form id="f-busca" class="row"><input type="search" id="consulta" placeholder="Ex.: advogada sócia fundadora escritório Curitiba" style="flex:1;min-width:240px">
+      <div class="tabs" id="modos" style="margin-bottom:10px">
+        <button type="button" data-modo-busca="linkedin" class="on">in · Só LinkedIn</button>
+        <button type="button" data-modo-busca="instagram">📷 Só Instagram</button>
+        <button type="button" data-modo-busca="web">🌐 Sites (página de equipe)</button></div>
+      <form id="f-busca" class="row"><input type="search" id="consulta" placeholder="Ex.: advogada sócia fundadora São Paulo" style="flex:1;min-width:240px">
         <button class="btn" type="submit" id="b-buscar">🔎 Pesquisar na internet</button></form>
       <div style="margin-top:10px">${SUGESTOES.map((s) => `<button class="chip" data-sug="${esc(s)}" style="cursor:pointer">${esc(s)}</button>`).join('')}</div>
-      <p class="muted" style="margin-top:12px"><b>Dicas que funcionam:</b> profissão + cargo + palavra de página de equipe ("equipe", "quem somos", "sobre"). Adicione a cidade para focar. Inclua "LinkedIn" para achar perfis.</p>
+      <p class="muted" style="margin-top:12px" id="dica-busca"></p>
       <div class="crit"><div class="top"><span>Buscas usadas este mês</span><span>${st.usadas} / ${st.limite}</span></div><div class="bar"><i style="width:${pct}%"></i></div>
         <small>Repetir a mesma busca em 24 h não gasta crédito. Ao chegar no limite, a busca trava sozinha.</small></div>
       <div id="res-busca"></div></div>
@@ -92,13 +96,20 @@ async function viewDescobrir() {
   $('#b-novo').onclick = () => abrirForm();
   $('#b-imp').onclick = () => $('#f-csv').click();
   $('#f-csv').onchange = (e) => importarCSV(e.target.files[0]);
+  const DICAS = { linkedin: '<b>Só LinkedIn:</b> perfis públicos com nome, título do perfil e empresa. Escreva profissão + cargo + cidade. Ex.: "médica dermatologista sócia clínica Curitiba". Até 20 perfis por busca.',
+    instagram: '<b>Só Instagram:</b> perfis públicos (nome e @). Ex.: "arquiteta fundadora estúdio Belo Horizonte". Até 20 perfis por busca.',
+    web: '<b>Sites:</b> páginas de equipe e "quem somos", que costumam trazer telefone e e-mail. Use profissão + cargo + "equipe", "quem somos" ou "sobre".' };
+  let modoBusca = 'linkedin';
+  const setModo = (m) => { modoBusca = m; document.querySelectorAll('[data-modo-busca]').forEach((b) => b.classList.toggle('on', b.dataset.modoBusca === m)); $('#dica-busca').innerHTML = DICAS[m]; };
+  document.querySelectorAll('[data-modo-busca]').forEach((b) => (b.onclick = () => setModo(b.dataset.modoBusca)));
+  setModo('linkedin');
   document.querySelectorAll('[data-sug]').forEach((b) => (b.onclick = () => { $('#consulta').value = b.dataset.sug; $('#consulta').focus(); }));
   $('#f-busca').onsubmit = async (e) => {
     e.preventDefault();
     const consulta = $('#consulta').value.trim(); if (!consulta) return;
     const btn = $('#b-buscar'); btn.disabled = true; btn.textContent = 'Pesquisando…';
     try {
-      const r = await fetch('/api/descobrir', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ consulta }) });
+      const r = await fetch('/api/descobrir', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ consulta, modo: modoBusca }) });
       const d = await r.json();
       if (!r.ok) throw new Error(d.erro);
       $('#res-busca').innerHTML = `<div class="aviso" style="margin-top:12px">${d.doCache ? '♻️ Resultado da mesma busca nas últimas 24 h (não gastou crédito). ' : '✅ Busca feita. '}
@@ -427,6 +438,13 @@ async function viewConfig() {
       <div class="row"><input type="password" id="c-tav" placeholder="Cole aqui a chave (tvly-...)" autocomplete="off" style="flex:1;min-width:220px">
         <button class="btn" id="c-tav-salvar">Salvar chave</button></div>
       <p class="muted">Em app.tavily.com, clique no ícone 👁 e depois no ícone 📋 de copiar. Não selecione com o mouse.</p></div>
+    <div class="card"><h2>Botão "Salvar na Blindada"</h2>
+      <p class="muted">Funciona como a extensão do Apollo: você abre um perfil do <b>LinkedIn</b> ou do <b>Instagram</b>, clica no botão e o app abre com nome, título e link já preenchidos. Você confere e salva.</p>
+      <ol class="muted" style="padding-left:20px"><li>Mostre a barra de favoritos do Chrome (Cmd + Shift + B).</li>
+        <li><b>Arraste</b> o botão abaixo até a barra de favoritos.</li>
+        <li>Num perfil, clique em "Salvar na Blindada" na barra.</li></ol>
+      <a class="btn" id="bm-link" href="#" style="display:inline-block;text-decoration:none">★ Salvar na Blindada</a>
+      <p class="muted">O botão só lê a página que você está vendo. Nada é coletado automaticamente.</p></div>
     <div class="card"><h2>Dados de demonstração</h2><p class="muted">Remova os perfis fictícios antes de usar com dados reais.</p><button class="btn ghost" id="c-demo">Remover dados de teste</button></div>
     <div class="card"><h2>Backup</h2><a class="btn sec" href="/api/exportar?formato=completo">⬇ Exportar backup completo (CSV)</a></div>
     <div class="card"><h2>Sessão</h2><button class="btn ghost" id="c-sair">Sair do app</button></div>`;
@@ -435,12 +453,27 @@ async function viewConfig() {
     await api('config', { method: 'PUT', body: { link_formulario: $('#c-form').value, instagram_proprio: $('#c-ig').value, retencao_dias: $('#c-ret').value, limite_buscas_mes: $('#c-lim').value, profissoes_alvo: $('#c-prof').value, regioes_alvo: $('#c-reg').value } });
     state.meta = (await api('meta')).data; toast('Configurações salvas ✅');
   };
+  $('#bm-link').setAttribute('href', BOOKMARKLET);
+  $('#bm-link').onclick = (e) => { e.preventDefault(); toast('Arraste este botão para a barra de favoritos.'); };
   $('#c-tav-salvar').onclick = async () => {
     const v = $('#c-tav').value.trim(); if (!v) return toast('Cole a chave primeiro.');
     try { const r = await api('config', { method: 'PUT', body: { tavily_key: v } }); if (r.status !== 200) throw new Error(r.data.erro);
       $('#c-tav').value = ''; state.meta = (await api('meta')).data; toast('Chave salva ✅'); viewConfig(); } catch (e) { toast(e.message); }
   };
   $('#c-demo').onclick = async () => { if (!confirm('Remover todos os dados de teste?')) return; const { data } = await api('demo', { method: 'DELETE' }); toast(`${data.removidos} perfis de teste removidos`); };
+}
+
+// ---------- Botão "Salvar na Blindada" ----------
+const BOOKMARKLET = 'javascript:(()=>{const q=(s)=>document.querySelector(s);const m=(n)=>q(\'meta[property="\'+n+\'"],meta[name="\'+n+\'"]\')?.content||\'\';const h=location.hostname;let d={fonte_url:location.href.split(\'?\')[0]};if(h.includes(\'linkedin.com\')){d.nome=q(\'h1\')?.innerText;d.cargo=q(\'.text-body-medium\')?.innerText;d.local=q(\'.text-body-small.inline\')?.innerText;d.linkedin=d.fonte_url;d.origem=\'manual\';}else if(h.includes(\'instagram.com\')){const t=m(\'og:title\')||document.title;const x=t.match(/^(.+?)\\s*\\(@([\\w.]+)\\)/);d.nome=x?x[1]:\'\';d.instagram=x?\'@\'+x[2]:\'@\'+location.pathname.split(\'/\')[1];d.bio=m(\'og:description\')||m(\'description\');d.origem=\'instagram\';}else{d.nome=\'\';d.bio=document.title;d.origem=\'manual\';}const p=Object.entries(d).filter(([k,v])=>v).map(([k,v])=>k+\'=\'+encodeURIComponent(String(v).trim().slice(0,300))).join(\'&\');window.open(\'https://blindada-intelligence.pages.dev/#salvar?\'+p,\'_blank\');})();';
+function lerSalvar() {
+  const h = location.hash;
+  if (!h.startsWith('#salvar?')) return null;
+  const p = Object.fromEntries(new URLSearchParams(h.slice(8)));
+  history.replaceState(null, '', '#leads');
+  const lead = { nome: p.nome, cargo: p.cargo || (p.bio ? p.bio.split(/[\n•]/)[0].slice(0, 90) : undefined), instagram: p.instagram, linkedin: p.linkedin, fonte_url: p.fonte_url, origem: p.origem || 'manual',
+    fonte_desc: p.bio ? `Perfil: ${p.bio}`.slice(0, 300) : (p.cargo ? `Título do perfil: ${p.cargo}` : null) };
+  if (p.local) { const [cid, uf] = p.local.split(',').map((x) => x.trim()); lead.cidade = cid; if (uf && uf.length <= 20) lead.uf = uf; }
+  return lead;
 }
 
 // ---------- Início ----------
@@ -451,6 +484,7 @@ document.addEventListener('click', (e) => {
 });
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape') fecharDrawer(); });
 $('#menu-btn').onclick = () => $('#sidebar').classList.toggle('aberta');
+window.addEventListener('hashchange', () => { if (location.hash.startsWith('#salvar?') && state.meta) { const l = lerSalvar(); ir('leads'); abrirForm(l); } });
 $('#chk-testes').onchange = (e) => { state.testes = e.target.checked; recarregar(); };
 async function telaLogin() {
   const { data: est } = await api('auth/estado');
@@ -479,7 +513,9 @@ async function telaLogin() {
 async function iniciar() {
   state.meta = (await api('meta')).data;
   state.testes = false; $('#chk-testes').checked = false;
+  const pend = lerSalvar();
   ir(location.hash.slice(1) || 'hoje');
+  if (pend) { abrirForm(pend); toast('Confira os dados e clique em Salvar.'); }
 }
 (async () => {
   const { data: est } = await api('auth/estado');
