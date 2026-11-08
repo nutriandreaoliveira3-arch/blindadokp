@@ -94,7 +94,7 @@ INSERT OR IGNORE INTO config (chave, valor) VALUES
   ('limite_buscas_mes', '900'),
   ('link_formulario', ''),
   ('instagram_proprio', '@emagrecimentoblindado'),
-  ('profissoes_alvo', 'advogad, medic, arquitet, engenheir, dentista, empresari, executiv, psicolog, dermatolog'),
+  ('profissoes_alvo', 'advogad, advoca, medic, arquitet, engenheir, engenhar, dentista, odontolog, empresari, executiv, psicolog, dermatolog'),
   ('regioes_alvo', '');
 
 -- Buscas na internet: cache de 24 h e contador mensal (trava de custo)

@@ -159,6 +159,15 @@ async function viewLeads() {
       <button class="btn" id="b-novo">+ Adicionar</button><button class="btn sec" id="b-imp">⬆ Importar</button>
       <a class="btn ghost" href="/api/exportar?formato=funil">⬇ Exportar (planilha do funil)</a>
       <input type="file" id="f-csv" accept=".csv,text/csv" hidden></div>
+    <div class="card"><h2>✨ Completar dados</h2>
+      <p class="muted">Dados que faltam valem zero no score. O app completa sem apagar nada e registra a fonte no histórico de cada lead.</p>
+      <div class="row">
+        <button class="btn" id="b-gratis">✨ Completar grátis (todas)</button>
+        <select id="cp-classe" style="max-width:190px"><option value="C">🟡 Faixa C (média)</option><option value="B">🟠 Faixa B (alta)</option><option value="D">❄️ Faixa D (baixa)</option><option value="">Todas</option></select>
+        <select id="cp-qtd" style="max-width:120px"><option>10</option><option>25</option><option>5</option></select>
+        <button class="btn sec" id="b-lote">🔎 Completar com a busca</button></div>
+      <p class="muted">Grátis: site, profissão e anos de atuação tirados da fonte que você já tem. Com a busca: LinkedIn e Instagram, só quando o nome completo aparece no resultado (1 busca por lead).</p>
+      <div id="cp-res"></div></div>
     <div class="card"><div class="row">
       <input type="search" id="q" placeholder="Buscar por nome, empresa, cargo, cidade…" value="${esc(q)}" style="flex:2;min-width:200px">
       <select id="cl" style="flex:1;min-width:150px"><option value="">Todas as prioridades</option>
@@ -187,6 +196,22 @@ async function viewLeads() {
   $('#b-novo').onclick = () => abrirForm();
   $('#b-imp').onclick = () => $('#f-csv').click();
   $('#f-csv').onchange = (e) => importarCSV(e.target.files[0]);
+  $('#b-gratis').onclick = async (e) => {
+    e.target.disabled = true; e.target.textContent = 'Completando…';
+    try { const { data } = await api('completar/gratis', { method: 'POST' });
+      $('#cp-res').innerHTML = `<div class="aviso">✅ ${data.atualizados} de ${data.total} leads ganharam dados: ${data.contagem.site_empresa} sites, ${data.contagem.profissao} profissões, ${data.contagem.anos_atuacao} anos de atuação. Nenhuma busca gasta.</div>`;
+      setTimeout(viewLeads, 2500);
+    } catch (err) { toast(err.message); } finally { e.target.disabled = false; e.target.textContent = '✨ Completar grátis (todas)'; }
+  };
+  $('#b-lote').onclick = async (e) => {
+    const qtd = $('#cp-qtd').value; const cl = $('#cp-classe').value;
+    if (!confirm(`Completar ${qtd} leads com a busca? Gasta até ${qtd} das buscas do mês.`)) return;
+    e.target.disabled = true; e.target.textContent = 'Buscando… (pode levar 1 min)';
+    try { const { data } = await api('completar/lote', { method: 'POST', body: { quantidade: qtd, classe: cl } });
+      $('#cp-res').innerHTML = `<div class="aviso">🔎 ${data.processados} pesquisadas · ${data.comNovidade} com dados novos (${data.linkedin} LinkedIn, ${data.instagram} Instagram). Faltam ${data.restantes} nesta faixa. Confira os perfis encontrados antes de abordar.</div>`;
+      setTimeout(viewLeads, 3500);
+    } catch (err) { $('#cp-res').innerHTML = `<div class="aviso">⚠️ ${esc(err.message)}</div>`; } finally { e.target.disabled = false; e.target.textContent = '🔎 Completar com a busca'; }
+  };
 }
 
 // ---------- DETALHE DO LEAD ----------
@@ -196,6 +221,7 @@ async function abrirLead(id) {
   const sinaisOn = new Set(l.sinais.map((s) => s.tipo));
   $('#drawer-panel').innerHTML = `
     <div class="row"><button class="btn ghost sm" data-close>✕ Fechar</button><span class="spacer"></span>
+      <button class="btn ghost sm" id="b-completar">🔎 Completar dados (1 busca)</button>
       <button class="btn sec sm" id="b-editar">Editar</button></div>
     <h1 style="margin-top:14px">${esc(l.nome)}${l.teste ? '<span class="tag-teste">teste</span>' : ''}</h1>
     <p class="sub">${esc([l.cargo, l.profissao, l.empresa].filter(Boolean).join(' · ') || 'Dados profissionais não informados')} — ${local(l)}</p>
@@ -258,6 +284,13 @@ async function abrirLead(id) {
   $('#b-contato').onclick = () => registrar('contato', 'Contatado', 4);
   $('#b-resp').onclick = () => registrar('resposta', 'Respondeu', 1);
   $('#b-editar').onclick = () => abrirForm(l);
+  $('#b-completar').onclick = async (e) => {
+    e.target.disabled = true; e.target.textContent = 'Buscando…';
+    try { const { data } = await api(`leads/${id}/completar`, { method: 'POST' });
+      toast(data.completados.length ? `Completado: ${data.completados.join(', ')} ✅ Confira no histórico.` : 'Nada novo encontrado para esta pessoa.');
+      abrirLead(id); recarregar();
+    } catch (err) { toast(err.message); e.target.disabled = false; e.target.textContent = '🔎 Completar dados (1 busca)'; }
+  };
   $('#b-remover').onclick = async () => { if (!confirm('Remover esta pessoa e bloquear contatos futuros?')) return; await api(`leads/${id}?nao_contatar=1`, { method: 'DELETE' }); fecharDrawer(); toast('Removida e bloqueada'); recarregar(); };
   $('#b-apagar').onclick = async () => { if (!confirm('Apagar este lead?')) return; await api('leads/' + id, { method: 'DELETE' }); fecharDrawer(); toast('Apagado'); recarregar(); };
 }

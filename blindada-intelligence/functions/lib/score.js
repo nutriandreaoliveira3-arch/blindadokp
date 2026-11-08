@@ -6,12 +6,12 @@ const norm = (s) => (s || '').toString().normalize('NFD').replace(/[̀-ͯ]/g, ''
 
 const CARGOS_DECISAO = ['fundadora', 'cofundadora', 'co-fundadora', 'socia', 'proprietaria', 'dona', 'ceo', 'presidente', 'diretora', 'founder', 'owner', 'partner', 'managing'];
 const CARGOS_GESTAO = ['gerente', 'head', 'coordenadora', 'superintendente', 'executiva', 'vp', 'vice'];
-const PROFISSOES_ALTA = ['medic', 'advogad', 'arquitet', 'engenheir', 'dentista', 'cirurgi', 'juiza', 'promotor', 'desembargador', 'empresari',
+const PROFISSOES_ALTA = ['medic', 'advogad', 'advoca', 'arquitet', 'engenheir', 'engenhar', 'dentista', 'odontolog', 'contabil', 'cirurgi', 'juiza', 'promotor', 'desembargador', 'empresari',
   'executiv', 'investidor', 'economista', 'auditor', 'contador', 'psicolog', 'dermatolog', 'corretora de imoveis', 'consultor'];
 
 // Padrão do público-alvo (editável em Configurações). Radicais, sem acento.
 export const ALVO_PADRAO = {
-  profissoes: ['advogad', 'medic', 'arquitet', 'engenheir', 'dentista', 'empresari', 'executiv', 'psicolog', 'dermatolog'],
+  profissoes: ['advogad', 'advoca', 'medic', 'arquitet', 'engenheir', 'engenhar', 'dentista', 'odontolog', 'empresari', 'executiv', 'psicolog', 'dermatolog'],
   regioes: [], // vazio = Brasil inteiro
 };
 

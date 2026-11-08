@@ -44,3 +44,8 @@ test('config ausente usa o público-alvo padrão', () => {
 test('acentos não atrapalham o reconhecimento do cargo', () => {
   assert.ok(calcularScore({ cargo: 'SÓCIA PROPRIETÁRIA' }, []).criterios[0].pontos >= 15);
 });
+
+test('profissão gravada como área ("Advocacia", "Odontologia") também pontua', () => {
+  assert.equal(calcularScore({ profissao: 'Advocacia' }, []).criterios[0].pontos, 10);
+  assert.equal(calcularScore({ profissao: 'Odontologia' }, []).criterios[1].pontos, 10);
+});

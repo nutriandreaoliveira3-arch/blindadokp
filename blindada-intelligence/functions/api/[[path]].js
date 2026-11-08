@@ -1,6 +1,7 @@
 // API da Blindada Intelligence v2 (Cloudflare Pages Functions + D1)
 import { calcularScore, SINAIS, parseAlvo } from '../lib/score.js';
 import { processarResultados } from '../lib/extrair.js';
+import { completarGratis, completarComResultados, consultaPara } from '../lib/completar.js';
 import { aleatorio, sha256, hashSenha, igual, criarSessao, sessaoValida, lerCookie, cookieSessao, senhaForte, ITERACOES } from '../lib/auth.js';
 
 // Chaves internas que nunca saem do servidor
@@ -147,6 +148,44 @@ function csvEscape(v) {
   return /[";\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
 }
 
+
+// Busca na Tavily com cache de 24 h e trava mensal (compartilhado por Descobrir e Completar)
+async function buscarTavily(env, db, consulta, max = 6) {
+  const cache = await db.prepare("SELECT resultado FROM buscas WHERE lower(consulta) = lower(?) AND criado_em >= datetime('now', '-1 day') ORDER BY criado_em DESC").bind('raw:' + consulta).first();
+  if (cache) return { resultados: JSON.parse(cache.resultado || '[]'), doCache: true };
+  const chave = await tavilyKey(env, db);
+  if (!chave) throw Object.assign(new Error('Cole a chave da Tavily em Configurações para usar a busca.'), { status: 503 });
+  const limite = parseInt((await getCfg(db, 'limite_buscas_mes')) || '900', 10);
+  const usadas = (await db.prepare("SELECT COUNT(*) n FROM buscas WHERE strftime('%Y-%m', criado_em) = strftime('%Y-%m', 'now')").first()).n;
+  if (usadas >= limite) throw Object.assign(new Error(`Limite de ${limite} buscas do mês atingido.`), { status: 429 });
+  let r;
+  try {
+    r = await fetch('https://api.tavily.com/search', { method: 'POST', headers: { 'content-type': 'application/json', authorization: `Bearer ${chave}` },
+      body: JSON.stringify({ query: consulta, search_depth: 'basic', max_results: max, country: 'brazil' }) });
+  } catch { throw Object.assign(new Error('Não consegui conectar ao serviço de busca (nenhum crédito gasto).'), { status: 502 }); }
+  if (r.status === 401 || r.status === 403) throw Object.assign(new Error('A chave da Tavily foi recusada. Confira em Configurações.'), { status: 502 });
+  if (!r.ok) throw Object.assign(new Error(`A busca falhou (Tavily ${r.status}).`), { status: 502 });
+  const resultados = (await r.json()).results || [];
+  await db.prepare('INSERT INTO buscas (consulta, resultado, qtd) VALUES (?, ?, ?)').bind('raw:' + consulta, JSON.stringify(resultados), resultados.length).run();
+  return { resultados, doCache: false };
+}
+
+async function aplicarCompletar(db, id, novo, descricao) {
+  const cols = Object.keys(novo);
+  if (!cols.length) return false;
+  await db.prepare(`UPDATE leads SET ${cols.map((c) => `${c} = ?`).join(', ')}, atualizado_em = datetime('now') WHERE id = ?`).bind(...cols.map((c) => novo[c]), id).run();
+  await db.prepare('INSERT INTO atividades (lead_id, tipo, descricao) VALUES (?, ?, ?)').bind(id, 'dados completados', descricao).run();
+  return true;
+}
+
+async function completarUmComBusca(env, db, lead) {
+  const { resultados } = await buscarTavily(env, db, consultaPara(lead));
+  const { novo, motivos, fontes } = completarComResultados(lead, resultados);
+  await db.prepare('INSERT INTO atividades (lead_id, tipo, descricao) VALUES (?, ?, ?)').bind(lead.id, 'busca de dados', motivos.length ? 'Encontrado' : 'Nada novo encontrado').run();
+  if (Object.keys(novo).length) await aplicarCompletar(db, lead.id, novo, `${motivos.join('; ')}. Fontes: ${fontes.join(' ')}. Confira antes de usar.`);
+  return { campos: Object.keys(novo), motivos };
+}
+
 // ---------------- Rotas ----------------
 export async function onRequest({ request, env, params }) {
   const db = env.DB;
@@ -255,6 +294,14 @@ export async function onRequest({ request, env, params }) {
         await db.prepare('DELETE FROM sinais WHERE lead_id = ? AND tipo = ?').bind(leadId, subId).run();
         return json(await recalcular(db, leadId));
       }
+      if (sub === 'completar' && m === 'POST') {
+        const l = await db.prepare('SELECT * FROM leads WHERE id = ?').bind(leadId).first();
+        if (!l) return erro('Lead não encontrado.', 404);
+        const g = completarGratis(l);
+        if (Object.keys(g.novo).length) { await aplicarCompletar(db, leadId, g.novo, g.motivos.join('; ') + ' (sem busca)'); Object.assign(l, g.novo); }
+        const r = await completarUmComBusca(env, db, l);
+        return json({ ...(await recalcular(db, leadId)), completados: [...Object.keys(g.novo), ...r.campos] });
+      }
       if (sub === 'atividades' && m === 'POST') {
         if (!body.tipo) return erro('Informe o tipo da atividade.');
         await db.prepare('INSERT INTO atividades (lead_id, tipo, canal, descricao) VALUES (?, ?, ?, ?)')
@@ -359,6 +406,33 @@ export async function onRequest({ request, env, params }) {
       return json({ doCache, total: itens.length, novos, pessoas, fontes, ignorados });
     }
 
+    // ----- Completar dados -----
+    if (rec === 'completar' && id === 'gratis' && m === 'POST') {
+      const leads = (await db.prepare('SELECT * FROM leads').all()).results;
+      let atualizados = 0; const contagem = { site_empresa: 0, profissao: 0, anos_atuacao: 0 };
+      for (const l of leads) {
+        const { novo, motivos } = completarGratis(l);
+        if (await aplicarCompletar(db, l.id, novo, motivos.join('; ') + ' (sem busca)')) { atualizados++; for (const k of Object.keys(novo)) contagem[k]++; }
+      }
+      return json({ total: leads.length, atualizados, contagem });
+    }
+    if (rec === 'completar' && id === 'lote' && m === 'POST') {
+      const qtd = Math.min(Math.max(parseInt(body.quantidade, 10) || 10, 1), 25);
+      const faixa = { A: [75, 101], B: [55, 75], C: [35, 55], D: [0, 35] }[body.classe] || [0, 101];
+      const cands = (await db.prepare(`SELECT * FROM leads WHERE teste = 0 AND score >= ? AND score < ?
+          AND id NOT IN (SELECT lead_id FROM atividades WHERE tipo = 'busca de dados') ORDER BY score DESC LIMIT ?`).bind(faixa[0], faixa[1], qtd).all()).results;
+      const res = { processados: 0, comNovidade: 0, linkedin: 0, instagram: 0, outros: 0 };
+      for (const l of cands) {
+        const r = await completarUmComBusca(env, db, l);
+        res.processados++; if (r.campos.length) res.comNovidade++;
+        if (r.campos.includes('linkedin')) res.linkedin++; if (r.campos.includes('instagram')) res.instagram++;
+        res.outros += r.campos.filter((c) => !['linkedin', 'instagram'].includes(c)).length;
+        await recalcular(db, l.id);
+      }
+      const restantes = (await db.prepare(`SELECT COUNT(*) n FROM leads WHERE teste = 0 AND score >= ? AND score < ? AND id NOT IN (SELECT lead_id FROM atividades WHERE tipo = 'busca de dados')`).bind(faixa[0], faixa[1]).first()).n;
+      return json({ ...res, restantes });
+    }
+
     // ----- Painel -----
     if (rec === 'painel' && m === 'GET') {
       const base = 'FROM leads WHERE teste = 0';
@@ -418,6 +492,6 @@ export async function onRequest({ request, env, params }) {
 
     return erro('Rota não encontrada.', 404);
   } catch (e) {
-    return erro(e.message || 'Erro inesperado.', 500);
+    return erro(e.message || 'Erro inesperado.', e.status || 500);
   }
 }
