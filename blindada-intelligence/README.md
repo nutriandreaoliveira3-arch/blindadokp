@@ -14,8 +14,11 @@ Especificação completa: [`../entregas/maquina-prospeccao/especificacao.md`](..
 - **Privacidade**: fonte e data registradas, retenção configurável (90 dias), "Remover e não contatar mais".
 - **Painel** e **Configurações** (link do formulário, retenção, limpar dados de teste).
 
+## Fase 2 (construída, aguardando a chave ser validada)
+- **Descobrir**: busca grátis (Tavily) com cache de 24 h e trava mensal (900). Separa pessoa × matéria, extrai nome, cargo, empresa, e-mail nominal, telefone, Instagram e UF, e manda tudo para **Revisar**.
+- Segredo de produção: `TAVILY_API_KEY` nas variáveis seguras do Cloudflare. Localmente, em `.dev.vars` (fora do Git).
+
 ## Próximas fases
-2. Descobrir: busca grátis (Tavily) + separação automática pessoa × matéria.
 3. Mensagens por profissão + sequência de aquecimento.
 4. Publicação no Cloudflare com login (Cloudflare Access).
 

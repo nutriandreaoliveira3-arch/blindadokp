@@ -63,11 +63,24 @@ async function viewHoje() {
 }
 
 // ---------- DESCOBRIR (Fase 2) ----------
+const SUGESTOES = ['advogada sócia fundadora escritório equipe', 'arquiteta fundadora estúdio quem somos', 'médica proprietária clínica equipe',
+  'empresária fundadora CEO empresa Brasil', 'diretora executiva LinkedIn São Paulo', 'dentista proprietária clínica sobre'];
 async function viewDescobrir() {
+  const { data: st } = await api('descobrir');
+  const pct = Math.min(100, (st.usadas / st.limite) * 100);
   $('#view').innerHTML = `
     <div class="kicker">Encontrar novas mulheres</div><h1>Descobrir</h1>
-    <p class="sub">Busca grátis na internet (Tavily, 1.000 por mês) com separação automática entre pessoas e matérias.</p>
-    <div class="card aviso">🚧 <b>Fase 2.</b> A busca automática entra quando a chave da Tavily for configurada com segurança. Enquanto isso, adicione leads à mão ou importe a sua base atual.</div>
+    <p class="sub">Busca grátis na internet. O robô separa <b>pessoas</b> de <b>matérias</b> e pré-preenche o dossiê. Tudo vai para <b>Revisar</b> antes de virar lead.</p>
+    ${st.configurada ? '' : '<div class="card aviso">⚠️ A chave da busca ainda não está configurada neste ambiente.</div>'}
+    <div class="card">
+      <form id="f-busca" class="row"><input type="search" id="consulta" placeholder="Ex.: advogada sócia fundadora escritório Curitiba" style="flex:1;min-width:240px">
+        <button class="btn" type="submit" id="b-buscar">🔎 Pesquisar na internet</button></form>
+      <div style="margin-top:10px">${SUGESTOES.map((s) => `<button class="chip" data-sug="${esc(s)}" style="cursor:pointer">${esc(s)}</button>`).join('')}</div>
+      <p class="muted" style="margin-top:12px"><b>Dicas que funcionam:</b> profissão + cargo + palavra de página de equipe ("equipe", "quem somos", "sobre"). Adicione a cidade para focar. Inclua "LinkedIn" para achar perfis.</p>
+      <div class="crit"><div class="top"><span>Buscas usadas este mês</span><span>${st.usadas} / ${st.limite}</span></div><div class="bar"><i style="width:${pct}%"></i></div>
+        <small>Repetir a mesma busca em 24 h não gasta crédito. Ao chegar no limite, a busca trava sozinha.</small></div>
+      <div id="res-busca"></div></div>
+    ${st.ultimas.length ? `<div class="card"><h2>Últimas buscas</h2>${st.ultimas.map((u) => `<div class="muted">${esc(u.criado_em)} — <b>${esc(u.consulta)}</b> (${u.qtd} resultados)</div>`).join('')}</div>` : ''}
     <div class="card"><h2>Adicionar agora</h2><div class="row">
       <button class="btn" id="b-novo">+ Adicionar lead</button>
       <button class="btn sec" id="b-imp">⬆ Importar CSV / Excel (CSV)</button>
@@ -76,6 +89,23 @@ async function viewDescobrir() {
   $('#b-novo').onclick = () => abrirForm();
   $('#b-imp').onclick = () => $('#f-csv').click();
   $('#f-csv').onchange = (e) => importarCSV(e.target.files[0]);
+  document.querySelectorAll('[data-sug]').forEach((b) => (b.onclick = () => { $('#consulta').value = b.dataset.sug; $('#consulta').focus(); }));
+  $('#f-busca').onsubmit = async (e) => {
+    e.preventDefault();
+    const consulta = $('#consulta').value.trim(); if (!consulta) return;
+    const btn = $('#b-buscar'); btn.disabled = true; btn.textContent = 'Pesquisando…';
+    try {
+      const r = await fetch('/api/descobrir', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ consulta }) });
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.erro);
+      $('#res-busca').innerHTML = `<div class="aviso" style="margin-top:12px">${d.doCache ? '♻️ Resultado da mesma busca nas últimas 24 h (não gastou crédito). ' : '✅ Busca feita. '}
+        <b>${d.pessoas}</b> pessoa(s) e <b>${d.fontes}</b> fonte(s) foram para <b>Revisar</b>${d.ignorados ? ` · ${d.ignorados} já conhecido(s) ou bloqueado(s), ignorado(s)` : ''}.
+        <div style="margin-top:8px"><button class="btn sm" id="b-ir-rev">Revisar agora →</button></div></div>`;
+      $('#b-ir-rev').onclick = () => ir('revisar');
+      atualizarBadge();
+    } catch (err) { $('#res-busca').innerHTML = `<div class="aviso" style="margin-top:12px">⚠️ ${esc(err.message)}</div>`; }
+    finally { btn.disabled = false; btn.textContent = '🔎 Pesquisar na internet'; }
+  };
 }
 
 // ---------- REVISAR ----------

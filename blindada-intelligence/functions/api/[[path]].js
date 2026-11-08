@@ -1,5 +1,6 @@
 // API da Blindada Intelligence v2 (Cloudflare Pages Functions + D1)
 import { calcularScore, SINAIS } from '../lib/score.js';
+import { processarResultados } from '../lib/extrair.js';
 
 const json = (data, status = 200) => new Response(JSON.stringify(data), {
   status, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' },
@@ -249,6 +250,58 @@ export async function onRequest({ request, env, params }) {
         await db.prepare("UPDATE revisao SET status = 'descartado' WHERE id = ?").bind(rid).run();
         return json({ ok: true });
       }
+    }
+
+    // ----- Descobrir: busca grátis na internet (Tavily) -----
+    if (rec === 'descobrir' && m === 'GET') {
+      const mes = await db.prepare("SELECT COUNT(*) n FROM buscas WHERE strftime('%Y-%m', criado_em) = strftime('%Y-%m', 'now')").first();
+      const limite = parseInt((await db.prepare("SELECT valor FROM config WHERE chave='limite_buscas_mes'").first())?.valor || '900', 10);
+      const ultimas = (await db.prepare('SELECT consulta, qtd, criado_em FROM buscas ORDER BY criado_em DESC LIMIT 10').all()).results;
+      return json({ usadas: mes.n, limite, configurada: Boolean(env.TAVILY_API_KEY), ultimas });
+    }
+    if (rec === 'descobrir' && m === 'POST') {
+      const consulta = (body.consulta || '').toString().trim().slice(0, 300);
+      if (consulta.length < 3) return erro('Descreva quem você quer encontrar.');
+      if (!env.TAVILY_API_KEY) return erro('A busca ainda não está configurada (chave Tavily ausente).', 503);
+      // Cache de 24 h: repetir a mesma busca não gasta crédito
+      const cache = await db.prepare("SELECT resultado FROM buscas WHERE lower(consulta) = lower(?) AND criado_em >= datetime('now', '-1 day') ORDER BY criado_em DESC").bind(consulta).first();
+      let itens;
+      let doCache = false;
+      if (cache) { itens = JSON.parse(cache.resultado || '[]'); doCache = true; }
+      else {
+        const limite = parseInt((await db.prepare("SELECT valor FROM config WHERE chave='limite_buscas_mes'").first())?.valor || '900', 10);
+        const usadas = (await db.prepare("SELECT COUNT(*) n FROM buscas WHERE strftime('%Y-%m', criado_em) = strftime('%Y-%m', 'now')").first()).n;
+        if (usadas >= limite) return erro(`Limite de ${limite} buscas do mês atingido. Ele renova no dia 1º.`, 429);
+        let r;
+        try {
+          r = await fetch('https://api.tavily.com/search', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json', authorization: `Bearer ${env.TAVILY_API_KEY}` },
+            body: JSON.stringify({ query: consulta, search_depth: 'basic', max_results: 10, country: 'brazil', include_answer: false }),
+          });
+        } catch {
+          return erro('Não consegui conectar ao serviço de busca. Verifique a internet e tente de novo (nenhum crédito foi gasto).', 502);
+        }
+        if (r.status === 401 || r.status === 403) return erro('A chave da Tavily foi recusada. Confira se ela está correta e ativa.', 502);
+        if (!r.ok) return erro(`A busca falhou (Tavily ${r.status}). Tente de novo em instantes.`, 502);
+        const dados = await r.json();
+        itens = processarResultados(dados.results || [], consulta);
+        await db.prepare('INSERT INTO buscas (consulta, resultado, qtd) VALUES (?, ?, ?)').bind(consulta, JSON.stringify(itens), itens.length).run();
+      }
+      // Coloca na fila de revisão (sem repetir a mesma URL+nome pendente, sem quem está em "Não contatar")
+      let novos = 0, pessoas = 0, fontes = 0, ignorados = 0;
+      for (const it of itens) {
+        if (it.tipo === 'pessoa' && await bloqueado(db, it)) { ignorados++; continue; }
+        if (it.tipo === 'pessoa' && it.nome && await duplicado(db, it)) { ignorados++; continue; }
+        const existe = await db.prepare('SELECT 1 FROM revisao WHERE url IS ? AND nome IS ?').bind(it.url || null, it.nome || null).first();
+        if (existe) { ignorados++; continue; }
+        await db.prepare(`INSERT INTO revisao (tipo, titulo, url, trecho, nome, cargo, empresa, cidade, uf, email, whatsapp, instagram, linkedin, consulta)
+          VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`).bind(it.tipo, it.titulo || null, it.url || null, it.trecho || null, it.nome || null,
+          it.cargo || it.profissao || null, it.empresa || null, it.cidade || null, it.uf || null, it.email || null, it.whatsapp || null,
+          it.instagram || null, it.linkedin || null, consulta).run();
+        novos++; if (it.tipo === 'pessoa') pessoas++; else fontes++;
+      }
+      return json({ doCache, total: itens.length, novos, pessoas, fontes, ignorados });
     }
 
     // ----- Painel -----

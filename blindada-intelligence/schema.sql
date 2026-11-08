@@ -94,3 +94,13 @@ INSERT OR IGNORE INTO config (chave, valor) VALUES
   ('limite_buscas_mes', '900'),
   ('link_formulario', ''),
   ('instagram_proprio', '@emagrecimentoblindado');
+
+-- Buscas na internet: cache de 24 h e contador mensal (trava de custo)
+CREATE TABLE IF NOT EXISTS buscas (
+  id         INTEGER PRIMARY KEY AUTOINCREMENT,
+  consulta   TEXT NOT NULL,
+  resultado  TEXT,               -- JSON com os itens processados
+  qtd        INTEGER DEFAULT 0,
+  criado_em  TEXT DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS idx_buscas_consulta ON buscas(consulta, criado_em);
