@@ -8,6 +8,7 @@ async function api(path, opts = {}) {
   const r = await fetch('/api/' + path, { headers: { 'content-type': 'application/json' }, ...opts, body: opts.body ? JSON.stringify(opts.body) : undefined });
   const ct = r.headers.get('content-type') || '';
   const data = ct.includes('json') ? await r.json() : await r.text();
+  if (r.status === 401 && !path.startsWith('auth/')) { telaLogin(); throw new Error('Entre com sua senha.'); }
   if (!r.ok && r.status !== 409) throw new Error(data.erro || 'Erro');
   return { status: r.status, data };
 }
@@ -388,11 +389,23 @@ async function viewConfig() {
         <label class="f">Regiões-alvo (cidades ou UFs; vazio = Brasil inteiro)<textarea id="c-reg" placeholder="SP, RJ, Curitiba">${esc(cfg.regioes_alvo)}</textarea></label></div>
       <p class="muted">Leads coletados há mais tempo que a retenção saem da lista e da exportação.</p>
       <button class="btn" id="c-salvar">Salvar</button></div>
+    <div class="card"><h2>Busca automática (Tavily)</h2>
+      <p class="muted">${cfg.tavily_configurada ? '✅ Chave configurada. Ela fica guardada e nunca aparece na tela.' : '⚠️ Sem chave: a busca da tela Descobrir não funciona.'}</p>
+      <div class="row"><input type="password" id="c-tav" placeholder="Cole aqui a chave (tvly-...)" autocomplete="off" style="flex:1;min-width:220px">
+        <button class="btn" id="c-tav-salvar">Salvar chave</button></div>
+      <p class="muted">Em app.tavily.com, clique no ícone 👁 e depois no ícone 📋 de copiar. Não selecione com o mouse.</p></div>
     <div class="card"><h2>Dados de demonstração</h2><p class="muted">Remova os perfis fictícios antes de usar com dados reais.</p><button class="btn ghost" id="c-demo">Remover dados de teste</button></div>
-    <div class="card"><h2>Backup</h2><a class="btn sec" href="/api/exportar?formato=completo">⬇ Exportar backup completo (CSV)</a></div>`;
+    <div class="card"><h2>Backup</h2><a class="btn sec" href="/api/exportar?formato=completo">⬇ Exportar backup completo (CSV)</a></div>
+    <div class="card"><h2>Sessão</h2><button class="btn ghost" id="c-sair">Sair do app</button></div>`;
+  $('#c-sair').onclick = async () => { await api('auth/sair', { method: 'POST' }); telaLogin(); };
   $('#c-salvar').onclick = async () => {
     await api('config', { method: 'PUT', body: { link_formulario: $('#c-form').value, instagram_proprio: $('#c-ig').value, retencao_dias: $('#c-ret').value, limite_buscas_mes: $('#c-lim').value, profissoes_alvo: $('#c-prof').value, regioes_alvo: $('#c-reg').value } });
     state.meta = (await api('meta')).data; toast('Configurações salvas ✅');
+  };
+  $('#c-tav-salvar').onclick = async () => {
+    const v = $('#c-tav').value.trim(); if (!v) return toast('Cole a chave primeiro.');
+    try { const r = await api('config', { method: 'PUT', body: { tavily_key: v } }); if (r.status !== 200) throw new Error(r.data.erro);
+      $('#c-tav').value = ''; state.meta = (await api('meta')).data; toast('Chave salva ✅'); viewConfig(); } catch (e) { toast(e.message); }
   };
   $('#c-demo').onclick = async () => { if (!confirm('Remover todos os dados de teste?')) return; const { data } = await api('demo', { method: 'DELETE' }); toast(`${data.removidos} perfis de teste removidos`); };
 }
@@ -406,8 +419,37 @@ document.addEventListener('click', (e) => {
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape') fecharDrawer(); });
 $('#menu-btn').onclick = () => $('#sidebar').classList.toggle('aberta');
 $('#chk-testes').onchange = (e) => { state.testes = e.target.checked; recarregar(); };
-(async () => {
+async function telaLogin() {
+  const { data: est } = await api('auth/estado');
+  document.querySelector('.app').hidden = true;
+  let box = $('#login'); if (!box) { box = document.createElement('div'); box.id = 'login'; document.body.appendChild(box); }
+  box.hidden = false;
+  box.innerHTML = `<div style="min-height:100vh;display:grid;place-items:center;padding:16px;background:var(--verde)">
+    <form id="f-login" class="card" style="width:min(420px,100%);margin:0">
+      <div class="brand" style="margin-bottom:14px"><div class="brand-mark">B</div><div><div class="brand-name" style="color:var(--verde)">BLINDADA</div><div class="brand-sub">INTELLIGENCE™</div></div></div>
+      <h2>${est.configurada ? 'Entrar' : 'Primeiro acesso'}</h2>
+      <p class="muted">${est.configurada ? 'Digite sua senha.' : 'Use o código de primeiro acesso que o Claude te passou e crie sua senha (mín. 10 caracteres, com letras e números).'}</p>
+      ${est.configurada ? '' : '<label class="f">Código de primeiro acesso<input type="text" id="l-cod" autocomplete="off" required></label>'}
+      <label class="f" style="margin-top:10px">${est.configurada ? 'Senha' : 'Crie sua senha'}<input type="password" id="l-senha" autocomplete="${est.configurada ? 'current-password' : 'new-password'}" required></label>
+      ${est.configurada ? '' : '<label class="f" style="margin-top:10px">Repita a senha<input type="password" id="l-senha2" autocomplete="new-password" required></label>'}
+      <button class="btn" type="submit" style="margin-top:14px;width:100%">${est.configurada ? 'Entrar' : 'Criar senha e entrar'}</button>
+      <p class="muted" id="l-msg" style="margin-top:10px"></p></form></div>`;
+  $('#f-login').onsubmit = async (e) => {
+    e.preventDefault(); const msg = $('#l-msg');
+    const senha = $('#l-senha').value;
+    if (!est.configurada && senha !== $('#l-senha2').value) { msg.textContent = 'As senhas não são iguais.'; return; }
+    const r = await api(est.configurada ? 'auth/login' : 'auth/setup', { method: 'POST', body: est.configurada ? { senha } : { senha, codigo: $('#l-cod').value } }).catch((err) => ({ status: 0, data: { erro: err.message } }));
+    if (r.status === 200) { box.hidden = true; document.querySelector('.app').hidden = false; iniciar(); }
+    else msg.textContent = r.data?.erro || 'Não foi possível entrar.';
+  };
+}
+async function iniciar() {
   state.meta = (await api('meta')).data;
-  state.testes = true; $('#chk-testes').checked = true; // começa mostrando os exemplos fictícios
+  state.testes = false; $('#chk-testes').checked = false;
   ir(location.hash.slice(1) || 'hoje');
+}
+(async () => {
+  const { data: est } = await api('auth/estado');
+  if (!est.logado) return telaLogin();
+  iniciar();
 })();

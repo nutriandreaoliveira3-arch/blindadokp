@@ -1,3 +1,4 @@
+[hidden] { display: none !important; }
 :root {
   --verde: #1F2A24; --verde-2: #2B3A31; --dourado: #C9A96E; --creme: #F7F4EE; --papel: #FFFFFF;
   --texto: #1E1E1E; --suave: #6B6B6B; --linha: #E6E1D6; --vermelho: #B23A3A; --ok: #2E7D4F;

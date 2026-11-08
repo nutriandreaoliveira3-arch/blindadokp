@@ -1,6 +1,53 @@
 // API da Blindada Intelligence v2 (Cloudflare Pages Functions + D1)
 import { calcularScore, SINAIS, parseAlvo } from '../lib/score.js';
 import { processarResultados } from '../lib/extrair.js';
+import { aleatorio, sha256, hashSenha, igual, criarSessao, sessaoValida, lerCookie, cookieSessao, senhaForte, ITERACOES } from '../lib/auth.js';
+
+// Chaves internas que nunca saem do servidor
+const SECRETAS = ['senha_hash', 'senha_sal', 'senha_iter', 'sessao_segredo', 'setup_codigo_hash', 'tavily_key', 'login_falhas', 'login_bloqueio_ate'];
+const getCfg = async (db, k) => (await db.prepare('SELECT valor FROM config WHERE chave = ?').bind(k).first())?.valor ?? null;
+const setCfg = (db, k, v) => db.prepare('INSERT INTO config (chave, valor) VALUES (?, ?) ON CONFLICT(chave) DO UPDATE SET valor = excluded.valor').bind(k, v === null ? null : String(v)).run();
+const tavilyKey = async (env, db) => env.TAVILY_API_KEY || (await getCfg(db, 'tavily_key'));
+
+async function rotasAuth(db, request, sub, body, m) {
+  const temSenha = Boolean(await getCfg(db, 'senha_hash'));
+  if (sub === 'estado' && m === 'GET') {
+    const seg = await getCfg(db, 'sessao_segredo');
+    return json({ configurada: temSenha, logado: temSenha && await sessaoValida(lerCookie(request), seg) });
+  }
+  if (sub === 'setup' && m === 'POST') {
+    if (temSenha) return erro('A senha já foi criada. Use a tela de entrar.', 409);
+    const codHash = await getCfg(db, 'setup_codigo_hash');
+    if (!codHash || !igual(await sha256(String(body.codigo || '').trim()), codHash)) return erro('Código de primeiro acesso inválido.', 403);
+    const fraca = senhaForte(body.senha || ''); if (fraca) return erro(fraca);
+    const sal = aleatorio(16); const seg = aleatorio(32);
+    await setCfg(db, 'senha_sal', sal);
+    await setCfg(db, 'senha_iter', ITERACOES);
+    await setCfg(db, 'senha_hash', await hashSenha(body.senha, sal));
+    await setCfg(db, 'sessao_segredo', seg);
+    await db.prepare("DELETE FROM config WHERE chave = 'setup_codigo_hash'").run(); // código vale uma vez só
+    return new Response(JSON.stringify({ ok: true }), { headers: { 'content-type': 'application/json', 'set-cookie': cookieSessao(await criarSessao(seg)) } });
+  }
+  if (sub === 'login' && m === 'POST') {
+    if (!temSenha) return erro('Crie a senha primeiro.', 409);
+    const ate = Number(await getCfg(db, 'login_bloqueio_ate') || 0);
+    if (ate > Date.now()) return erro(`Muitas tentativas. Tente de novo em ${Math.ceil((ate - Date.now()) / 60000)} min.`, 429);
+    const sal = await getCfg(db, 'senha_sal'); const iter = Number(await getCfg(db, 'senha_iter') || ITERACOES);
+    const ok = igual(await hashSenha(String(body.senha || ''), sal, iter), await getCfg(db, 'senha_hash'));
+    if (!ok) {
+      const f = Number(await getCfg(db, 'login_falhas') || 0) + 1;
+      await setCfg(db, 'login_falhas', f >= 5 ? 0 : f);
+      if (f >= 5) await setCfg(db, 'login_bloqueio_ate', Date.now() + 15 * 60000);
+      return erro('Senha incorreta.', 401);
+    }
+    await setCfg(db, 'login_falhas', 0);
+    return new Response(JSON.stringify({ ok: true }), { headers: { 'content-type': 'application/json', 'set-cookie': cookieSessao(await criarSessao(await getCfg(db, 'sessao_segredo'))) } });
+  }
+  if (sub === 'sair' && m === 'POST') {
+    return new Response(JSON.stringify({ ok: true }), { headers: { 'content-type': 'application/json', 'set-cookie': cookieSessao('', true) } });
+  }
+  return erro('Rota não encontrada.', 404);
+}
 
 const json = (data, status = 200) => new Response(JSON.stringify(data), {
   status, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' },
@@ -118,9 +165,16 @@ export async function onRequest({ request, env, params }) {
   if (['POST', 'PUT', 'PATCH'].includes(m)) { try { body = await request.json(); } catch { body = {}; } }
 
   try {
+    // ----- Login (rotas abertas) -----
+    if (rec === 'auth') return rotasAuth(db, request, id, body, m);
+    // Tudo o resto exige sessão válida
+    if (!(await sessaoValida(lerCookie(request), await getCfg(db, 'sessao_segredo')))) return erro('Entre com sua senha.', 401);
+
     // ----- Meta -----
     if (rec === 'meta' && m === 'GET') {
-      const cfg = Object.fromEntries((await db.prepare('SELECT chave, valor FROM config').all()).results.map((r) => [r.chave, r.valor]));
+      const rows = (await db.prepare('SELECT chave, valor FROM config').all()).results;
+      const cfg = Object.fromEntries(rows.filter((r) => !SECRETAS.includes(r.chave)).map((r) => [r.chave, r.valor]));
+      cfg.tavily_configurada = Boolean(await tavilyKey(env, db));
       return json({ etapas: ETAPAS, sinais: SINAIS, config: cfg });
     }
 
@@ -263,12 +317,13 @@ export async function onRequest({ request, env, params }) {
       const mes = await db.prepare("SELECT COUNT(*) n FROM buscas WHERE strftime('%Y-%m', criado_em) = strftime('%Y-%m', 'now')").first();
       const limite = parseInt((await db.prepare("SELECT valor FROM config WHERE chave='limite_buscas_mes'").first())?.valor || '900', 10);
       const ultimas = (await db.prepare('SELECT consulta, qtd, criado_em FROM buscas ORDER BY criado_em DESC LIMIT 10').all()).results;
-      return json({ usadas: mes.n, limite, configurada: Boolean(env.TAVILY_API_KEY), ultimas });
+      return json({ usadas: mes.n, limite, configurada: Boolean(await tavilyKey(env, db)), ultimas });
     }
     if (rec === 'descobrir' && m === 'POST') {
       const consulta = (body.consulta || '').toString().trim().slice(0, 300);
       if (consulta.length < 3) return erro('Descreva quem você quer encontrar.');
-      if (!env.TAVILY_API_KEY) return erro('A busca ainda não está configurada (chave Tavily ausente).', 503);
+      const chaveTavily = await tavilyKey(env, db);
+      if (!chaveTavily) return erro('A busca ainda não está configurada. Cole a chave da Tavily em Configurações.', 503);
       // Cache de 24 h: repetir a mesma busca não gasta crédito
       const cache = await db.prepare("SELECT resultado FROM buscas WHERE lower(consulta) = lower(?) AND criado_em >= datetime('now', '-1 day') ORDER BY criado_em DESC").bind(consulta).first();
       let itens;
@@ -282,7 +337,7 @@ export async function onRequest({ request, env, params }) {
         try {
           r = await fetch('https://api.tavily.com/search', {
             method: 'POST',
-            headers: { 'content-type': 'application/json', authorization: `Bearer ${env.TAVILY_API_KEY}` },
+            headers: { 'content-type': 'application/json', authorization: `Bearer ${chaveTavily}` },
             body: JSON.stringify({ query: consulta, search_depth: 'basic', max_results: 10, country: 'brazil', include_answer: false }),
           });
         } catch {
@@ -348,9 +403,13 @@ export async function onRequest({ request, env, params }) {
     // ----- Configurações -----
     if (rec === 'config' && m === 'PUT') {
       const permitidas = ['retencao_dias', 'link_formulario', 'instagram_proprio', 'limite_buscas_mes', 'profissoes_alvo', 'regioes_alvo'];
-      for (const [k, v] of Object.entries(body)) if (permitidas.includes(k)) {
-        await db.prepare('INSERT INTO config (chave, valor) VALUES (?, ?) ON CONFLICT(chave) DO UPDATE SET valor = excluded.valor').bind(k, String(v ?? '')).run();
+      for (const [k, v] of Object.entries(body)) if (permitidas.includes(k)) await setCfg(db, k, String(v ?? ''));
+      if (typeof body.tavily_key === 'string' && body.tavily_key.trim()) {
+        const k = body.tavily_key.trim();
+        if (!/^tvly-[A-Za-z0-9_-]{10,}$/.test(k)) return erro('A chave da Tavily deve começar com "tvly-" e estar completa (copie pelo ícone de copiar).');
+        await setCfg(db, 'tavily_key', k);
       }
+      if (body.tavily_key === null) await db.prepare("DELETE FROM config WHERE chave = 'tavily_key'").run();
       return json({ ok: true });
     }
     if (rec === 'demo' && m === 'DELETE') {
