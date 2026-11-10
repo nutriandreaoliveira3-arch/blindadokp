@@ -16,6 +16,7 @@ Cliente: Andréa Oliveira, nutricionista (@nutriandreaoliveira). Responder em po
 - Texto **sempre branco**.
 - Capa estilo **JEJUM**: palavra gigante em Bodoni embaixo à esquerda e linha menor embaixo à direita. Nada de layout novo sem ela pedir.
 - Na capa ela aparece **sorrindo** ou com **postura de autoridade** (ombros abertos, olhar firme, boca fechada).
+- Texto da capa **acima de y 1680**: a grade do perfil corta o que fica abaixo (o modelo já sai assim).
 - Conferir **olhos abertos** num recorte do rosto em resolução cheia. Evitar quadros a menos de 0,4 s de uma piscada.
 - **Capas vão para aprovação antes** do vídeo final, todas do lote juntas ("deixa eu aprovar").
 - A capa entra **embutida nos primeiros 0,3 s**. No Meta, ela escolhe o primeiro quadro em Miniatura e não mexe em "Editar".

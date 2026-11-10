@@ -45,7 +45,7 @@
 | Laterais | 130 px de cada lado, igual | botões curtir/comentar à direita; mantém o texto centralizado |
 
 - A legenda simples (`ferramentas/modelos/legendas.ass`) já segue isso: margens 130/130 e MarginV 480.
-- **Capa:** a grade do perfil mostra um recorte 3:4 do centro (y 240 a 1680). Texto da capa abaixo de y 1680 some na grade. O modelo JEJUM atual coloca a linha menor em y≈1722: **pendente de decisão da cliente** se sobe ou fica como está.
+- **Capa:** a grade do perfil mostra um recorte 3:4 do centro (y 240 a 1680). Texto da capa abaixo de y 1680 some na grade. Por isso o modelo JEJUM (`ferramentas/modelos/capa_jejum.ass`) sobe o texto 70 px (palavra em y 1590, linha menor em y 1652), aprovado pela cliente. Conferir em toda capa nova que a linha menor termina acima de y 1680.
 
 ## Exportação final
 - H.264 High 4.2, 12 Mbps (máx. 16), GOP fechado de 2 s, BT.709.
