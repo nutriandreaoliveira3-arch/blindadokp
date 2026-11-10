@@ -119,6 +119,15 @@ export default function Compare() {
   const allChecked = ATTRS.every(([a]) => marks[a] || ai?.itens.some((x) => x.atributo === a));
   const level = findings.length ? riskLevel(findings) : allChecked ? 'baixo' : 'atencao';
 
+  /** Veredito só da conferência manual (para medir a concordância com a IA). */
+  const manualVerdict = (): 'compativel' | 'divergente' | 'incerto' | undefined => {
+    const vals = ATTRS.map(([a]) => marks[a]).filter(Boolean);
+    if (vals.length < ATTRS.length) return undefined;
+    if (vals.includes('diferente')) return 'divergente';
+    if (vals.includes('incerto')) return 'incerto';
+    return 'compativel';
+  };
+
   const runAI = async () => {
     setBusy('Comparando com IA…');
     setMsg('');
@@ -146,6 +155,7 @@ export default function Compare() {
       kbVersion,
       aiUsed: !!ai,
       evidence,
+      compare: { ai: ai?.veredito, manual: manualVerdict() },
     };
     await saveAnalysis(a);
     setSaved(a);

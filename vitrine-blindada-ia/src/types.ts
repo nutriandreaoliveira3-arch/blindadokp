@@ -127,6 +127,7 @@ export interface Analysis {
   parentId?: string; // análise anterior (quando é reanálise após correção)
   aiUsed?: boolean;
   evidence?: { listing: string[]; frames: string[] }; // imagens guardadas como prova (recurso)
+  compare?: { ai?: 'compativel' | 'divergente' | 'incerto'; manual?: 'compativel' | 'divergente' | 'incerto' };
 }
 
 export interface ProductPhoto {
@@ -187,5 +188,19 @@ export interface Violation {
   appeal: 'nao_recorrido' | 'em_analise' | 'aprovado' | 'nao_aprovado';
   policyIds: string[];
   lesson: string; // o que fazer diferente
+  createdAt: string;
+}
+
+export interface ValidationRecord {
+  id: string;
+  publishedAt: string; // AAAA-MM-DD
+  productId?: string;
+  productName: string;
+  analysisId?: string;
+  appLevel: RiskLevel | 'sem_analise';
+  outcome: 'pendente' | 'passou' | 'violacao';
+  violationReason?: string;
+  points?: number;
+  notes?: string;
   createdAt: string;
 }

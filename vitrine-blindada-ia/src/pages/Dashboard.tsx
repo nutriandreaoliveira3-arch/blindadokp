@@ -24,6 +24,7 @@ const TILES: [Page, string, string][] = [
   ['politicas', '📚', 'Biblioteca de políticas'],
   ['historico', '🗂️', 'Histórico de análises'],
   ['violacoes', '⚠️', 'Minhas violações'],
+  ['validacao', '🧪', 'Validação'],
   ['config', '⚙️', 'Configurações'],
 ];
 

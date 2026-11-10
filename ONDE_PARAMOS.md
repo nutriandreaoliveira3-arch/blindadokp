@@ -28,3 +28,4 @@
 - Falta: abrir as 13 violações sem motivo e copiar o texto; informar a nota atual do Índice de qualidade do criador.
 - 30 prints analisados (doc CLAUDE_BLINDADA): 21 registros, 136 pts. Regras EV-5 a EV-8 e checagens de vídeo educativo, IA x anúncio, ofertas. 72 regras na base.
 - Nova tela "Conferir anúncio x vídeo": tira quadros do vídeo no navegador, compara lado a lado (manual ou com IA) e guarda a prova no histórico para recurso. Prompt do Flow com modo "sem amostra".
+- Tela Validação: cada vídeo publicado com o nível do app antes e o resultado no TikTok. Metas para lançar a mensalidade: 50 vídeos, 90% das violações apontadas, no máximo 5% de 🟢 com violação, 90% de concordância IA x manual. Teste até o fim de dezembro.

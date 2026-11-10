@@ -20,7 +20,8 @@ export type Page =
   | 'config'
   | 'admin'
   | 'violacoes'
-  | 'comparar';
+  | 'comparar'
+  | 'validacao';
 
 export interface Draft {
   productId?: string;

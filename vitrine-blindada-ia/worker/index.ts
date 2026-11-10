@@ -22,7 +22,7 @@ export interface Env {
 }
 
 const GLOBAL = '__global__';
-const USER_STORES = new Set(['products', 'analyses', 'docs', 'violations']);
+const USER_STORES = new Set(['products', 'analyses', 'docs', 'violations', 'validations']);
 const GLOBAL_STORES = new Set(['policies', 'sources']);
 const GLOBAL_META = new Set(['kbVersion', 'kbUpdatedAt', 'seedVersion']);
 const USER_META = new Set(['settings']);

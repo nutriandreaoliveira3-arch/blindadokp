@@ -2,7 +2,7 @@ import { openDB, type IDBPDatabase } from 'idb';
 import { SEED_POLICIES } from './data/policies';
 import { SEED_SOURCES } from './data/sources';
 import { api, isCloud } from './mode';
-import type { Analysis, Policy, PolicySource, Product, Settings, Violation } from './types';
+import type { Analysis, Policy, PolicySource, Product, Settings, ValidationRecord, Violation } from './types';
 
 // Armazenamento persistente no navegador (IndexedDB).
 // Os dados ficam no computador da usuária. Use Exportar backup para guardar cópia.
@@ -10,18 +10,19 @@ import type { Analysis, Policy, PolicySource, Product, Settings, Violation } fro
 const DB_NAME = 'vitrine-blindada-ia';
 const SEED_VERSION = 2;
 
-type Stores = 'products' | 'policies' | 'sources' | 'analyses' | 'meta' | 'docs' | 'violations';
+type Stores = 'products' | 'policies' | 'sources' | 'analyses' | 'meta' | 'docs' | 'violations' | 'validations';
 
 let dbp: Promise<IDBPDatabase> | null = null;
 function db() {
   if (!dbp)
-    dbp = openDB(DB_NAME, 2, {
+    dbp = openDB(DB_NAME, 3, {
       upgrade(d, oldVersion) {
         if (oldVersion < 1) {
           for (const s of ['products', 'policies', 'sources', 'analyses', 'docs'] as const) d.createObjectStore(s, { keyPath: 'id' });
           d.createObjectStore('meta');
         }
         if (oldVersion < 2) d.createObjectStore('violations', { keyPath: 'id' });
+        if (oldVersion < 3) d.createObjectStore('validations', { keyPath: 'id' });
       },
     });
   return dbp;
@@ -91,6 +92,7 @@ export interface Backup {
   analyses: Analysis[];
   docs: StoredDoc[];
   violations?: Violation[];
+  validations?: ValidationRecord[];
   kbVersion: number;
 }
 
@@ -104,6 +106,7 @@ export async function exportBackup(): Promise<Backup> {
     analyses: await all('analyses'),
     docs: await all('docs'),
     violations: await all('violations'),
+    validations: await all('validations'),
     kbVersion: (await getMeta<number>('kbVersion')) ?? 1,
   };
 }
@@ -115,16 +118,18 @@ export async function importBackup(b: Backup) {
     for (const p of b.analyses ?? []) await put('analyses', p);
     for (const p of b.docs ?? []) await put('docs', p);
     for (const p of b.violations ?? []) await put('violations', p);
+    for (const p of b.validations ?? []) await put('validations', p);
     return; // a base de políticas na nuvem é gerida pela administradora
   }
   const d = await db();
-  const tx = d.transaction(['products', 'policies', 'sources', 'analyses', 'docs', 'violations', 'meta'], 'readwrite');
+  const tx = d.transaction(['products', 'policies', 'sources', 'analyses', 'docs', 'violations', 'validations', 'meta'], 'readwrite');
   for (const p of b.products ?? []) await tx.objectStore('products').put(p);
   for (const p of b.policies ?? []) await tx.objectStore('policies').put(p);
   for (const p of b.sources ?? []) await tx.objectStore('sources').put(p);
   for (const p of b.analyses ?? []) await tx.objectStore('analyses').put(p);
   for (const p of b.docs ?? []) await tx.objectStore('docs').put(p);
   for (const p of b.violations ?? []) await tx.objectStore('violations').put(p);
+  for (const p of b.validations ?? []) await tx.objectStore('validations').put(p);
   await tx.objectStore('meta').put(Math.max(b.kbVersion ?? 1, ((await tx.objectStore('meta').get('kbVersion')) as number) ?? 1), 'kbVersion');
   await tx.done;
 }
