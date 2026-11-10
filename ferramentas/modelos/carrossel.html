@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8">
+<!-- Modelo de carrossel Emagrecimento Blindado. Uma <section class="slide"> por slide.
+     Tipos: capa | stake | ideia | recap | cta. Foto de fundo: class="foto" e style="--foto:url('arquivo.jpg')".
+     Caminhos relativos a este arquivo: copie-o para ferramentas/modelos/ ou ajuste os url(). -->
+<style>
+@font-face{font-family:Bodoni;src:url('../fontes/BodoniModa-500.ttf')}
+@font-face{font-family:BodoniR;src:url('../fontes/BodoniModa-400.ttf')}
+*{margin:0;box-sizing:border-box}
+body{background:#000}
+.slide{width:1080px;height:1350px;position:relative;overflow:hidden;color:#fff;
+  background:#000 var(--foto,none) center/cover no-repeat;
+  font-family:'DejaVu Sans',sans-serif;padding:120px;display:flex;flex-direction:column;justify-content:center}
+.slide.foto::before{content:"";position:absolute;inset:0;
+  background:linear-gradient(to top,rgba(0,0,0,.85) 0%,rgba(0,0,0,.25) 55%,rgba(0,0,0,0) 75%)}
+.slide>*{position:relative}
+h1{font-family:Bodoni;font-weight:500;font-size:150px;line-height:.95;text-transform:uppercase;
+  letter-spacing:-2px;text-shadow:0 3px 12px rgba(0,0,0,.6)}
+h2{font-family:Bodoni;font-weight:500;font-size:88px;line-height:1.02;text-transform:uppercase;margin-bottom:40px}
+p,li{font-size:44px;line-height:1.3}
+.apoio{font-family:BodoniR;font-size:54px;text-transform:uppercase;letter-spacing:2px;margin-top:28px}
+.capa{justify-content:flex-end;padding-bottom:180px}
+ol{padding-left:60px}
+li{margin:14px 0}
+.cta h2{font-size:110px}
+.cta .palavra{font-family:Bodoni;font-size:130px;border-bottom:4px solid #fff;align-self:flex-start;margin:20px 0}
+.rodape{position:absolute;left:120px;right:120px;bottom:56px;display:flex;justify-content:space-between;
+  align-items:center;font-size:32px;opacity:.9}
+.rodape img{height:64px}
+</style></head><body>
+
+<section class="slide capa">
+  <h1>Palavra<br>gigante</h1>
+  <div class="apoio">Uma linha de promessa</div>
+  <div class="rodape"><span>@nutriandreaoliveira</span><span>1/5</span></div>
+</section>
+
+<section class="slide stake">
+  <h2>Por que isso importa</h2>
+  <p>Uma frase que funciona sozinha, como se fosse uma segunda capa.</p>
+  <div class="rodape"><span>@nutriandreaoliveira</span><span>2/5</span></div>
+</section>
+
+<section class="slide ideia">
+  <h2>Lei 1: título curto</h2>
+  <p>No máximo 25 palavras explicando a ideia.</p>
+  <div class="rodape"><span>@nutriandreaoliveira</span><span>3/5</span></div>
+</section>
+
+<section class="slide recap">
+  <h2>Resumo</h2>
+  <ol><li>Lei 1</li><li>Lei 2</li><li>Lei 3</li></ol>
+  <div class="rodape"><span>@nutriandreaoliveira</span><span>4/5</span></div>
+</section>
+
+<section class="slide cta">
+  <h2>Quer o plano?</h2>
+  <p>Comenta a palavra</p>
+  <div class="palavra">BLINDADA</div>
+  <div class="rodape"><span>@nutriandreaoliveira</span><img src="../../padrao-visual/marca/logo_emagrecimento_blindado.png" alt=""></div>
+</section>
+
+</body></html>

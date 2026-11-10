@@ -37,6 +37,21 @@
 - A palavra falada cresce 10%, sem mudar de cor.
 - Posição: na altura do peito, sem cobrir o rosto nem o logo.
 
+## Área segura do Instagram (vale para todo texto)
+| Zona | Medida (tela 1080×1920) | Motivo |
+|---|---|---|
+| Topo | não usar os 300 px de cima | nome do perfil e botão voltar |
+| Base | texto termina em y = 1440 | descrição, áudio e botões cobrem os 480 px de baixo |
+| Laterais | 130 px de cada lado, igual | botões curtir/comentar à direita; mantém o texto centralizado |
+
+- A legenda simples (`ferramentas/modelos/legendas.ass`) já segue isso: margens 130/130 e MarginV 480.
+- **Capa:** a grade do perfil mostra um recorte 3:4 do centro (y 240 a 1680). Texto da capa abaixo de y 1680 some na grade. O modelo JEJUM atual coloca a linha menor em y≈1722: **pendente de decisão da cliente** se sobe ou fica como está.
+
+## Exportação final
+- H.264 High 4.2, 12 Mbps (máx. 16), GOP fechado de 2 s, BT.709.
+- Áudio AAC 256k, 48 kHz, voz em −14 LUFS e pico máximo −1,5 dB.
+- Já configurado no último passo do `ferramentas/assemble.sh`.
+
 ## Publicação no Meta Business Suite
 1. Criar reel → vídeo → Miniatura: escolher o **primeiro quadro** (a capa).
 2. Etapa "Editar": **não mexer em nada**.
