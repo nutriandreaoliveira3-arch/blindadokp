@@ -16,6 +16,7 @@ Cliente: Andréa Oliveira, nutricionista (@nutriandreaoliveira). Responder em po
 - Texto **sempre branco**.
 - Capa estilo **JEJUM**: palavra gigante em Bodoni embaixo à esquerda e linha menor embaixo à direita. Nada de layout novo sem ela pedir.
 - Na capa ela aparece **sorrindo** ou com **postura de autoridade** (ombros abertos, olhar firme, boca fechada).
+- Texto da capa **acima de y 1680**: a grade do perfil corta o que fica abaixo (o modelo já sai assim).
 - Conferir **olhos abertos** num recorte do rosto em resolução cheia. Evitar quadros a menos de 0,4 s de uma piscada.
 - **Capas vão para aprovação antes** do vídeo final, todas do lote juntas ("deixa eu aprovar").
 - A capa entra **embutida nos primeiros 0,3 s**. No Meta, ela escolhe o primeiro quadro em Miniatura e não mexe em "Editar".
@@ -24,6 +25,8 @@ Cliente: Andréa Oliveira, nutricionista (@nutriandreaoliveira). Responder em po
 - **Não usar a foto P&B** na abertura.
 - Letras grandes, para ler num piscar: legenda 68, frase final ~118.
 - A frase final **varia a cada vídeo**, combinando com o tema. Sempre fecha com o logo.
+- **Área segura do Instagram** (tela 1080×1920): legenda e textos lidos dentro de x 130–950 e y 300–1440. Os botões e a descrição do Instagram cobrem os 480 px de baixo, os 300 px de cima e a lateral direita. A legenda já sai assim pelo `modelos/legendas.ass` (margens 130/130, MarginV 480). Fundo, vídeo e logo em tela cheia podem ignorar.
+- **Exportação final** (já no `assemble.sh`): H.264 High, 12 Mbps (máx. 16), GOP fechado de 2 s, BT.709, AAC 256k 48 kHz, voz em −14 LUFS. Arquivo maior que antes (~90 MB por minuto), mas o Instagram comprime menos e a imagem chega mais nítida. Não baixar a taxa para economizar espaço.
 
 ## 2. Estrutura do vídeo (modelo série)
 Capa (0,3 s) → logo dourado no preto (2,2 s) → corpo com legenda DejaVu Sans 68 → tela preta com a frase em Bodoni ~118 (3,6 s) → logo → música ElevenLabs abaixando sob a voz.
@@ -37,7 +40,7 @@ Capa (0,3 s) → logo dourado no preto (2,2 s) → corpo com legenda DejaVu Sans
 6. **Montar o JSON** `{"src":"in.mp4","out":"A_body.mp4","chunks":[[ini,fim,"Texto da legenda"],...]}`. O texto vai corrigido, com frase inteira. Depois rodar `python3 ferramentas/build_body.py spec.json`.
 7. **Capa**: escolher o quadro (sorriso ou autoridade, olhos abertos) e rodar `ferramentas/capa.sh in.mp4 <seg> "PALAVRA" "LINHA MENOR" capa/A.jpg [tam]`. Palavra longa: diminuir tam (ex.: 260). Mandar todas as capas para aprovação.
 8. **Montagem final** (na pasta com `capa/` e `A_body.mp4`): `ferramentas/assemble.sh A A e1 "Frase\\Nem linhas"`. Músicas e1 a e4: alternar entre vídeos. Para vídeo acima de 60 s, a música entra em loop sozinha.
-9. Conferir a duração e quadros de amostra, copiar para `entregas/<lote>/`, fazer commit e push.
+9. Conferir a duração, quadros de amostra e se a legenda termina acima de y=1440 (recortar um quadro e olhar), copiar para `entregas/<lote>/`, fazer commit e push.
 
 ### Frases finais (rodízio)
 1. Blindar o corpo é transformar a vida.
