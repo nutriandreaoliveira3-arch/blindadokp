@@ -142,3 +142,14 @@ describe('portão do produto', () => {
     expect(gateAllows({ ...product, gate: g }).ok).toBe(true);
   });
 });
+
+describe('conteúdo orgânico (sem produto e sem link)', () => {
+  const ctx = { contentType: 'video', origem: 'gravado_real', aiDisclosure: 'nao', virtualModel: 'nao', aiAlteredProduct: 'nao', demonstration: 'nenhuma', productShown: '', productMostDuration: '', linkMatch: 'sem_link', presence: 'aparece_fala', audio: 'voz_humana', staticContent: 'nenhum', originality: 'original', watermark: 'nao', layeredEditing: 'nao', beautyFilter: 'nao', thirdPartyBrandOrPerson: 'nao', reviewScreenshot: 'nao', sameContentOtherAccounts: 'nao', creatorAdult: 'sim', preRecordedInLive: 'nao', screenRecording: 'nao', educational: 'sim' } as ProductionContext;
+  const input: ContentInput = { roteiro: 'Na lista de ingredientes, o primeiro item é o que aparece em maior quantidade.', textoTela: '', legenda: '', hashtags: '#nutricionista', imagemDescricao: '' };
+  it('vídeo educativo sem carrinho sai 🟢', () => {
+    expect(analyzeContent(input, ctx, SEED_POLICIES).level).toBe('baixo');
+  });
+  it('continua pegando alegação proibida', () => {
+    expect(analyzeContent({ ...input, roteiro: 'Esse chá emagrece rápido' }, ctx, SEED_POLICIES).level).toBe('alto');
+  });
+});

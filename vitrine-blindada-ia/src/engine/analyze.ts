@@ -138,9 +138,11 @@ export function checkContext(ctx: ProductionContext, input: ContentInput, produc
   const isLive = ctx.contentType === 'live';
   const isAI = ctx.origem === 'ia_total' || ctx.origem === 'ia_parcial';
 
+  // Conteúdo orgânico: sem produto e sem link (ex.: vídeo educativo sem carrinho). As regras de vídeo comprável não se aplicam.
+  const organic = ctx.linkMatch === 'sem_link' && !product;
   const unanswered = (
     ['origem', 'productShown', 'linkMatch', 'presence', 'audio', 'originality', 'creatorAdult'] as (keyof ProductionContext)[]
-  ).filter((k) => !ctx[k]);
+  ).filter((k) => !ctx[k] && !(organic && k === 'productShown'));
   if (unanswered.length)
     f.push(C('atencao', ['CP-1'], 'Checklist de produção incompleto',
       `Há ${unanswered.length} pergunta(s) sem resposta. Sem essas informações a análise não consegue verificar correspondência do produto, uso de IA e originalidade.`,
@@ -154,7 +156,7 @@ export function checkContext(ctx: ProductionContext, input: ContentInput, produc
   if (product?.gate?.level === 'alto')
     f.push(C('alto', ['CP-3.5', 'CP-3.15'], 'Produto bloqueado na análise de cadastro',
       'O produto vinculado tem risco alto no cadastro. Nenhum conteúdo deve ser publicado antes de corrigir o cadastro ou trocar de produto.', 'Revise o produto em "Biblioteca de produtos".'));
-  if (!product)
+  if (!product && !organic)
     f.push(C('atencao', ['CP-3.13.2'], 'Nenhum produto vinculado',
       'Sem produto cadastrado, a análise não confere a correspondência entre o conteúdo e o produto anunciado.', 'Vincule um produto da biblioteca.', true));
 
@@ -173,7 +175,7 @@ export function checkContext(ctx: ProductionContext, input: ContentInput, produc
   if (ctx.linkMatch === 'cor_diferente')
     f.push(C('atencao', ['PR-1.1', 'CI-4'], 'Cor diferente do anúncio',
       'Cor diferente é aceita, mas o guia recomenda informar a variação.', 'Diga na fala ou no texto que o produto está disponível em outras cores.'));
-  if (ctx.linkMatch === 'sem_link' && ctx.contentType !== 'imagem')
+  if (ctx.linkMatch === 'sem_link' && product && ctx.contentType !== 'imagem')
     f.push(C('atencao', ['PI-3'], 'Conteúdo sem link de produto',
       'Sem link, as regras de vídeo comprável não se aplicam, mas o conteúdo não gera venda pelo Shop.', undefined, true));
 
