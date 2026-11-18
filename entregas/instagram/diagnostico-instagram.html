@@ -1,0 +1,157 @@
+<title>Diagnóstico @nutriandreaoliveira</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,650&family=Source+Sans+3:wght@400;500;600&display=swap">
+<style>
+/* Layout: relatório de uma coluna (≈ 720px). Números-chave no topo, depois achados por gravidade, depois o plano. */
+:root {
+  --bg: #F4F6F3; --surface: #FFFFFF; --fg: #1B2620; --muted: #5E6B63; --line: #DCE3DD;
+  --accent: #9A7B3F; --accent-soft: #F1E9D8; --brand: #1F2A24; --on-brand: #F3EBDD;
+  --bad: #A8432F; --bad-soft: #F6E3DE; --ok: #2E7D4F; --ok-soft: #DDEFE3;
+  --display: 'Fraunces', Georgia, 'Times New Roman', serif;
+  --body: 'Source Sans 3', 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #121815; --surface: #1A221D; --fg: #E9EEE9; --muted: #A3B0A7; --line: #2C3831;
+  --accent: #D2B178; --accent-soft: #2C2718; --brand: #0E1411; --on-brand: #EADFC8;
+  --bad: #E58A76; --bad-soft: #3A221D; --ok: #6FC08E; --ok-soft: #1B3326; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #121815; --surface: #1A221D; --fg: #E9EEE9; --muted: #A3B0A7; --line: #2C3831;
+  --accent: #D2B178; --accent-soft: #2C2718; --brand: #0E1411; --on-brand: #EADFC8;
+  --bad: #E58A76; --bad-soft: #3A221D; --ok: #6FC08E; --ok-soft: #1B3326; color-scheme: dark }
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font: 17px/1.6 var(--body); margin: 0; }
+.wrap { max-width: 760px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+header { background: var(--brand); color: var(--on-brand); }
+header .wrap { padding-block: 30px 24px; }
+.selo { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); }
+h1 { font: 650 clamp(28px, 7vw, 40px)/1.1 var(--display); margin: 6px 0 8px; text-wrap: balance; }
+header p { margin: 0; opacity: .85; max-width: 56ch; }
+main .wrap { padding-block: 26px 70px; display: grid; gap: 34px; }
+h2 { font: 650 24px/1.2 var(--display); margin: 0 0 12px; text-wrap: balance; }
+h3 { font: 600 13px var(--body); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin: 0 0 8px; }
+p { margin: 0 0 10px; max-width: 65ch; }
+.nums { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+.num { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px; }
+.num b { display: block; font: 650 28px/1.1 var(--display); font-variant-numeric: tabular-nums; }
+.num span { color: var(--muted); font-size: 14px; }
+.num.bad b { color: var(--bad); }
+.achado { border-left: 4px solid var(--bad); background: var(--surface); border-radius: 0 12px 12px 0; padding: 14px 16px; }
+.achado.bom { border-left-color: var(--ok); }
+.achado h4 { margin: 0 0 6px; font: 600 18px var(--body); }
+.achado p:last-child { margin-bottom: 0; }
+.lista { display: grid; gap: 12px; }
+.tabela { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; min-width: 520px; font-size: 15px; }
+th { text-align: left; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--line); padding: 8px; }
+td { padding: 10px 8px; border-bottom: 1px solid var(--line); vertical-align: top; font-variant-numeric: tabular-nums; }
+td.n { text-align: right; white-space: nowrap; }
+.tag { font-size: 12px; font-weight: 600; border-radius: 6px; padding: 2px 8px; white-space: nowrap; }
+.tag.ok { background: var(--ok-soft); color: var(--ok); }
+.tag.bad { background: var(--bad-soft); color: var(--bad); }
+.barras { display: grid; gap: 8px; }
+.barra { display: grid; grid-template-columns: 150px 1fr 48px; gap: 10px; align-items: center; font-size: 15px; }
+.trilho { height: 12px; background: var(--line); border-radius: 6px; overflow: hidden; }
+.trilho i { display: block; height: 100%; background: var(--accent); }
+.barra.alvo .trilho i { background: var(--ok); }
+.n { font-variant-numeric: tabular-nums; }
+ol.plano { margin: 0; padding-left: 0; list-style: none; display: grid; gap: 12px; counter-reset: p; }
+ol.plano li { counter-increment: p; display: grid; grid-template-columns: 34px 1fr; gap: 10px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px; }
+ol.plano li::before { content: counter(p); font: 650 22px var(--display); color: var(--accent); }
+ol.plano b { display: block; margin-bottom: 2px; }
+.horas { display: flex; flex-wrap: wrap; gap: 8px; }
+.hora { background: var(--accent-soft); border-radius: 999px; padding: 6px 12px; font-weight: 600; }
+.nota { color: var(--muted); font-size: 14px; }
+@media (max-width: 520px) { .barra { grid-template-columns: 110px 1fr 42px; } }
+</style>
+
+<header><div class="wrap">
+  <div class="selo">Instagram · últimos 90 dias (12/08 a 10/11/2026)</div>
+  <h1>Diagnóstico do @nutriandreaoliveira</h1>
+  <p>Números reais tirados do Metricool. O perfil é grande, mas fala com pouca gente, e uma parte do público não é quem compra o seu acompanhamento.</p>
+</div></header>
+
+<main><div class="wrap">
+
+<section>
+  <h2>Os números que importam</h2>
+  <div class="nums">
+    <div class="num"><b>44.455</b><span>seguidores hoje</span></div>
+    <div class="num bad"><b>−270</b><span>seguidores em 90 dias (44.725 → 44.455)</span></div>
+    <div class="num bad"><b>70</b><span>pessoas alcançadas, em média, por Reel</span></div>
+    <div class="num bad"><b>0,16%</b><span>dos seguidores veem cada Reel</span></div>
+    <div class="num"><b>23</b><span>Reels publicados no período</span></div>
+    <div class="num"><b>75</b><span>visualizações no Reel típico (mediana)</span></div>
+  </div>
+  <p class="nota" style="margin-top:10px">Média de alcance por post de feed: 169. Por story: 114. Engajamento médio dos Reels: 5,4%.</p>
+</section>
+
+<section>
+  <h2>O que está travando</h2>
+  <div class="lista">
+    <div class="achado"><h4>1. O perfil fala com quase ninguém</h4>
+      <p>Com 44 mil seguidores, cada Reel chega a cerca de 70 pessoas. Isso mostra que a maior parte da base não vê nem interage com o seu conteúdo. Para o Instagram, é como se o perfil fosse bem menor do que o número de seguidores diz.</p></div>
+    <div class="achado"><h4>2. Metade do público não é o seu cliente</h4>
+      <p>Seu acompanhamento é para mulheres com mais de 35 anos. Hoje, só cerca de 1 em cada 4 seguidores é mulher com 35 anos ou mais. Homens são 42% da base, e 17% dos seguidores estão fora do Brasil (Estados Unidos, Portugal, Espanha, México e até Irã e Egito).</p></div>
+    <div class="achado"><h4>3. As publicações pararam em 23 de outubro</h4>
+      <p>Desde então não saiu nenhum Reel, e o alcance diário caiu para menos de 30 pessoas na maioria dos dias. O Instagram entrega menos para quem some.</p></div>
+    <div class="achado"><h4>4. Conteúdo misturado confunde quem chega</h4>
+      <p>Entre posts de emagrecimento aparecem "Domingo é dia de aproveitar", "Imersão em Produto Digital de Alto Valor" e "A Grande Virada da Nutrição no Digital". Esses dois últimos falam com <b>nutricionistas</b>, não com a sua paciente. Eles atraem o público errado e diluem a sua autoridade.</p></div>
+    <div class="achado"><h4>5. A chamada "Toque em Saiba mais" não puxa conversa</h4>
+      <p>A maioria das legendas termina em "Toque em Saiba mais" ou "link da bio". O Reel que mais deu resultado terminava com <b>"Comenta CANETA"</b>. Pedir uma palavra nos comentários gera conversa, alcance e uma lista de quem tem interesse.</p></div>
+    <div class="achado bom"><h4>O que já funciona</h4>
+      <p>Conteúdo <b>educativo, direto e com tema concreto</b> prende mais. O Reel da caneta emagrecedora foi assistido por quase 40 segundos, em média. Os de dor emocional ("já chorou no provador?", "medo de madrugada") ficaram entre 34 e 90 visualizações, com 4 a 5 segundos de atenção.</p></div>
+  </div>
+</section>
+
+<section>
+  <h2>Seus Reels: o que deu certo e o que não deu</h2>
+  <div class="tabela"><table>
+    <thead><tr><th>Reel</th><th>Tema</th><th class="n">Visualizações</th><th class="n">Tempo assistido</th><th></th></tr></thead>
+    <tbody>
+      <tr><td>16/09 · Caneta emagrecedora não faz milagre</td><td>Educativo, assunto do momento, CTA "Comenta CANETA"</td><td class="n">366</td><td class="n">39,7 s</td><td><span class="tag ok">Melhor</span></td></tr>
+      <tr><td>22/08 · Uma nova era começou</td><td>Lançamento do digital</td><td class="n">242</td><td class="n">5,9 s</td><td></td></tr>
+      <tr><td>21/08 · Imersão em Produto Digital</td><td>Fala com nutricionistas</td><td class="n">154</td><td class="n">3,6 s</td><td><span class="tag bad">Fora do nicho</span></td></tr>
+      <tr><td>14/10 · Já tentou de tudo e tem medo de engordar?</td><td>Objeção, curto</td><td class="n">138</td><td class="n">17,3 s</td><td><span class="tag ok">9 compartilhamentos</span></td></tr>
+      <tr><td>15/10 · Executivas: sucesso e cuidado</td><td>Fala direto com o seu público premium</td><td class="n">52</td><td class="n">17,1 s</td><td><span class="tag ok">Prende atenção</span></td></tr>
+      <tr><td>15/10 · Massa magra depois dos 35</td><td>Educativo, CTA "Comente MÚSCULO"</td><td class="n">46</td><td class="n">10,4 s</td><td></td></tr>
+      <tr><td>15/10 · Já chorou no provador?</td><td>Dor emocional</td><td class="n">42</td><td class="n">5,2 s</td><td></td></tr>
+      <tr><td>20/10 · O medo de madrugada</td><td>Dor emocional</td><td class="n">34</td><td class="n">4,8 s</td><td><span class="tag bad">Menor</span></td></tr>
+    </tbody></table></div>
+  <p class="nota">Seleção de 8 dos 23 Reels do período. Um padrão aparece: quando o vídeo ensina algo concreto, as pessoas assistem por mais tempo.</p>
+</section>
+
+<section>
+  <h2>Quem segue você hoje</h2>
+  <h3>Seguidores por gênero e idade (amostra de 19.903 com dados)</h3>
+  <div class="barras">
+    <div class="barra alvo"><span>Mulheres 35–44</span><div class="trilho"><i style="width:47%"></i></div><span class="n">12%</span></div>
+    <div class="barra alvo"><span>Mulheres 45–54</span><div class="trilho"><i style="width:39%"></i></div><span class="n">10%</span></div>
+    <div class="barra alvo"><span>Mulheres 55+</span><div class="trilho"><i style="width:20%"></i></div><span class="n">5%</span></div>
+    <div class="barra"><span>Mulheres até 34</span><div class="trilho"><i style="width:62%"></i></div><span class="n">15%</span></div>
+    <div class="barra"><span>Homens (todas as idades)</span><div class="trilho"><i style="width:100%"></i></div><span class="n">42%</span></div>
+    <div class="barra"><span>Gênero não informado</span><div class="trilho"><i style="width:38%"></i></div><span class="n">16%</span></div>
+  </div>
+  <p class="nota" style="margin-top:8px">Em verde: o seu público-alvo, cerca de 26% da base. Brasil: 83% dos seguidores.</p>
+</section>
+
+<section>
+  <h2>Melhores horários para postar</h2>
+  <p>Segundo o Metricool, o seu público mais ativo está online:</p>
+  <div class="horas"><span class="hora">Seg a sex · 18h às 20h</span><span class="hora">Todos os dias · 12h</span><span class="hora">Domingo · 18h (o pico da semana)</span></div>
+</section>
+
+<section>
+  <h2>Plano para as próximas 6 semanas</h2>
+  <ol class="plano">
+    <li><div><b>Voltar a postar, com constância</b>3 a 4 Reels por semana, às 18h ou 19h, e stories todos os dias. Os três roteiros do kit de gravação (01, 02 e 21) já cobrem a primeira semana.</div></li>
+    <li><div><b>Só falar com a sua paciente</b>Nada de posts para nutricionistas, produto digital ou "bom domingo". Cada post deve servir uma mulher com mais de 35 anos que quer emagrecer e manter.</div></li>
+    <li><div><b>Mais aula, menos desabafo</b>Repetir o formato da caneta: tema concreto e do momento, explicação clara, 30 a 60 segundos. Sugestões: menopausa, proteína, músculo, canetas, fome emocional, efeito sanfona.</div></li>
+    <li><div><b>Trocar "Saiba mais" por palavra nos comentários</b>"Comenta BLINDADA", "Comenta CANETA". Quem comenta entra direto na sua máquina de prospecção como lead quente.</div></li>
+    <li><div><b>Atrair o público certo de propósito</b>Impulsionar os 2 melhores Reels por semana com orçamento pequeno, mirando mulheres de 35 a 60 anos no Brasil. Isso renova a base com quem pode comprar. Antes de gastar, eu monto a segmentação com você.</div></li>
+    <li><div><b>Revisar o perfil</b>Bio, destaques e link pensados para a executiva de mais de 35 anos. Para isso, preciso de um print da parte de cima do seu perfil.</div></li>
+    <li><div><b>Medir toda semana</b>Alcance por Reel, tempo assistido e comentários com a palavra-chave. A meta das primeiras semanas é sair dos 70 de alcance por Reel e ver o número subir semana a semana.</div></li>
+  </ol>
+</section>
+
+</div></main>

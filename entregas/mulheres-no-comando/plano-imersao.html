@@ -1,0 +1,321 @@
+<title>Plano Imersão Mulher no Comando</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: plano de uma coluna com abas (Visão, Calendário, Conteúdo, LinkedIn, E-mails, Podcasts, Vídeos). Cor da marca Mulher no Comando: ameixa + dourado. */
+:root {
+  --bg: #F7F3F1; --surface: #FFFFFF; --fg: #2A1424; --muted: #6E5A66; --line: #E6DADF;
+  --brand: #2A1424; --on-brand: #F4ECE2; --accent: #9A7440; --accent-soft: #F3E8D6; --ok: #2E7D4F;
+  --display: 'Fraunces', Georgia, serif; --body: 'Source Sans 3', 'Segoe UI', system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #170C14; --surface: #22131D; --fg: #F1E7EC; --muted: #B9A6B1; --line: #3A2533;
+  --brand: #10070D; --on-brand: #F4ECE2; --accent: #D9BC86; --accent-soft: #3A2B1A; --ok: #6FC08E; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #170C14; --surface: #22131D; --fg: #F1E7EC; --muted: #B9A6B1; --line: #3A2533;
+  --brand: #10070D; --on-brand: #F4ECE2; --accent: #D9BC86; --accent-soft: #3A2B1A; --ok: #6FC08E; color-scheme: dark }
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font: 17px/1.6 var(--body); margin: 0; }
+.wrap { max-width: 780px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+header { background: var(--brand); color: var(--on-brand); }
+header .wrap { padding-block: 30px 22px; }
+.selo { font-size: 12px; letter-spacing: .16em; text-transform: uppercase; color: #D9BC86; }
+h1 { font: 700 clamp(28px, 7vw, 42px)/1.05 var(--display); margin: 6px 0 8px; text-wrap: balance; }
+h1 em { font-style: italic; font-weight: 500; color: #D9BC86; }
+header p { margin: 0; opacity: .88; max-width: 58ch; }
+nav { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); border-bottom: 1px solid var(--line); }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+nav .wrap { display: flex; gap: 6px; overflow-x: auto; padding-block: 10px; scrollbar-width: none; }
+.aba { flex: 0 0 auto; border: 1px solid var(--line); background: var(--surface); color: var(--fg); border-radius: 999px; padding: 8px 14px; font: 600 15px var(--body); cursor: pointer; }
+.aba[aria-selected="true"] { background: var(--brand); color: var(--on-brand); border-color: var(--brand); }
+button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+main .wrap { padding-block: 24px 70px; }
+section { display: grid; gap: 22px; }
+h2 { font: 700 26px/1.2 var(--display); margin: 0; text-wrap: balance; }
+h3 { font: 700 13px var(--body); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin: 0 0 8px; }
+p { margin: 0 0 10px; max-width: 66ch; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; }
+.destaque { background: var(--accent-soft); border-radius: 14px; padding: 16px 18px; }
+.dia { display: grid; grid-template-columns: 74px 1fr; gap: 14px; padding: 14px 0; border-bottom: 1px solid var(--line); }
+.dia .d { font: 700 20px/1.1 var(--display); color: var(--accent); }
+.dia .d small { display: block; font: 600 12px var(--body); color: var(--muted); letter-spacing: .06em; text-transform: uppercase; margin-top: 4px; }
+.dia ul { margin: 0; padding-left: 18px; }
+.dia li { margin: 2px 0; }
+.tag { font-size: 12px; font-weight: 700; border-radius: 6px; padding: 1px 7px; margin-right: 4px; background: var(--accent-soft); color: var(--fg); }
+.msg { white-space: pre-wrap; background: var(--surface); border: 1px dashed var(--line); border-radius: 12px; padding: 14px 16px; font-size: 16px; }
+.copiar { margin-top: 8px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); border-radius: 9px; padding: 7px 12px; font: 600 14px var(--body); cursor: pointer; }
+.tabela { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; min-width: 540px; font-size: 15.5px; }
+th { text-align: left; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--line); padding: 8px; }
+td { padding: 10px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+a { color: var(--accent); }
+.muted { color: var(--muted); font-size: 14px; }
+.grid2 { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); }
+.grid2 > * { min-width: 0; }
+</style>
+
+<header><div class="wrap">
+  <div class="selo">Imersão gratuita · online · 26 e 27 de novembro · 19h às 21h</div>
+  <h1>Plano de divulgação: Mulher no <em>Comando</em></h1>
+  <p>Objetivo de novembro e dezembro: aparecer, criar autoridade e juntar uma lista de mulheres que lideram. A venda do acompanhamento hi-ticket começa em janeiro, para quem já conhece vocês.</p>
+</div></header>
+
+<nav aria-label="Seções"><div class="wrap" role="tablist" id="abas"></div></nav>
+<main><div class="wrap" id="conteudo"></div></main>
+
+<template id="t-visao"><section>
+  <h2>A estratégia em 1 minuto</h2>
+  <div class="grid2">
+    <div class="card"><h3>Meta da imersão</h3><p><b>Lista, não venda.</b> Cada pessoa precisa terminar dentro do grupo VIP, com nome e WhatsApp.</p></div>
+    <div class="card"><h3>Como medir</h3><p>Pessoas no grupo VIP · presentes ao vivo · quem fez pergunta. Quem pergunta ao vivo é a lead mais quente de janeiro.</p></div>
+    <div class="card"><h3>Divulgação</h3><p>Instagram e LinkedIn das duas, convites 1 a 1 pela máquina de prospecção, e-mail e podcasts.</p></div>
+    <div class="card"><h3>Mensagem central</h3><p>"A mulher que lidera é a última da própria agenda." Camila resolve a agenda; Andréa resolve o corpo e a energia.</p></div>
+  </div>
+  <div class="destaque"><h3>Palavra-chave de todos os posts</h3><p style="margin:0">Termine cada Reel e post com <b>"Comenta COMANDO que eu te mando o link de inscrição"</b>. Quem comenta vira lead na máquina e recebe o link pelo direct.</p></div>
+  <div class="card" style="border-color:#A8432F"><h3>Antes de divulgar: corrigir a landing page</h3><p>A página diz <b>17 e 18 de novembro</b> em três lugares, mas a imersão é <b>26 e 27</b>. Ela também não informa o <b>horário (19h às 21h)</b>, nem que é <b>online e gratuita</b>. Corrija antes do primeiro post (o texto para pedir a correção está no chat).</p></div>
+  <div class="card"><h3>Links oficiais</h3><p><b>Inscrição (use em tudo):</b> <a href="https://mulher-no-comando-workshop.andrea48oliveira.chatgpt.site" target="_blank" rel="noopener">mulher-no-comando-workshop.andrea48oliveira.chatgpt.site</a><br>A inscrição salva nome, e-mail e WhatsApp e leva direto para o grupo VIP. Por isso, divulgue a página, não o link do grupo: assim você fica com os contatos.</p></div>
+  <div class="card"><h3>Artes</h3><p>Use as <b>7 artes que você já tem</b> (com as fotos das duas): elas são melhores que qualquer card novo. Para o convite individual no LinkedIn, a Arte 05 (com as duas fotos lado a lado) funciona bem.</p></div>
+</section></template>
+
+<template id="t-calendario"><section>
+  <h2>Calendário dia a dia</h2>
+  <p class="muted">Horários do Metricool: 18h a 20h nos dias úteis, 12h como segunda opção e domingo às 18h.</p>
+  <div>
+    <div class="dia"><div class="d">18–19<small>qua · qui</small></div><ul>
+      <li><span class="tag">Gravar</span>Sessão 1 de vídeos: 4 Reels (ver aba Vídeos).</li>
+      <li><span class="tag">IG + LinkedIn</span>Post de anúncio com a Arte 01 ou 03 + stories "vem coisa aí".</li>
+      <li><span class="tag">LinkedIn</span>Começar os convites 1 a 1: 15 a 20 por dia.</li>
+      <li><span class="tag">Bio</span>Link do grupo VIP no topo da bio das duas.</li></ul></div>
+    <div class="dia"><div class="d">20<small>sexta</small></div><ul>
+      <li><span class="tag">Reel 1</span>Andréa: "A mulher que lidera é a última da própria agenda".</li>
+      <li><span class="tag">E-mail 1</span>Convite.</li>
+      <li><span class="tag">WhatsApp</span>Convite pessoal para as 140 leads prioritárias da máquina (20 a 30 por dia).</li></ul></div>
+    <div class="dia"><div class="d">21<small>sábado</small></div><ul>
+      <li><span class="tag">Reel 2</span>Camila: o gargalo nº 1 de quem não delega.</li>
+      <li><span class="tag">Stories</span>Enquete: "O que mais falta na sua semana: tempo, energia ou equipe?"</li></ul></div>
+    <div class="dia"><div class="d">22<small>domingo</small></div><ul>
+      <li><span class="tag">Reel 3</span>18h · Andréa: "Por que você tem energia para tudo, menos para você".</li>
+      <li><span class="tag">LinkedIn</span>Post pessoal (texto) contando por que criou a imersão com a Camila.</li></ul></div>
+    <div class="dia"><div class="d">23<small>segunda</small></div><ul>
+      <li><span class="tag">Reel 4</span>As duas juntas: "O que acontece na imersão" (collab no Instagram).</li>
+      <li><span class="tag">E-mail 2</span>O que você vai levar da imersão.</li></ul></div>
+    <div class="dia"><div class="d">24<small>terça</small></div><ul>
+      <li><span class="tag">Gravar</span>Sessão 2: 3 Reels.</li>
+      <li><span class="tag">Reel 5</span>Andréa: 3 hábitos de 5 minutos para a agenda lotada.</li>
+      <li><span class="tag">Grupo VIP</span>Primeiro conteúdo de aquecimento no grupo.</li></ul></div>
+    <div class="dia"><div class="d">25<small>quarta</small></div><ul>
+      <li><span class="tag">Reel 6</span>"É amanhã" + o que preparar (caderno, água, 1 hora livre).</li>
+      <li><span class="tag">E-mail 3</span>É amanhã.</li>
+      <li><span class="tag">WhatsApp</span>Lembrete para quem confirmou.</li></ul></div>
+    <div class="dia"><div class="d">26<small>quinta</small></div><ul>
+      <li><span class="tag">Dia 1 · 19h</span>Camila Leal: gestão e liderança estratégica. Às 18h: stories "começa em 1 hora", e-mail 4 e aviso no grupo VIP.</li>
+      <li><span class="tag">Gravar</span>A imersão inteira: vira cortes para dezembro.</li></ul></div>
+    <div class="dia"><div class="d">27<small>sexta</small></div><ul>
+      <li><span class="tag">Dia 2 · 19h</span>Andréa Oliveira: alimentação na rotina real. Mesma rotina de avisos. No fim, convite para a lista de espera de janeiro (sem venda).</li></ul></div>
+    <div class="dia"><div class="d">28+<small>dezembro</small></div><ul>
+      <li><span class="tag">Cortes</span>3 a 4 Reels por semana com trechos da imersão.</li>
+      <li><span class="tag">E-mail 5</span>Obrigada + replay + lista de espera.</li>
+      <li><span class="tag">Janeiro</span>Abertura da aplicação para o acompanhamento, primeiro para quem perguntou ao vivo.</li></ul></div>
+  </div>
+</section></template>
+
+<template id="t-conteudo"><section>
+  <h2>Estratégia de conteúdo</h2>
+  <div class="grid2">
+    <div class="card"><h3>Instagram (cada uma no seu)</h3><p><b>Reels curtos (30 a 60 s)</b> com tema concreto, no estilo da caneta, que foi o seu melhor Reel. Collab das duas em pelo menos 2 posts, para o público de uma ver a outra.</p><p class="muted">Stories todo dia: bastidores da preparação, enquetes, contagem regressiva.</p></div>
+    <div class="card"><h3>LinkedIn (cada uma no seu)</h3><p><b>Post de texto pessoal</b> rende mais que vídeo no LinkedIn. Fale como empresária para empresária: dados, história real e opinião. O card vai no post de anúncio.</p><p class="muted">E todo dia: 15 a 20 convites individuais (aba LinkedIn).</p></div>
+  </div>
+  <h3>Pilares (o que cada post precisa ser)</h3>
+  <div class="tabela"><table>
+    <thead><tr><th>Pilar</th><th>Quem</th><th>Exemplo</th></tr></thead>
+    <tbody>
+      <tr><td>A dor da líder</td><td>Andréa</td><td>"Você cuida de 20 pessoas e não cuida de você."</td></tr>
+      <tr><td>Gestão que libera tempo</td><td>Camila</td><td>"Se tudo depende de você, sua empresa não tem dona: tem refém."</td></tr>
+      <tr><td>Saúde que dá energia</td><td>Andréa</td><td>"O cansaço das 15h não é falta de café."</td></tr>
+      <tr><td>As duas juntas</td><td>Collab</td><td>"Por que uma nutricionista e uma especialista em gestão criaram uma imersão."</td></tr>
+      <tr><td>Convite</td><td>As duas</td><td>"26 e 27, online e gratuito. Comenta COMANDO."</td></tr>
+    </tbody></table></div>
+  <p class="muted">Corte o que não é para a líder: nada de "bom domingo", produto digital ou posts para nutricionistas nestes 10 dias.</p>
+</section></template>
+
+<template id="t-linkedin"><section>
+  <h2>LinkedIn: convite 1 a 1</h2>
+  <p>Fluxo diário (15 minutos): na máquina, use <b>Descobrir → Só LinkedIn</b> (ex.: "sócia fundadora empresa São Paulo"). Para cada perfil: pedido de conexão com a nota 1. Quando aceitar, mande a mensagem 2 com o card de convite.</p>
+  <h3>1. Nota do pedido de conexão (até 300 caracteres)</h3>
+  <div><div class="msg" id="m1">Oi, [nome]! Acompanho mulheres que lideram empresas e gostaria de te ter na minha rede. Dia 26 e 27 faço, com a Camila Leal (consultora empresarial), uma imersão gratuita para empresárias sobre agenda, saúde e energia. Se fizer sentido, te mando o convite.</div><button class="copiar" data-c="m1">Copiar</button></div>
+  <h3>2. Depois que ela aceitar (mande junto a Arte 05)</h3>
+  <div><div class="msg" id="m2">Obrigada por aceitar, [nome]! 😊
+
+Como prometi: dia 26 e 27 de novembro, online e gratuito, faço com a Camila a imersão Mulher no Comando.
+
+No dia 26, a Camila mostra como tirar da sua mão o que trava a empresa. No dia 27, eu mostro como a alimentação acompanha a rotina de quem lidera, inclusive na menopausa.
+
+Quer o link de inscrição? É só responder aqui. Ao se inscrever, você entra direto no grupo VIP.</div><button class="copiar" data-c="m2">Copiar</button></div>
+  <h3>3. Se não responder em 3 dias</h3>
+  <div><div class="msg" id="m3">[nome], só para não deixar passar: a imersão é dia 26 e 27, online e sem custo. Se a agenda não permitir, sem problema nenhum. Fica o convite. 💛</div><button class="copiar" data-c="m3">Copiar</button></div>
+  <h2 style="margin-top:10px">WhatsApp: leads da máquina</h2>
+  <p>Na máquina, vá em <b>Leads → filtro "🟠 B · Alta"</b>. Abra cada lead, copie a mensagem, troque o nome e a empresa e envie pelo <b>WhatsApp Business</b>, uma por vez. Depois clique em <b>"📨 Registrar contato feito"</b>. No máximo <b>20 a 30 por dia</b>, sempre personalizadas: mandar muitas iguais, ou por lista de transmissão, pode bloquear o seu número.</p>
+  <h3>4. Convite pelo WhatsApp</h3>
+  <div><div class="msg" id="w1">Oi, [nome]! Tudo bem? Sou a Andréa Oliveira, nutricionista. Conheci o seu trabalho na [empresa] e queria te fazer um convite.
+
+Dias 26 e 27 de novembro, das 19h às 21h, eu e a Camila Leal, consultora empresarial, fazemos a imersão Mulher no Comando, online e gratuita, para mulheres à frente de negócios.
+
+No dia 26, gestão: o que delegar para a empresa não depender só de você. No dia 27, alimentação na rotina de quem lidera.
+
+Posso te mandar o link? Se preferir não receber mensagens, é só me avisar. 💛</div><button class="copiar" data-c="w1">Copiar</button></div>
+  <h3>5. Quando ela responder "sim"</h3>
+  <div><div class="msg" id="w2">Que bom! Aqui está o link para se inscrever. Ao preencher, você já entra no grupo VIP, onde sai o link da transmissão:
+https://mulher-no-comando-workshop.andrea48oliveira.chatgpt.site
+
+Te espero lá! 💛</div><button class="copiar" data-c="w2">Copiar</button></div>
+  <h3>Post de anúncio no seu perfil (com uma das suas artes)</h3>
+  <div><div class="msg" id="m4">Nos últimos anos, atendendo mulheres que lideram, percebi um padrão: elas resolvem tudo, menos a própria saúde.
+
+Não é falta de disciplina. É falta de tempo, de energia e de alguém que divida a carga.
+
+Por isso, eu e a Camila Leal, consultora empresarial, criamos a imersão Mulher no Comando.
+
+📅 26 e 27 de novembro · 19h às 21h · online · gratuita
+→ Gestão para tirar da sua mão o que trava a empresa
+→ Saúde e energia para a mulher com agenda cheia
+
+Se você lidera e sente que é a última da própria agenda, comenta COMANDO que eu te mando o link de inscrição.</div><button class="copiar" data-c="m4">Copiar</button></div>
+</section></template>
+
+<template id="t-emails"><section>
+  <h2>E-mails</h2>
+  <p>Mesmo com pouca abertura, o seu nome na caixa de entrada marca presença. Mande para as 89 leads com e-mail da máquina e para a lista da Camila. Envie <b>com cópia oculta (Cco)</b> ou por ferramenta de e-mail, nunca com todos os endereços visíveis. Se preferir, eu deixo os 5 como <b>rascunhos no seu Gmail</b>, e você só revisa e envia.</p>
+  <div class="card"><h3>E-mail 1 · 20/11 · Convite</h3><div class="msg" id="e1"><b>Assunto:</b> Você é a última da sua agenda?
+
+Oi, [nome],
+
+Sou a Andréa, nutricionista especialista em emagrecimento feminino.
+
+Atendendo mulheres que lideram, vejo sempre o mesmo padrão: elas cuidam da empresa, da equipe e da família, e deixam a própria saúde para depois.
+
+Dia 26 e 27 de novembro, junto com a Camila (gestão para empresárias), faço a imersão Mulher no Comando, online e gratuita.
+
+Inscreva-se e entre no grupo VIP: https://mulher-no-comando-workshop.andrea48oliveira.chatgpt.site
+
+Um abraço,
+Andréa Oliveira
+Nutricionista · Emagrecimento Blindado
+
+Se não quiser receber mais e-mails, é só responder "sair".</div><button class="copiar" data-c="e1">Copiar</button></div>
+  <div class="card"><h3>E-mail 2 · 23/11 · O que você vai levar</h3><div class="msg" id="e2"><b>Assunto:</b> 3 coisas que você leva da imersão
+
+Oi, [nome],
+
+Na imersão Mulher no Comando (26 e 27/11, online e gratuita), você vai sair com:
+
+1. O gargalo nº 1 que faz tudo depender de você, e como delegar a primeira tarefa.
+2. Uma rotina de alimentação que cabe na agenda cheia e devolve energia.
+3. Um plano simples para começar 2027 cuidando da empresa e de você.
+
+Inscrição: https://mulher-no-comando-workshop.andrea48oliveira.chatgpt.site
+
+Andréa</div><button class="copiar" data-c="e2">Copiar</button></div>
+  <div class="card"><h3>E-mail 3 · 25/11 · É amanhã</h3><div class="msg" id="e3"><b>Assunto:</b> É amanhã, [nome]
+
+Amanhã começa a imersão Mulher no Comando.
+
+Separe 1 hora, um caderno e uma garrafa de água. O link da transmissão sai no grupo VIP. Ainda não se inscreveu? https://mulher-no-comando-workshop.andrea48oliveira.chatgpt.site
+
+Te espero lá,
+Andréa</div><button class="copiar" data-c="e3">Copiar</button></div>
+  <div class="card"><h3>E-mail 4 · 26/11 · Começa em 1 hora</h3><div class="msg" id="e4"><b>Assunto:</b> Começa em 1 hora
+
+[nome], em 1 hora a gente começa. O link está no grupo VIP. Se ainda não se inscreveu: https://mulher-no-comando-workshop.andrea48oliveira.chatgpt.site
+
+Andréa</div><button class="copiar" data-c="e4">Copiar</button></div>
+  <div class="card"><h3>E-mail 5 · 28/11 · Obrigada + próximos passos</h3><div class="msg" id="e5"><b>Assunto:</b> Obrigada por estar com a gente
+
+Oi, [nome],
+
+Obrigada por fazer parte da imersão Mulher no Comando. Se não conseguiu assistir, os melhores trechos vão estar no meu Instagram nas próximas semanas.
+
+Em janeiro, abro poucas vagas no meu acompanhamento individual para mulheres que lideram. Se quiser ser avisada antes, responda este e-mail com "QUERO".
+
+Andréa Oliveira
+Nutricionista · Emagrecimento Blindado</div><button class="copiar" data-c="e5">Copiar</button></div>
+</section></template>
+
+<template id="t-podcasts"><section>
+  <h2>Podcasts para pedir participação</h2>
+  <p>Encontrados em pesquisa pública. Antes de mandar o convite, confirme no Instagram de cada um se ainda recebem convidadas. Muitos gravam com semanas de antecedência, então use a participação para dezembro e janeiro.</p>
+  <div class="tabela"><table>
+    <thead><tr><th>Podcast</th><th>Por que combina</th><th>Fonte</th></tr></thead>
+    <tbody>
+      <tr><td><b>Empreendidelas</b> (Juliana Mendonça)</td><td>Entrevista empreendedoras a cada 15 dias, com episódio recente em 2026</td><td><a href="https://podcasts.apple.com/us/podcast/empreendidelas-empreendedorismo-feminino-na-pr%C3%A1tica/id1586338452" target="_blank" rel="noopener">Apple Podcasts</a> · <a href="https://www.youtube.com/@empreendidelas" target="_blank" rel="noopener">YouTube</a></td></tr>
+      <tr><td><b>Protagonistas Cast</b> (Protagonistas de Saia)</td><td>Entrevistas semanais com mulheres que empreendem e lideram equipes</td><td><a href="https://protagonistasdesaia.com.br/protagonistas-cast-o-podcast-sobre-empreendedorismo-e-lideranca-feminina-que-inspira-e-transforma/" target="_blank" rel="noopener">site</a></td></tr>
+      <tr><td><b>Gestão &amp; Negócios</b> (Diário do Comércio)</td><td>Recebeu em 2026 fundadora para falar de liderança feminina</td><td><a href="https://diariodocomercio.com.br/podcast/empreendedorismo-feminino-tema-podcast/" target="_blank" rel="noopener">matéria</a></td></tr>
+      <tr><td><b>Betim Cast</b> (O Tempo)</td><td>Entrevistou mentora de empreendedorismo feminino em 2026</td><td><a href="https://www.otempobetim.com.br/betim-cast/2026/8/5/empreendedorismo-feminino-proposito-e-os-desafios-de-quem-decide-comecar-vender.amp" target="_blank" rel="noopener">episódio</a></td></tr>
+      <tr><td><b>Mulheres Empreendedoras</b></td><td>Entrevista empreendedoras de várias áreas</td><td><a href="https://pt-br.spreaker.com/podcast/podcast-mulheres-empreendedoras--5516036" target="_blank" rel="noopener">Spreaker</a></td></tr>
+      <tr><td><b>Vida em Equilíbrio</b></td><td>Saúde feminina e equilíbrio hormonal: encaixa o tema menopausa</td><td><a href="https://www.bahianoticias.com.br/saude/coluna/361-saude-feminina-e-equilibrio-hormonal-sao-destaques-em-novo-episodio-do-podcast-vida-em-equilibrio" target="_blank" rel="noopener">matéria</a></td></tr>
+      <tr><td><b>Mulheres Poderosas</b> (Forbes)</td><td>Videocast de mulheres de destaque: meta mais ambiciosa, para 2027</td><td><a href="https://forbes.com.br/forbes-mulher/2025/12/forbes-lanca-novo-videocast-mulheres-poderosas/" target="_blank" rel="noopener">Forbes</a></td></tr>
+    </tbody></table></div>
+  <h3>Mensagem para pedir participação (Instagram ou e-mail do podcast)</h3>
+  <div><div class="msg" id="p1">Oi, [nome do apresentador]! Acompanho o [nome do podcast] e adoro as conversas com mulheres que lideram.
+
+Sou a Andréa Oliveira, nutricionista especialista em emagrecimento feminino. Atendo empresárias e executivas que cuidam de tudo, menos da própria saúde.
+
+Sugestão de tema para um episódio: "Por que a mulher que lidera é a última da própria agenda, e como mudar isso sem dieta maluca". Também posso trazer a Camila Leal, consultora empresarial, para falarmos juntas de agenda, delegação e energia.
+
+Se fizer sentido, adoraria participar. Obrigada! 💛</div><button class="copiar" data-c="p1">Copiar</button></div>
+</section></template>
+
+<template id="t-videos"><section>
+  <h2>Vídeos: quantos e como</h2>
+  <div class="destaque"><p style="margin:0"><b>Decisão: 1 Reel por dia</b>, de 20 a 25/11 (6 Reels). Mais que isso, neste prazo, cansa você e não aumenta o alcance. Grave <b>em 2 sessões</b>: hoje ou amanhã (4 Reels) e dia 24 (3 Reels). Depois da imersão, os cortes dela viram o conteúdo de dezembro.</p></div>
+  <div class="tabela"><table>
+    <thead><tr><th>#</th><th>Reel</th><th>Quem</th><th>Sessão</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>A mulher que lidera é a última da própria agenda</td><td>Andréa</td><td>1</td></tr>
+      <tr><td>2</td><td>O gargalo nº 1 de quem não delega</td><td>Camila</td><td>1 (ela grava)</td></tr>
+      <tr><td>3</td><td>Por que você tem energia para tudo, menos para você</td><td>Andréa</td><td>1</td></tr>
+      <tr><td>4</td><td>O que acontece na imersão (collab)</td><td>As duas</td><td>1 (pode ser chamada de vídeo)</td></tr>
+      <tr><td>5</td><td>3 hábitos de 5 minutos para a agenda lotada</td><td>Andréa</td><td>2</td></tr>
+      <tr><td>6</td><td>É amanhã: o que preparar</td><td>Andréa</td><td>2</td></tr>
+    </tbody></table></div>
+  <p class="muted">Os 6 roteiros completos, com teleprompter, estão em <a href="https://claude.ai/artifact/My4XbFxcMBnESgJdm4e5qH" target="_blank" rel="noopener">Reels da Imersão</a>.</p>
+  <h3>Edição: o que eu uso (tudo grátis)</h3>
+  <div class="tabela"><table>
+    <thead><tr><th>Efeito</th><th>Ferramenta</th><th>Custo</th></tr></thead>
+    <tbody>
+      <tr><td>Tirar a tela verde e colocar outro fundo</td><td>FFmpeg (recorte de cor)</td><td>Grátis</td></tr>
+      <tr><td>Fundo da marca (ameixa e dourado, escritório elegante)</td><td>Eu crio a imagem</td><td>Grátis</td></tr>
+      <tr><td>Legenda palavra por palavra</td><td>WhisperX + seu padrão visual</td><td>Grátis</td></tr>
+      <tr><td>Animações (títulos, números, listas, palavra-chave)</td><td>HyperFrames</td><td>Grátis</td></tr>
+      <tr><td>Música de fundo, capa e logo</td><td>Já configurados</td><td>Grátis</td></tr>
+      <tr><td>Vídeo gerado por IA (Higgsfield)</td><td>Não vamos precisar. Sua conta está com 0 créditos, no plano grátis</td><td>—</td></tr>
+    </tbody></table></div>
+  <h3>Para a tela verde ficar perfeita</h3>
+  <ul style="margin:0;padding-left:20px">
+    <li>Tecido <b>esticado, sem dobras</b>, e iluminado por igual (a luz não pode fazer sombra nele).</li>
+    <li>Fique a <b>1 metro ou mais</b> do tecido, para a sua sombra não cair nele.</li>
+    <li><b>Nada verde</b> na roupa, nas unhas ou nos acessórios.</li>
+    <li>Luz de frente para você, e outra luz só para o tecido, se tiver.</li>
+    <li>Grave em 1080p ou 4K, 30 fps, com o celular em pé.</li>
+  </ul>
+</section></template>
+
+<script>
+const ABAS = [['visao', 'Visão'], ['calendario', 'Calendário'], ['conteudo', 'Conteúdo'], ['linkedin', 'LinkedIn'], ['emails', 'E-mails'], ['podcasts', 'Podcasts'], ['videos', 'Vídeos']];
+document.getElementById('abas').innerHTML = ABAS.map(([id, n]) => `<button class="aba" role="tab" data-aba="${id}">${n}</button>`).join('');
+function mostrar(id) {
+  if (!ABAS.some(([a]) => a === id)) id = 'visao';
+  document.querySelectorAll('.aba').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.aba === id)));
+  document.getElementById('conteudo').replaceChildren(document.getElementById('t-' + id).content.cloneNode(true));
+  if (location.hash.slice(1) !== id) history.replaceState(null, '', '#' + id);
+}
+document.addEventListener('click', async (e) => {
+  const a = e.target.closest('[data-aba]'); if (a) { mostrar(a.dataset.aba); window.scrollTo(0, 0); return; }
+  const c = e.target.closest('[data-c]');
+  if (c) { const t = document.getElementById(c.dataset.c).innerText;
+    try { await navigator.clipboard.writeText(t); c.textContent = 'Copiado ✓'; } catch { const r = document.createRange(); r.selectNodeContents(document.getElementById(c.dataset.c)); const s = getSelection(); s.removeAllRanges(); s.addRange(r); c.textContent = 'Texto selecionado: Cmd + C'; }
+    setTimeout(() => (c.textContent = 'Copiar'), 2200); }
+});
+window.addEventListener('hashchange', () => mostrar(location.hash.slice(1)));
+mostrar(location.hash.slice(1) || 'visao');
+</script>
