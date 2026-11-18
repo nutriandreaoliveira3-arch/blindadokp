@@ -11,6 +11,7 @@ const FLOW: [string, string, Page][] = [
 ];
 
 const TILES: [Page, string, string][] = [
+  ['itens', '🧩', 'Itens do catálogo'],
   ['produto', '➕', 'Cadastrar produto'],
   ['produtos', '📦', 'Biblioteca de produtos'],
   ['imagem', '🖼️', 'Criar imagem'],

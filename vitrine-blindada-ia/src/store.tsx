@@ -2,7 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useState, type React
 import * as db from './db';
 import { aiConfigured } from './ai';
 import { detectMode, getAccount, type Account } from './mode';
-import type { Analysis, ContentInput, Policy, PolicySource, Product, ProductionContext, Settings } from './types';
+import type { Analysis, CatalogItem, ContentInput, Policy, PolicySource, Product, ProductionContext, Settings } from './types';
 
 export type Page =
   | 'painel'
@@ -21,7 +21,8 @@ export type Page =
   | 'admin'
   | 'violacoes'
   | 'comparar'
-  | 'validacao';
+  | 'validacao'
+  | 'itens';
 
 export interface Draft {
   productId?: string;
@@ -36,6 +37,9 @@ interface Store {
   refreshAccount: () => Promise<void>;
   aiReady: boolean;
   products: Product[];
+  items: CatalogItem[];
+  saveItem: (i: CatalogItem) => Promise<void>;
+  deleteItem: (id: string) => Promise<void>;
   policies: Policy[];
   sources: PolicySource[];
   analyses: Analysis[];
@@ -69,6 +73,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [ready, setReady] = useState(false);
   const [account, setAccount] = useState<Account>(getAccount());
   const [products, setProducts] = useState<Product[]>([]);
+  const [items, setItems] = useState<CatalogItem[]>([]);
   const [policies, setPolicies] = useState<Policy[]>([]);
   const [sources, setSources] = useState<PolicySource[]>([]);
   const [analyses, setAnalyses] = useState<Analysis[]>([]);
@@ -79,14 +84,16 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [toastMsg, setToast] = useState('');
 
   const reload = useCallback(async () => {
-    const [pr, po, so, an, kb, st] = await Promise.all([
+    const [pr, po, so, an, kb, st, it] = await Promise.all([
       db.all<Product>('products'),
       db.all<Policy>('policies'),
       db.all<PolicySource>('sources'),
       db.all<Analysis>('analyses'),
       db.getMeta<number>('kbVersion'),
       db.getSettings(),
+      db.all<CatalogItem>('items'),
     ]);
+    setItems(it.sort((a, b) => a.name.localeCompare(b.name, 'pt')));
     setProducts(pr.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)));
     setPolicies(po.sort((a, b) => a.id.localeCompare(b.id, 'pt', { numeric: true })));
     setSources(so.sort((a, b) => a.id.localeCompare(b.id)));
@@ -127,6 +134,15 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     refreshAccount,
     aiReady: account.mode === 'nuvem' ? !!account.ai : aiConfigured(settings),
     products,
+    items,
+    saveItem: async (i) => {
+      await db.put('items', i);
+      await reload();
+    },
+    deleteItem: async (id) => {
+      await db.del('items', id);
+      await reload();
+    },
     policies,
     sources,
     analyses,

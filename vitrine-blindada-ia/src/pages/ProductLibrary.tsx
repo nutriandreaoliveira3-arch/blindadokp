@@ -4,7 +4,7 @@ import { checkProduct } from '../engine/productGate';
 import { useStore } from '../store';
 
 export default function ProductLibrary() {
-  const { products, policies, kbVersion, go, deleteProduct, saveProduct, toast } = useStore();
+  const { products, items, policies, kbVersion, go, deleteProduct, saveProduct, toast } = useStore();
   const [q, setQ] = useState('');
   const list = products.filter((p) => ((p.name ?? "") + (p.brand ?? "") + (p.category ?? "")).toLowerCase().includes(q.toLowerCase()));
   const outdated = products.filter((p) => p.gate && p.gate.kbVersion < kbVersion).length;
@@ -20,7 +20,7 @@ export default function ProductLibrary() {
                 type="button"
                 className="btn"
                 onClick={async () => {
-                  for (const p of products) await saveProduct({ ...p, gate: checkProduct(p, policies, kbVersion) });
+                  for (const p of products) await saveProduct({ ...p, gate: checkProduct(p, policies, kbVersion, items) });
                   toast('Produtos reanalisados com a base atual.');
                 }}
               >

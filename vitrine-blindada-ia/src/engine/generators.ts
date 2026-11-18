@@ -1,4 +1,5 @@
-import type { Product } from '../types';
+import type { CatalogItem, Product } from '../types';
+import { kitAvoid, kitNarration, kitVisual } from './kit';
 import { plain } from './normalize';
 import { extractQuantities } from './analyze';
 
@@ -96,7 +97,7 @@ const STYLE: Record<VideoStyle, { en: string; pt: string }> = {
   afiliado: { en: 'Authentic UGC-style b-roll of the product in a real home setting', pt: 'Conteúdo de afiliado (apoio/b-roll)' },
 };
 
-export function videoPrompt(p: Product, o: VideoPromptOptions) {
+export function videoPrompt(p: Product, o: VideoPromptOptions, items: CatalogItem[] = []) {
   const f = facts(p);
   const person = {
     nenhuma: 'No people in frame; only the product and the setting.',
@@ -117,6 +118,7 @@ export function videoPrompt(p: Product, o: VideoPromptOptions) {
   const en: string[] = [
     `Vertical 9:16 video, ${o.duration} seconds, single continuous shot, photorealistic.`,
     ...sample,
+    ...kitVisual(p, items),
     `${STYLE[o.style].en}.`,
     `Product: "${p.name}"${p.brand ? ` (${p.brand})` : ''}. Use the attached reference image(s) as the exact product.`,
     o.action ? `Action: ${o.action}.` : 'Action: the product is picked up, rotated slowly to show its main details, then placed back.',
@@ -134,6 +136,7 @@ export function videoPrompt(p: Product, o: VideoPromptOptions) {
     'results on the body, before/after, body changes, weight changes, glowing skin, exaggerated effects',
     'on-screen text, prices, logos of other brands, watermarks, QR codes, social media handles, subtitles',
     'copying the listing photo composition, background, model or pose',
+    ...(kitVisual(p, items).length ? ['people swallowing pills, capsules in mouth, body effects, badges, health authority logos'] : []),
   ];
   const tool = VIDEO_TOOLS[o.tool ?? 'flow'];
   const negative = tool.negativeField ? negatives.join(', ') : '';
@@ -165,7 +168,8 @@ export function videoPrompt(p: Product, o: VideoPromptOptions) {
     `FERRAMENTA: ${tool.label} · ESTILO: ${STYLE[o.style].pt} · ${o.duration}s · 9:16${o.noSample ? ' · SEM AMOSTRA' : ''}`,
     '',
     'NARRAÇÃO SUGERIDA (grave com sua voz)',
-    narration(p, o.duration),
+    kitNarration(p, items) || narration(p, o.duration),
+    ...(kitAvoid(p, items).length ? ['', 'NÃO FALAR SOBRE ESTE KIT', ...kitAvoid(p, items).map((x) => '• ' + x)] : []),
     '',
     'AVISOS DE CONFORMIDADE',
     ...warn,

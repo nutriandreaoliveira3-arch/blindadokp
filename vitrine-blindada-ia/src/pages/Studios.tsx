@@ -116,9 +116,9 @@ export function ImageStudio() {
 export function VideoStudio() {
   const [pid, setPid] = usePid();
   const { product, ok } = useGate(pid);
-  const { setDraft, go } = useStore();
+  const { setDraft, go, items } = useStore();
   const [o, setO] = useState<VideoPromptOptions>({ style: 'pov', duration: 8, scene: '', camera: '', lighting: '', person: 'maos', action: '', noSample: true, variant: '', tool: 'flow' });
-  const out = product && ok ? videoPrompt(product, o) : null;
+  const out = product && ok ? videoPrompt(product, o, items) : null;
   return (
     <>
       <PageHead title="Gerar prompt de vídeo" sub="Google Flow, Gemini, Kling, Runway, Hailuo, YouTube Create ou outra IA. Vertical 9:16, movimento natural, fidelidade total ao produto." />

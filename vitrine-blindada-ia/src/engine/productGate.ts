@@ -1,4 +1,5 @@
-import type { Finding, Policy, Product, ProductGate } from '../types';
+import type { CatalogItem, Finding, Policy, Product, ProductGate } from '../types';
+import { kitFindings } from './kit';
 import { riskLevel, scanText } from './analyze';
 import { plain } from './normalize';
 
@@ -32,8 +33,8 @@ function g(severity: 'alto' | 'atencao', policyIds: string[], title: string, exp
 }
 
 /** Análise do cadastro do produto. Libera (ou não) as etapas de criação. */
-export function checkProduct(p: Product, policies: Policy[], kbVersion: number): ProductGate {
-  const f: Finding[] = [];
+export function checkProduct(p: Product, policies: Policy[], kbVersion: number, items: CatalogItem[] = []): ProductGate {
+  const f: Finding[] = [...kitFindings(p, items)];
   const text = [p.name, p.description, p.specs, p.benefits].join('\n');
   // Alegações no cadastro — campo "produto"
   f.push(...scanText(text, 'produto', policies, p.category).map((x) => ({ ...x, start: undefined, end: undefined, fixMode: 'manual' as const })));
@@ -74,7 +75,7 @@ export function checkProduct(p: Product, policies: Policy[], kbVersion: number):
   if (p.shopLink && !/tiktok/i.test(p.shopLink))
     f.push(g('atencao', ['CI-4', 'CP-3.12'], 'Link não parece ser do TikTok Shop',
       'O link vinculado deve ser a página do produto no TikTok Shop. Links externos são redirecionamento de tráfego.', 'Use o link do produto no TikTok Shop.'));
-  if (!p.benefits.trim())
+  if (!p.benefits.trim() && !(p.components ?? []).length)
     f.push(g('atencao', ['CP-3.10.2', 'CP-3.10.5'], 'Sem benefícios comprováveis cadastrados',
       'Os geradores só usam benefícios desta lista. Sem ela, os roteiros ficam limitados a características.', 'Cadastre um benefício por linha, apenas o que o fabricante comprova.'));
 

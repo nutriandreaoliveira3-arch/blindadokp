@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Card, Choice, Field, FindingCard, LevelPanel, PageHead } from '../components/ui';
 import { uid } from '../db';
 import { PRODUCT_CATEGORIES, checkProduct, gateAllows } from '../engine/productGate';
+import { ITEM_STATUS, kitSpecs, kitWarnings } from '../engine/kit';
 import { useStore } from '../store';
 import type { Product } from '../types';
 
@@ -43,7 +44,8 @@ async function resize(file: File, max = 1280): Promise<string> {
 }
 
 export default function ProductForm() {
-  const { param, products, policies, kbVersion, saveProduct, go, toast } = useStore();
+  const { param, products, items, policies, kbVersion, saveProduct, go, toast } = useStore();
+  const [addItem, setAddItem] = useState('');
   const [p, setP] = useState<Product>(blank);
   useEffect(() => {
     const found = products.find((x) => x.id === param);
@@ -57,7 +59,7 @@ export default function ProductForm() {
   });
 
   const analyze = async () => {
-    const gate = checkProduct(p, policies, kbVersion);
+    const gate = checkProduct(p, policies, kbVersion, items);
     const next = { ...p, gate, updatedAt: new Date().toISOString() };
     setP(next);
     await saveProduct(next);
@@ -148,6 +150,44 @@ export default function ProductForm() {
         </Card>
 
         <div className="stack">
+          <Card title="Kit (itens do catálogo)">
+            <p className="hint">Para kits: adicione os itens já avaliados. O kit herda a avaliação de cada item.</p>
+            {(p.components ?? []).map((c, i) => {
+              const it = items.find((x) => x.id === c.itemId);
+              return (
+                <div key={i} className="row">
+                  <input type="number" min={1} value={c.qty} style={{ width: 70 }} onChange={(e) => set('components', (p.components ?? []).map((x, k) => (k === i ? { ...x, qty: Math.max(1, +e.target.value) } : x)))} />
+                  <span className="grow">{it ? `${ITEM_STATUS[it.status].emoji} ${it.name}` : 'item removido'}</span>
+                  <button type="button" className="btn ghost sm danger" onClick={() => set('components', (p.components ?? []).filter((_, k) => k !== i))}>Remover</button>
+                </div>
+              );
+            })}
+            <div className="row">
+              <select value={addItem} onChange={(e) => setAddItem(e.target.value)} style={{ flex: 1 }}>
+                <option value="">Adicionar item…</option>
+                {items.map((it) => <option key={it.id} value={it.id}>{ITEM_STATUS[it.status].emoji} {it.name}</option>)}
+              </select>
+              <button type="button" className="btn sm" disabled={!addItem} onClick={() => { set('components', [...(p.components ?? []), { itemId: addItem, qty: 1 }]); setAddItem(''); }}>Adicionar</button>
+            </div>
+            {!items.length && <p className="muted sm">Nenhum item no catálogo. <button type="button" className="link" onClick={() => go('itens')}>Cadastrar itens</button></p>}
+            {(p.components ?? []).length > 0 && (
+              <>
+                <Field label="A imagem principal e a descrição do anúncio mostram os mesmos itens e quantidades?">
+                  <Choice value={p.listingConsistency ?? ''} onChange={(v) => set('listingConsistency', v)} options={[['igual', 'Sim, iguais'], ['diferente', 'Não, diferentes'], ['', 'Não conferi']]} />
+                </Field>
+                <button
+                  type="button"
+                  className="btn sm"
+                  onClick={() => {
+                    const ph = (p.components ?? []).flatMap((c) => items.find((x) => x.id === c.itemId)?.photos ?? []);
+                    setP((o) => ({ ...o, specs: kitSpecs(o, items), mandatoryInfo: [o.mandatoryInfo, kitWarnings(o, items)].filter(Boolean).join('\n'), photos: o.photos.length ? o.photos : ph, gate: undefined }));
+                  }}
+                >
+                  Preencher especificações, avisos e fotos a partir dos itens
+                </button>
+              </>
+            )}
+          </Card>
           <Card title="Fotos originais *">
             <input
               type="file"

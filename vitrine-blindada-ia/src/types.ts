@@ -151,6 +151,8 @@ export interface Product {
   listingTitle?: string; // título exato do anúncio no TikTok Shop
   modelName?: string; // nome que a loja dá ao modelo/conjunto (ex.: Gaia)
   sellerName?: string; // nome da loja que vende (ex.: Boneca de Ferro, Pozze)
+  components?: { itemId: string; qty: number }[]; // kit montado com itens do catálogo
+  listingConsistency?: 'igual' | 'diferente' | ''; // imagem principal x descrição do anúncio
   price: string;
   photos: ProductPhoto[];
   brandAuthorization: 'sim' | 'nao' | 'propria' | '';
@@ -202,5 +204,25 @@ export interface ValidationRecord {
   violationReason?: string;
   points?: number;
   notes?: string;
+  createdAt: string;
+}
+
+/** Item avaliado uma vez e reaproveitado em vários kits. */
+export interface CatalogItem {
+  id: string;
+  name: string; // ex.: NAC 600mg
+  brand: string;
+  labelText: string; // texto exato da frente do rótulo
+  contents: string; // ex.: 30 cápsulas de 750mg
+  ingredients: string;
+  usage: string; // modo de uso conforme o rótulo
+  warnings: string; // ex.: pode conter glúten
+  visual: string; // como é: cor do rótulo, tampa, formato
+  safeToSay: string; // frases liberadas para o vídeo, uma por linha
+  avoid: string; // o que não falar sobre este item, uma por linha
+  status: 'aprovado' | 'ressalva' | 'bloqueado' | 'pendente';
+  statusNote: string;
+  photos: ProductPhoto[];
+  reviewedAt: string;
   createdAt: string;
 }
