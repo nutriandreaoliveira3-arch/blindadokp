@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { aiCompareImages, aiConfigured } from './ai';
 import type { Settings } from './types';
 
-const s: Settings = { provider: 'gemini', geminiKey: 'chave-teste', geminiModel: 'gemini-2.5-flash', model: '', effort: 'medium' };
+const s: Settings = { provider: 'gemini', geminiKey: 'chave-teste', geminiModel: 'gemini-3.8-flash', model: '', effort: 'medium' };
 const img = 'data:image/jpeg;base64,AAAA';
 
 afterEach(() => vi.unstubAllGlobals());
@@ -19,7 +19,7 @@ describe('Gemini', () => {
     const r = await aiCompareImages(s, [img], [img, img]);
     expect(r.veredito).toBe('divergente');
     const [url, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit];
-    expect(url).toContain('/models/gemini-2.5-flash:generateContent');
+    expect(url).toContain('/models/gemini-3.8-flash:generateContent');
     expect((init.headers as Record<string, string>)['x-goog-api-key']).toBe('chave-teste');
     const body = JSON.parse(init.body as string);
     expect(body.contents[0].parts.filter((p: { inline_data?: unknown }) => p.inline_data).length).toBe(3);

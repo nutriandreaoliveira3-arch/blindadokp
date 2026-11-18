@@ -89,7 +89,7 @@ async function ask<T>(s: Settings, o: { system: string; parts: Part[]; schema: z
 /** Gemini via API REST oficial (generativelanguage.googleapis.com). A resposta é validada com o mesmo esquema. */
 async function askGemini<T>(s: Settings, o: { system: string; parts: Part[]; schema: z.ZodType<T>; maxTokens: number }): Promise<T> {
   if (!s.geminiKey) throw new AiUnavailable('Cadastre sua chave do Google Gemini em Configurações para usar a IA.');
-  const model = s.geminiModel || 'gemini-2.5-flash';
+  const model = s.geminiModel || 'gemini-3.8-flash';
   const jsonSchema = JSON.stringify(z.toJSONSchema(o.schema));
   const parts = [
     ...o.parts.map((p) => {

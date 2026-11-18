@@ -9,7 +9,7 @@ export default function SettingsPage() {
   const { settings, saveSettings, reload, toast, account, refreshAccount } = useStore();
   const [provider, setProvider] = useState<'anthropic' | 'gemini'>(settings.provider ?? 'anthropic');
   const [gKey, setGKey] = useState(settings.geminiKey ?? '');
-  const [gModel, setGModel] = useState(settings.geminiModel ?? 'gemini-2.5-flash');
+  const [gModel, setGModel] = useState(settings.geminiModel ?? 'gemini-3.8-flash');
   const [key, setKey] = useState(settings.apiKey ?? '');
   const [model, setModel] = useState(settings.model);
   const [visionModel, setVisionModel] = useState(settings.visionModel ?? 'claude-sonnet-5-5');
@@ -51,7 +51,7 @@ export default function SettingsPage() {
                 <Field label="Chave do Gemini" hint="Crie em aistudio.google.com → Get API key. Fica salva só neste navegador.">
                   <input type="password" value={gKey} onChange={(e) => setGKey(e.target.value)} placeholder="AIza…" autoComplete="off" />
                 </Field>
-                <Field label="Modelo do Gemini" hint="Use um modelo com visão disponível na sua conta (ex.: gemini-2.5-flash). Se der erro de modelo, troque pelo nome que aparece no AI Studio.">
+                <Field label="Modelo do Gemini" hint="Use um modelo com visão disponível na sua conta (ex.: gemini-3.8-flash). Se der erro de modelo, troque pelo nome que aparece no AI Studio.">
                   <input value={gModel} onChange={(e) => setGModel(e.target.value)} />
                 </Field>
               </>

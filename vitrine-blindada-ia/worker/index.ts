@@ -138,7 +138,7 @@ async function handleAI(req: Request, env: Env, user: User, kind: string) {
   if (!(await aiQuota(env, user))) return err(429, 'Limite mensal de uso da IA atingido no seu plano.');
   const settings: Settings = env.ANTHROPIC_API_KEY
     ? { provider: 'anthropic', apiKey: env.ANTHROPIC_API_KEY, model: env.AI_MODEL || 'claude-opus-5-5', effort: 'medium' }
-    : { provider: 'gemini', geminiKey: env.GEMINI_API_KEY, geminiModel: env.GEMINI_MODEL || 'gemini-2.5-flash', model: '', effort: 'medium' };
+    : { provider: 'gemini', geminiKey: env.GEMINI_API_KEY, geminiModel: env.GEMINI_MODEL || 'gemini-3.8-flash', model: '', effort: 'medium' };
   const body = (await req.json()) as Record<string, never>;
   const policies = await globalPolicies(env);
   try {
