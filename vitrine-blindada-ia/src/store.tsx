@@ -108,6 +108,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       setAccount(acc);
       if (acc.loggedIn) {
         await db.ensureSeed();
+        await db.applyPreload().catch(() => undefined);
         await reload();
       }
       setReady(true);

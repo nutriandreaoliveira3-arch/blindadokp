@@ -65,6 +65,17 @@ export async function ensureSeed() {
   await tx.done;
 }
 
+/** Dados pré-carregados na página publicada (window.__VB_PRELOAD__). Entram uma vez só por id. */
+export async function applyPreload() {
+  if (isCloud()) return;
+  const pre = (globalThis as { __VB_PRELOAD__?: { id: string; backups: Backup[] } }).__VB_PRELOAD__;
+  if (!pre?.id || !Array.isArray(pre.backups)) return;
+  const done = (await getMeta<string[]>('preloads')) ?? [];
+  if (done.includes(pre.id)) return;
+  for (const b of pre.backups) await importBackup(b);
+  await setMeta('preloads', [...done, pre.id]);
+}
+
 export async function bumpKb(): Promise<number> {
   if (isCloud()) return (await getMeta<number>('kbVersion')) ?? 1; // o servidor sobe a versão
   const v = ((await getMeta<number>('kbVersion')) ?? 1) + 1;
