@@ -56,16 +56,22 @@ function guardStop(r: { stop_reason: string | null }) {
 // ───────── Chamada genérica: Claude (Anthropic) ou Gemini (Google)
 type Part = string | { image: string };
 
+/** Chave do Google colada no campo do Claude: usa o Gemini com ela. */
+function fix(s: Settings): Settings {
+  if (s.provider !== 'gemini' && s.apiKey?.startsWith('AIza')) return { ...s, provider: 'gemini', geminiKey: s.geminiKey || s.apiKey };
+  return s;
+}
+
 function aiProvider(s: Settings) {
-  return s.provider === 'gemini' ? 'gemini' : 'anthropic';
+  return fix(s).provider === 'gemini' ? 'gemini' : 'anthropic';
 }
 
 export function aiConfigured(s: Settings) {
-  return aiProvider(s) === 'gemini' ? !!s.geminiKey : !!s.apiKey;
+  return aiProvider(s) === 'gemini' ? !!fix(s).geminiKey : !!s.apiKey;
 }
 
 async function ask<T>(s: Settings, o: { system: string; parts: Part[]; schema: z.ZodType<T>; maxTokens: number; vision?: boolean }): Promise<T> {
-  if (aiProvider(s) === 'gemini') return askGemini(s, o);
+  if (aiProvider(s) === 'gemini') return askGemini(fix(s), o);
   const c = client(s);
   const content = o.parts.map((p) => (typeof p === 'string' ? { type: 'text' as const, text: p } : b64(p.image)));
   const r = await c.messages.parse({
