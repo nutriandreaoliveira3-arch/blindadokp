@@ -102,12 +102,16 @@ async function askGemini<T>(s: Settings, o: { system: string; parts: Part[]; sch
   ];
   const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
     method: 'POST',
+    signal: AbortSignal.timeout(90_000),
     headers: { 'content-type': 'application/json', 'x-goog-api-key': s.geminiKey },
     body: JSON.stringify({
       systemInstruction: { parts: [{ text: o.system }] },
       contents: [{ role: 'user', parts }],
       generationConfig: { responseMimeType: 'application/json', maxOutputTokens: o.maxTokens },
     }),
+  }).catch((e: Error) => {
+    if (e.name === 'TimeoutError' || e.name === 'AbortError') throw new Error('O Gemini demorou mais de 90 segundos e não respondeu. Tente de novo em alguns minutos.');
+    throw new Error(`Sem conexão com o Gemini (${e.message}). Confira a internet e tente de novo.`);
   });
   const data = (await res.json().catch(() => ({}))) as {
     error?: { message?: string };
