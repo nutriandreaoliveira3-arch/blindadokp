@@ -327,6 +327,7 @@ export interface HybridOptions {
   kitItems?: string; // ex.: "2 white and purple STRONGHORN bags, 1 purple STRONGHORN shaker"
   kitCount?: number;
   speech: string; // fala em português
+  hook?: string; // gancho / texto na tela
   angled?: boolean;
 }
 

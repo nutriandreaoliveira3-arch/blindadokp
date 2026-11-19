@@ -119,12 +119,13 @@ export function ImageStudio() {
 export function VideoStudio() {
   const [pid, setPid] = usePid();
   const { product, ok } = useGate(pid);
-  const { setDraft, go, items } = useStore();
+  const { setDraft, go, items, policies } = useStore();
   const [o, setO] = useState<VideoPromptOptions>({ style: 'pov', duration: 8, scene: '', camera: '', lighting: '', person: 'maos', action: '', noSample: true, variant: '', tool: 'flow' });
   const out = product && ok ? videoPrompt(product, o, items) : null;
   const [h, setH] = useState<HybridOptions | null>(null);
   const hy = product && ok ? (h && h.speech !== undefined ? h : hybridDefaults(product, items)) : null;
-  const hyOut = product && ok && hy ? hybridPrompts(product, hy, items) : null;
+  const hyRisks = useMemo(() => (hy ? scanText([hy.speech, hy.hook ?? '', hy.labelText].join('\n'), 'roteiro', policies) : []), [hy, policies]);
+  const hyOut = product && ok && hy && !hyRisks.length ? hybridPrompts(product, hy, items) : null;
   return (
     <>
       <PageHead title="Gerar prompt de vídeo" sub="Google Flow, Gemini, Kling, Runway, Hailuo, YouTube Create ou outra IA. Vertical 9:16, movimento natural, fidelidade total ao produto." />
@@ -210,7 +211,7 @@ export function VideoStudio() {
           )}
         </Card>
       </div>
-      {product && ok && hy && hyOut && (
+      {product && ok && hy && (
         <div className="grid2 wide-left">
           <Card title="Modelo híbrido (cena travada) — recomendado">
             <p className="hint">IA só para a pessoa e o ambiente; produto parado; close com a foto real. Evita letras trocadas e itens sumindo.</p>
@@ -247,12 +248,27 @@ export function VideoStudio() {
               <Field label="Fala (português)" hint="Só nome, sabor, peso. Nada de resultado, músculo, emagrecer, preço.">
                 <input value={hy.speech} onChange={(e) => setH({ ...hy, speech: e.target.value })} />
               </Field>
+              <Field label="Gancho / texto na tela" hint="Ex.: Whey sabor Toddy? · O app bloqueia o prompt se houver termo de risco.">
+                <input value={hy.hook ?? ''} onChange={(e) => setH({ ...hy, hook: e.target.value })} />
+              </Field>
             </div>
           </Card>
           <Card title="Prompts do modelo híbrido">
-            <Output title="1. Prompt de mescla (imagem)" text={hyOut.mix} />
-            <Output title="2. Prompt do vídeo (Frames to video)" text={hyOut.video} />
-            <Output title="Como usar e o que não falar" text={hyOut.pt} />
+            {hyOut ? (
+              <>
+                <Output title="1. Prompt de mescla (imagem)" text={hyOut.mix} />
+                <Output title="2. Prompt do vídeo (Frames to video)" text={hyOut.video} />
+                {hy.hook?.trim() && <Output title="3. Gancho (texto na tela, nos primeiros segundos)" text={hy.hook.trim()} />}
+                <Output title="Como usar e o que não falar" text={hyOut.pt} />
+              </>
+            ) : (
+              <>
+                <div className="blocked">🔒 Prompt bloqueado: a fala, o gancho ou o texto do rótulo têm termo que pode gerar violação. Corrija o texto para liberar.</div>
+                {hyRisks.map((x) => (
+                  <FindingCard key={x.id} f={x} />
+                ))}
+              </>
+            )}
           </Card>
         </div>
       )}
