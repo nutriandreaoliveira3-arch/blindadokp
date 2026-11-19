@@ -94,7 +94,7 @@ export const DETECTORS: Detector[] = [
     title: 'Ganho de peso ou estética muscular',
     policyIds: ['CP-3.15'],
     severity: 'atencao',
-    patterns: [/\b(ganh\w* (de )?(massa|peso|musculo)|hipertrofia|engordar|crescer (o )?(bumbum|gluteo|bunda)|ficar (sarad|trincad|marombad)\w*|shape (perfeito|dos sonhos)|corpo (perfeito|dos sonhos)|musculos?|muscular|musculatura|massa magra|definicao muscular|secar (a )?barriga)/],
+    patterns: [/\b(ganh\w* (de )?(massa|peso|musculo)|hipertrofia|engordar|crescer (o )?(bumbum|gluteo|bunda)|ficar (sarad|trincad|marombad)\w*|shape (perfeito|dos sonhos)|corpo (perfeito|dos sonhos)|musculos?|muscular|musculatura|massa magra|definicao muscular|secar (a )?barriga|proteina suficiente|treina\w*,? mas)/],
     explanation:
       'O TikTok Shop não permite promover produtos para ganho de peso e fortalecimento muscular usados para buscar uma estética corporal específica, nem imagem corporal doentia.',
     fix: { mode: 'sentence', replacement: '[Fale de uso, sabor, praticidade ou rotina, sem prometer mudança estética no corpo.]' },

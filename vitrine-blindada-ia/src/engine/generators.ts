@@ -394,7 +394,9 @@ export function hybridPrompts(p: Product, o: HybridOptions, items: CatalogItem[]
     `2. Vídeo: use a imagem aprovada como primeiro quadro${isKit ? ' E como último quadro (trava a contagem)' : ''}. Gere com áudio ligado.`,
     '3. Confira quadro a quadro: letras iguais, sem tradução, sem itens a mais ou a menos.',
     '4. Close do produto: sempre com a FOTO REAL do anúncio (zoom lento + textos), nunca com close de IA.',
-    '5. Ao publicar: ative "Conteúdo gerado por IA", vincule o anúncio exato, guarde print do anúncio e registre na Validação.',
+    '5. Marca d\'água: coloque "Conteúdo gerado por IA" no topo do vídeo, do início ao fim (CapCut: Texto, duração total).',
+    '6. Legenda: só nome, sabor, peso e "veja no link". Nunca ganchos de treino/necessidade (ex.: "Treina?", "proteína suficiente?").',
+    '7. Ao publicar: ative "Conteúdo gerado por IA", vincule o anúncio exato, guarde print do anúncio e registre na Validação.',
     avoid.length ? `NÃO FALAR: ${[...new Set(avoid)].join('; ')}` : '',
   ].filter(Boolean);
 
