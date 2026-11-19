@@ -311,3 +311,91 @@ export const LIVE_CHECKLIST: ChecklistItem[] = [
   { id: 'l18', group: 'Proibido', text: 'Não faço sorteio, aposta ou leilão fora do recurso oficial.', policyIds: ['CP-3.4', 'CP-3.2'] },
   { id: 'l19', group: 'Proibido', text: 'Não peço compra por pena ("me ajuda a bater a meta").', policyIds: ['CP-3.11'] },
 ];
+
+// ───────────────────────── Modelo híbrido (cena travada)
+// Aprendizado dos testes reais (11/2026): a IA troca letras e perde/duplica itens quando o produto se mexe.
+// Regra: IA só para a pessoa e o ambiente; produto parado; close sempre com a foto real do anúncio.
+
+export type HybridContainer = 'pote' | 'pacote' | 'kit';
+export type HybridPose = 'segurando' | 'bancada';
+
+export interface HybridOptions {
+  container: HybridContainer;
+  pose: HybridPose;
+  productEn: string; // ex.: "black protein jar"
+  labelText: string; // textos visíveis do rótulo, como aparecem
+  kitItems?: string; // ex.: "2 white and purple STRONGHORN bags, 1 purple STRONGHORN shaker"
+  kitCount?: number;
+  speech: string; // fala em português
+  angled?: boolean;
+}
+
+export function hybridDefaults(p: Product, items: CatalogItem[] = []): HybridOptions {
+  const comps = (p.components ?? []).map((c) => ({ ...c, item: items.find((i) => i.id === c.itemId) }));
+  const total = comps.reduce((a, c) => a + c.qty, 0);
+  const first = comps[0]?.item;
+  const say = first?.safeToSay.split('\n').map((x) => x.trim()).filter(Boolean)[0];
+  const isKit = total > 1 || comps.length > 1;
+  return {
+    container: isKit ? 'kit' : /pacote|refil|bag/i.test(`${first?.visual ?? ''} ${p.name}`) ? 'pacote' : 'pote',
+    pose: isKit ? 'bancada' : 'segurando',
+    productEn: '',
+    labelText: first?.labelText ?? '',
+    kitItems: '',
+    kitCount: isKit ? total : undefined,
+    speech: say ? `Esse é o ${say}.` : `Esse é o ${p.listingTitle || p.name}.`,
+    angled: false,
+  };
+}
+
+export function hybridPrompts(p: Product, o: HybridOptions, items: CatalogItem[] = []) {
+  const avoid = [...kitAvoid(p, items), ...lines(p.restrictions)];
+  const label = o.labelText.trim() ? ` Visible label text, copied letter by letter: ${o.labelText.trim()}.` : '';
+  const what = o.productEn.trim() || (o.container === 'pacote' ? 'protein bag' : 'protein jar');
+  const isKit = o.container === 'kit';
+  const n = o.kitCount ?? 0;
+
+  const mix = isKit
+    ? [
+        'Combine the two reference images into one realistic vertical 9:16 photo.',
+        'PERSON: the woman from image 1 exactly (same face, hair, clothes), standing behind a kitchen counter, same background and soft natural light.',
+        `PRODUCTS: copy the kit from image 2 exactly and place it standing upright on the counter in front of her, side by side: ${o.kitItems?.trim() || 'all items of the kit'}. Count of items on the counter: ${n || 'exactly as in image 2'}.${label} Do not redraw or re-letter the labels: same colors, logos, words and numbers as image 2.`,
+        'POSE: her hands rest lightly on the counter behind the products, never covering the labels. She smiles at the camera.',
+        'Nothing else on the counter. Do not translate any text. No added text, no watermark.',
+      ]
+    : [
+        'Combine the two reference images into one realistic vertical 9:16 photo.',
+        'PERSON: use the woman from image 1 exactly (same face, hair, clothes, same kitchen background and soft natural light).',
+        `PRODUCT: use the ${what} from image 2 exactly as it is, like a real photo of it placed in her hands. Do NOT redraw, redesign or re-letter the label: same colors, logo, words, numbers and shape.${label} Keep its real size compared to her hands.`,
+        o.pose === 'bancada'
+          ? 'POSE: the product rests on the counter in front of her, her hands lightly on its sides, label facing the camera, never covering the logo or the product name.'
+          : `POSE: she holds it with both hands at chest height, ${o.container === 'pacote' ? 'flat and upright, the bag full and not wrinkled' : 'label facing the camera'}, fingers never covering the logo or the product name. She smiles at the camera.`,
+        'Only ONE product. The counter is completely empty: no shaker, no scoop, no powder, no fruit, no glass, no other objects. Do not translate any text. No added text, no watermark.',
+      ];
+
+  const hold = isKit
+    ? `Exactly ${n || 'the same number of'} items (${o.kitItems?.trim() || 'the kit'}) stand still on the counter for the entire 8 seconds. They never move, never disappear, never multiply. The woman smiles and opens one hand in a gentle presenting gesture above the products, without touching them.`
+    : o.pose === 'bancada'
+      ? `The ${what} rests on the counter in front of the woman for the entire 8 seconds, her hands lightly on its sides, label facing the camera. Her hands do not lift, turn, tilt, open or shake it.`
+      : `The woman holds the ${what} steady ${o.angled ? 'at the same slight angle' : 'at chest height'} for the entire 8 seconds, label facing the camera. Her hands do not move, ${o.container === 'pacote' ? 'squeeze, fold, ' : ''}turn, tilt, open or shake it.`;
+
+  const video = [
+    `LOCKED PRODUCT SHOT. ${hold} She only smiles and talks.`,
+    `The product keeps exactly the same shape, colors and text as the first frame.${label} Do not translate any text. No scoop, no powder, no shaker use, no drinking. Very slight slow push-in of the camera.`,
+    `AUDIO: She says in Brazilian Portuguese, friendly tone: "${o.speech.trim()}" Soft original upbeat instrumental in the background, low volume, original composition, not based on any existing song.`,
+    'No added text, subtitles, watermark or logos. Vertical 9:16, 8 seconds, realistic, soft natural light.',
+    `NEGATIVE: changed label, English label, product changing shape, ${o.container === 'pacote' ? 'wrinkled or melting bag, ' : ''}${isKit ? 'missing item, extra item, items moving, ' : 'extra products, '}objects on the counter, hands covering the logo.`,
+  ];
+
+  const pt = [
+    'COMO USAR (modelo híbrido)',
+    '1. Mescla: suba a foto da modelo (imagem 1) e a foto do ANÚNCIO (imagem 2). Confira rótulo, cor, quantidade e se a bancada está vazia.',
+    `2. Vídeo: use a imagem aprovada como primeiro quadro${isKit ? ' E como último quadro (trava a contagem)' : ''}. Gere com áudio ligado.`,
+    '3. Confira quadro a quadro: letras iguais, sem tradução, sem itens a mais ou a menos.',
+    '4. Close do produto: sempre com a FOTO REAL do anúncio (zoom lento + textos), nunca com close de IA.',
+    '5. Ao publicar: ative "Conteúdo gerado por IA", vincule o anúncio exato, guarde print do anúncio e registre na Validação.',
+    avoid.length ? `NÃO FALAR: ${[...new Set(avoid)].join('; ')}` : '',
+  ].filter(Boolean);
+
+  return { mix: mix.join('\n'), video: video.join('\n'), pt: pt.join('\n') };
+}

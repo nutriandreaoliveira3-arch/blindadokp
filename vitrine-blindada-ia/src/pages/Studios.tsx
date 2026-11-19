@@ -2,6 +2,9 @@ import { useMemo, useState } from 'react';
 import { Card, Choice, CopyButton, Field, FindingCard, PageHead, ProductPicker, useGate } from '../components/ui';
 import { scanText } from '../engine/analyze';
 import {
+  hybridDefaults,
+  hybridPrompts,
+  type HybridOptions,
   captionAndTags,
   imagePrompt,
   salesScript,
@@ -119,6 +122,9 @@ export function VideoStudio() {
   const { setDraft, go, items } = useStore();
   const [o, setO] = useState<VideoPromptOptions>({ style: 'pov', duration: 8, scene: '', camera: '', lighting: '', person: 'maos', action: '', noSample: true, variant: '', tool: 'flow' });
   const out = product && ok ? videoPrompt(product, o, items) : null;
+  const [h, setH] = useState<HybridOptions | null>(null);
+  const hy = product && ok ? (h && h.speech !== undefined ? h : hybridDefaults(product, items)) : null;
+  const hyOut = product && ok && hy ? hybridPrompts(product, hy, items) : null;
   return (
     <>
       <PageHead title="Gerar prompt de vídeo" sub="Google Flow, Gemini, Kling, Runway, Hailuo, YouTube Create ou outra IA. Vertical 9:16, movimento natural, fidelidade total ao produto." />
@@ -204,6 +210,52 @@ export function VideoStudio() {
           )}
         </Card>
       </div>
+      {product && ok && hy && hyOut && (
+        <div className="grid2 wide-left">
+          <Card title="Modelo híbrido (cena travada) — recomendado">
+            <p className="hint">IA só para a pessoa e o ambiente; produto parado; close com a foto real. Evita letras trocadas e itens sumindo.</p>
+            <div className="form">
+              <Field label="Embalagem">
+                <Choice value={hy.container} onChange={(v) => setH({ ...hy, container: v, pose: v === 'kit' ? 'bancada' : hy.pose })} options={[['pote', 'Pote'], ['pacote', 'Pacote'], ['kit', 'Kit (vários itens)']]} />
+              </Field>
+              {hy.container !== 'kit' && (
+                <Field label="Posição">
+                  <Choice value={hy.pose} onChange={(v) => setH({ ...hy, pose: v })} options={[['segurando', 'Segurando'], ['bancada', 'Apoiado na bancada']]} />
+                </Field>
+              )}
+              {hy.container !== 'kit' && hy.pose === 'segurando' && (
+                <label className="check">
+                  <input type="checkbox" checked={!!hy.angled} onChange={(e) => setH({ ...hy, angled: e.target.checked })} /> Produto inclinado na imagem
+                </label>
+              )}
+              <Field label="Produto em inglês" hint="Ex.: black protein jar · red protein bag">
+                <input value={hy.productEn} onChange={(e) => setH({ ...hy, productEn: e.target.value })} />
+              </Field>
+              {hy.container === 'kit' && (
+                <>
+                  <Field label="Itens do kit (inglês)" hint="Ex.: 2 white and purple STRONGHORN bags, 1 purple STRONGHORN shaker">
+                    <input value={hy.kitItems ?? ''} onChange={(e) => setH({ ...hy, kitItems: e.target.value })} />
+                  </Field>
+                  <Field label="Total de itens no kit">
+                    <input type="number" min={2} value={hy.kitCount ?? 2} onChange={(e) => setH({ ...hy, kitCount: +e.target.value })} />
+                  </Field>
+                </>
+              )}
+              <Field label="Textos visíveis do rótulo" hint="Copie como aparecem na embalagem. A IA é instruída a não trocar nenhuma letra.">
+                <input value={hy.labelText} onChange={(e) => setH({ ...hy, labelText: e.target.value })} />
+              </Field>
+              <Field label="Fala (português)" hint="Só nome, sabor, peso. Nada de resultado, músculo, emagrecer, preço.">
+                <input value={hy.speech} onChange={(e) => setH({ ...hy, speech: e.target.value })} />
+              </Field>
+            </div>
+          </Card>
+          <Card title="Prompts do modelo híbrido">
+            <Output title="1. Prompt de mescla (imagem)" text={hyOut.mix} />
+            <Output title="2. Prompt do vídeo (Frames to video)" text={hyOut.video} />
+            <Output title="Como usar e o que não falar" text={hyOut.pt} />
+          </Card>
+        </div>
+      )}
     </>
   );
 }
