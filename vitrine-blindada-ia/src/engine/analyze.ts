@@ -233,7 +233,7 @@ export function checkContext(ctx: ProductionContext, input: ContentInput, produc
     f.push(C('alto', ['PR-3'], 'Edição em camadas ou quadros inseridos',
       'Vídeos em camadas, quadros sanduíche ou disfarce de formato são táticas evasivas e podem gerar ação disciplinar.', 'Publique o vídeo em formato único e contínuo.'));
   if (ctx.sameContentOtherAccounts === 'sim')
-    f.push(C('alto', ['NO-2', 'CI-5'], 'Mesmo conteúdo em várias contas', 'Publicar conteúdo idêntico em várias contas é violação.', 'Crie uma versão original para cada conta.'));
+    f.push(C('alto', ['NO-2', 'CI-5', 'EV-9'], 'Mesmo conteúdo em várias contas', 'Publicar conteúdo idêntico em várias contas é violação. Relato de 11/2026 (não confirmado): seria permitido em até 5 contas marcando o @ de cada uma. Até confirmar no texto oficial, trate como proibido.', 'Crie uma versão original para cada conta (cenário, enquadramento e fala diferentes). Se usar o mesmo vídeo, marque o @ de cada conta e guarde a prova.'));
   if (ctx.thirdPartyBrandOrPerson === 'sim')
     f.push(C('alto', ['CP-3.7', 'PR-4.4'], 'Marca ou pessoa de terceiros sem permissão', 'Marcas, logotipos, nomes ou imagens de pessoas exigem permissão expressa.', 'Remova ou obtenha autorização por escrito.'));
   if (ctx.reviewScreenshot === 'sim')
