@@ -1,4 +1,5 @@
 name = "vitrine-blindada-ia"
+account_id = "371261f6188046c655a15911ce3b3a1d"
 main = "worker/index.ts"
 compatibility_date = "2026-10-01"
 compatibility_flags = ["nodejs_compat"]
@@ -13,7 +14,7 @@ run_worker_first = ["/api/*"]
 [[d1_databases]]
 binding = "DB"
 database_name = "vitrine-blindada-ia"
-database_id = "COLE_AQUI_O_ID_DO_BANCO_D1"
+database_id = "4adc9a23-dbd9-4148-92e3-c4e02dfdd7a6"
 migrations_dir = "migrations"
 
 [vars]
