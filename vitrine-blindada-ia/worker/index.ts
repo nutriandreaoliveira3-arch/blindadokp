@@ -26,7 +26,7 @@ const USER_STORES = new Set(['products', 'analyses', 'docs', 'violations', 'vali
 const GLOBAL_STORES = new Set(['policies', 'sources']);
 const GLOBAL_META = new Set(['kbVersion', 'kbUpdatedAt', 'seedVersion']);
 const USER_META = new Set(['settings']);
-const SEED_VERSION = 3;
+const SEED_VERSION = 4;
 const SESSION_DAYS = 30;
 const MAX_ROW = 1_900_000; // limite de linha do D1 é ~2 MB
 

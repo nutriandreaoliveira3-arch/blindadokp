@@ -258,7 +258,8 @@ export function VideoStudio() {
               <>
                 <Output title="1. Prompt de mescla (imagem)" text={hyOut.mix} />
                 <Output title="2. Prompt do vídeo (Frames to video)" text={hyOut.video} />
-                {hy.hook?.trim() && <Output title="3. Gancho (texto na tela, nos primeiros segundos)" text={hy.hook.trim()} />}
+                {hy.hook?.trim() && <Output title="3. Gancho (só na capa, primeiro segundo)" text={hy.hook.trim()} />}
+                <Output title="4. Legenda sugerida" text={hyOut.caption} />
                 <Output title="Como usar e o que não falar" text={hyOut.pt} />
               </>
             ) : (

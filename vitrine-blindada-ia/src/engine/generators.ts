@@ -395,10 +395,15 @@ export function hybridPrompts(p: Product, o: HybridOptions, items: CatalogItem[]
     '3. Confira quadro a quadro: letras iguais, sem tradução, sem itens a mais ou a menos.',
     '4. Close do produto: sempre com a FOTO REAL do anúncio (zoom lento + textos), nunca com close de IA.',
     '5. Marca d\'água: coloque "Conteúdo gerado por IA" no topo do vídeo, do início ao fim (CapCut: Texto, duração total).',
-    '6. Legenda: só nome, sabor, peso e "veja no link". Nunca ganchos de treino/necessidade (ex.: "Treina?", "proteína suficiente?").',
+    '6. Legenda: só nome, sabor, peso e "veja no link". Nunca ganchos de treino, necessidade ou duração (ex.: "Treina?", "proteína suficiente?", "acaba rápido").',
+    '   Gancho: só na CAPA (primeiro segundo); some quando a pessoa começa a falar. Capa = primeiro quadro.',
+    '   Textos na tela: linhas centralizadas, abaixo da barra do topo do TikTok (~12% da altura) e acima da legenda (~75%).',
+    '   Variação: mude cenário/ângulo a cada vídeo; nunca o mesmo arquivo em duas contas.',
+    '   Ritmo: no máximo 2 vídeos por dia por conta; registre cada um na Validação.',
     '7. Ao publicar: ative "Conteúdo gerado por IA", vincule o anúncio exato, guarde print do anúncio e registre na Validação.',
     avoid.length ? `NÃO FALAR: ${[...new Set(avoid)].join('; ')}` : '',
   ].filter(Boolean);
 
-  return { mix: mix.join('\n'), video: video.join('\n'), pt: pt.join('\n') };
+  const caption = `${o.speech.trim().replace(/^esse [ée] (o|a) /i, '').replace(/[.!]+$/, '')}. Veja os detalhes no link do produto.`;
+  return { mix: mix.join('\n'), video: video.join('\n'), pt: pt.join('\n'), caption: caption.charAt(0).toUpperCase() + caption.slice(1) };
 }

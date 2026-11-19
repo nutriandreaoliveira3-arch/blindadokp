@@ -30,3 +30,9 @@
 - Nova tela "Conferir anúncio x vídeo": tira quadros do vídeo no navegador, compara lado a lado (manual ou com IA) e guarda a prova no histórico para recurso. Prompt do Flow com modo "sem amostra".
 - Tela Validação: cada vídeo publicado com o nível do app antes e o resultado no TikTok. Metas para lançar a mensalidade: 50 vídeos, 90% das violações apontadas, no máximo 5% de 🟢 com violação, 90% de concordância IA x manual. Teste até o fim de dezembro.
 - Itens do catálogo: cada item avaliado uma vez e reaproveitado nos kits (AlwaysFit: NAC e Pro3 liberados, Fit Dreams com ressalva, Complexo B pendente; kit bloqueado por imagem x descrição diferentes).
+
+## 19/11/2026
+- 18 vídeos de proteína prontos (pasta scratchpad whey/final-v3): gancho só na capa, marca d'água de IA o vídeo inteiro, textos centralizados na área segura.
+- App: modelo híbrido (cena travada) com mescla, kit e legenda sugerida; trava que bloqueia o prompt com termo de risco; detectores novos (músculo, treino, proteína suficiente, duração/rendimento); regra EV-10 (violação de 19/11, -8 pontos); guia em vitrine-blindada-ia/docs/GUIA-VIDEO-HIBRIDO.md.
+- Cloudflare: site em young-sunset-7aa6.nutriandreaoliveira3.workers.dev (upload manual); banco D1 vitrine-blindada-ia criado; domínio vitrineblindada.com.br em registro (pedido 32685334).
+- Falta: Black Skull 100% HD (vídeo sem o texto de músculo), Max Whey Pro, FTW; botão no app para gerar o trecho com foto real; versão com login (GitHub → Cloudflare).

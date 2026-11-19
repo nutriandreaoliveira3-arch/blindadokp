@@ -17,3 +17,18 @@ describe('modelo híbrido', () => {
     expect(r.video).toContain('LOCKED PRODUCT SHOT');
   });
 });
+
+import { scanText } from './analyze';
+import { SEED_POLICIES } from '../data/policies';
+describe('lições de 19/11', () => {
+  it('pega legenda de treino e de duração', () => {
+    expect(scanText('💪 TREINA, MAS NÃO SABE SE CONSOME PROTEÍNA SUFICIENTE?', 'legenda', SEED_POLICIES).length).toBeGreaterThan(0);
+    expect(scanText('SEU WHEY ACABA RÁPIDO?', 'legenda', SEED_POLICIES).length).toBeGreaterThan(0);
+    expect(scanText('3 meses de uso', 'legenda', SEED_POLICIES).length).toBeGreaterThan(0);
+  });
+  it('legenda sugerida só com nome, sabor e peso passa limpa', () => {
+    const r = hybridPrompts(p, { container: 'pote', pose: 'segurando', productEn: 'jar', labelText: '', speech: 'Esse é o Whey 100% HD da Black Skull, sabor baunilha, pote de 900 gramas.' });
+    expect(r.caption).toBe('Whey 100% HD da Black Skull, sabor baunilha, pote de 900 gramas. Veja os detalhes no link do produto.');
+    expect(scanText(r.caption, 'legenda', SEED_POLICIES)).toEqual([]);
+  });
+});

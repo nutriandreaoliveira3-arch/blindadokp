@@ -101,6 +101,17 @@ export const DETECTORS: Detector[] = [
     humanReview: true,
   },
   {
+    id: 'D-DURACAO',
+    title: 'Promessa de duração ou rendimento',
+    policyIds: ['CP-3.10.1', 'EV-10'],
+    severity: 'atencao',
+    patterns: [/\b(acaba (muito |tao )?rapido|dura (ate |mais de )?\d+ (dias|semanas|meses)|\d+ (dias|semanas|meses) de uso|rende (ate |mais de )?\d+|nunca (mais )?acaba)/],
+    explanation:
+      'Prometer quanto o produto dura ou rende ("acaba rápido", "3 meses de uso") é afirmação de quantidade que o anúncio precisa comprovar. Foi o tipo de texto presente nas punições por produto inconsistente.',
+    fix: { mode: 'sentence', replacement: '[Informe só o peso ou a quantidade do rótulo (ex.: 900 g, 30 doses), sem prometer duração.]' },
+    humanReview: true,
+  },
+  {
     id: 'D-MEDICO',
     title: 'Alegação médica (cura, tratamento ou prevenção)',
     policyIds: ['CP-3.10.6', 'CP-3.10.5', 'CP-4.1', 'CP-4.2'],

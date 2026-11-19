@@ -8,7 +8,7 @@ import type { Analysis, CatalogItem, Policy, PolicySource, Product, Settings, Va
 // Os dados ficam no computador da usuária. Use Exportar backup para guardar cópia.
 
 const DB_NAME = 'vitrine-blindada-ia';
-const SEED_VERSION = 3;
+const SEED_VERSION = 4;
 
 type Stores = 'products' | 'policies' | 'sources' | 'analyses' | 'meta' | 'docs' | 'violations' | 'validations' | 'items';
 
