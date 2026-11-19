@@ -1,4 +1,4 @@
-name = "vitrine-blindada-ia"
+name = "vitrineblindada"
 account_id = "371261f6188046c655a15911ce3b3a1d"
 main = "worker/index.ts"
 compatibility_date = "2026-10-01"
