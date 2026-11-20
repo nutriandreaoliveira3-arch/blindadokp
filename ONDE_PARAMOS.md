@@ -16,3 +16,23 @@
 - Resposta automática no direct para BLINDADA, PLANO, VAGA e PROTEÍNA (ManyChat ou Meta)
 - Criar a lista grátis do CTA PROTEÍNA antes de postar os roteiros 26 e 27
 - Preencher os [colchetes] dos roteiros 4, 11, 29 e 30 com dados reais
+
+## Vitrine Blindada IA (05/11/2026) — antigo "TikTok Shop Safe AI"
+- App em `vitrine-blindada-ia/`. Abrir: `vitrine-blindada-ia/dist/index.html` (duplo clique).
+- Base v1: 64 regras de 10 documentos (TIK1–TIK12). 3 regras pendentes de verificação (vieram do TIK_12, não oficial).
+- Lacunas e conflitos: `vitrine-blindada-ia/docs/LACUNAS-E-CONFLITOS.md`.
+- Próximo: Andréa enviar os documentos oficiais de IA, Penalidades, Produtos Proibidos/Restritos e Diretrizes da Comunidade.
+- Modo nuvem pronto (Cloudflare Workers + D1 + webhook da Green). Falta: criar o banco D1, publicar, cadastrar segredos e testar uma venda real (`docs/PUBLICAR-CLOUDFLARE.md`).
+- Andréa vai mandar prints das violações recebidas: ligar cada uma a uma regra e ajustar os detectores.
+- Prints analisados: 19 violações (~113 pts). Regras EV-1 a EV-4, checagem de peso/kit e tela "Minhas violações". Arquivo para importar: violacoes-andrea-importar.json (enviado na conversa).
+- Falta: abrir as 13 violações sem motivo e copiar o texto; informar a nota atual do Índice de qualidade do criador.
+- 30 prints analisados (doc CLAUDE_BLINDADA): 21 registros, 136 pts. Regras EV-5 a EV-8 e checagens de vídeo educativo, IA x anúncio, ofertas. 72 regras na base.
+- Nova tela "Conferir anúncio x vídeo": tira quadros do vídeo no navegador, compara lado a lado (manual ou com IA) e guarda a prova no histórico para recurso. Prompt do Flow com modo "sem amostra".
+- Tela Validação: cada vídeo publicado com o nível do app antes e o resultado no TikTok. Metas para lançar a mensalidade: 50 vídeos, 90% das violações apontadas, no máximo 5% de 🟢 com violação, 90% de concordância IA x manual. Teste até o fim de dezembro.
+- Itens do catálogo: cada item avaliado uma vez e reaproveitado nos kits (AlwaysFit: NAC e Pro3 liberados, Fit Dreams com ressalva, Complexo B pendente; kit bloqueado por imagem x descrição diferentes).
+
+## 19/11/2026
+- 18 vídeos de proteína prontos (pasta scratchpad whey/final-v3): gancho só na capa, marca d'água de IA o vídeo inteiro, textos centralizados na área segura.
+- App: modelo híbrido (cena travada) com mescla, kit e legenda sugerida; trava que bloqueia o prompt com termo de risco; detectores novos (músculo, treino, proteína suficiente, duração/rendimento); regra EV-10 (violação de 19/11, -8 pontos); guia em vitrine-blindada-ia/docs/GUIA-VIDEO-HIBRIDO.md.
+- Cloudflare: site em young-sunset-7aa6.nutriandreaoliveira3.workers.dev (upload manual); banco D1 vitrine-blindada-ia criado; domínio vitrineblindada.com.br em registro (pedido 32685334).
+- Falta: Black Skull 100% HD (vídeo sem o texto de músculo), Max Whey Pro, FTW; botão no app para gerar o trecho com foto real; versão com login (GitHub → Cloudflare).

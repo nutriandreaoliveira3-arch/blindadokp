@@ -1,0 +1,535 @@
+import { useMemo, useState } from 'react';
+import { Card, Choice, CopyButton, Field, FindingCard, PageHead, ProductPicker, useGate } from '../components/ui';
+import { scanText } from '../engine/analyze';
+import {
+  hybridDefaults,
+  hybridPrompts,
+  type HybridOptions,
+  type WatermarkOptions,
+  WATERMARK_DEFAULT,
+  captionAndTags,
+  imagePrompt,
+  salesScript,
+  videoPrompt,
+  type Hook,
+  type ImagePromptOptions,
+  type VideoPromptOptions,
+  type VideoTool,
+  VIDEO_TOOLS,
+} from '../engine/generators';
+import { useStore } from '../store';
+import { HOOK_NEVER, HOOKS, hookGroupsFor } from '../data/hooks';
+
+function HookPicker({ container, value, onChange }: { container: string; value: string; onChange: (v: string) => void }) {
+  const groups = hookGroupsFor(container);
+  const warn = HOOKS.find((h) => h.text === value)?.warn;
+  return (
+    <>
+      <Field label="Biblioteca de ganchos" hint="Escolha um gancho pronto (só na capa) ou escreva o seu abaixo.">
+        <select value="" onChange={(e) => e.target.value && onChange(e.target.value)}>
+          <option value="">Escolher gancho…</option>
+          {groups.map((g) => (
+            <optgroup key={g} label={g}>
+              {HOOKS.filter((h) => h.group === g).map((h) => (
+                <option key={h.text} value={h.text}>
+                  {h.warn ? '⚠️ ' : ''}
+                  {h.text}
+                </option>
+              ))}
+            </optgroup>
+          ))}
+        </select>
+      </Field>
+      {warn && <div className="notice">⚠️ {warn}</div>}
+      <details className="hint">
+        <summary>O que nunca usar no gancho</summary>
+        <ul>
+          {HOOK_NEVER.map((x) => (
+            <li key={x}>{x}</li>
+          ))}
+        </ul>
+      </details>
+    </>
+  );
+}
+
+function WatermarkFields({ w, onChange }: { w: WatermarkOptions; onChange: (w: WatermarkOptions) => void }) {
+  return (
+    <>
+      <label className="check">
+        <input type="checkbox" checked={w.on} onChange={(e) => onChange({ ...w, on: e.target.checked })} /> Marca d'água "Conteúdo gerado por IA" no vídeo
+      </label>
+      {w.on && (
+        <>
+          <Field label="Posição da marca d'água">
+            <Choice
+              value={w.pos}
+              onChange={(v) => onChange({ ...w, pos: v })}
+              options={[['rodape-esq', 'Rodapé esquerdo'], ['rodape-dir', 'Rodapé direito'], ['topo', 'Topo'], ['centro', 'Centro']]}
+            />
+          </Field>
+          <Field label="Tamanho">
+            <Choice value={w.size} onChange={(v) => onChange({ ...w, size: v })} options={[['pequeno', 'Pequeno'], ['medio', 'Médio'], ['grande', 'Grande']]} />
+          </Field>
+          <Field label="Texto da marca d'água">
+            <input value={w.text} onChange={(e) => onChange({ ...w, text: e.target.value })} />
+          </Field>
+          {w.pos !== 'topo' && w.pos !== 'centro' && (
+            <p className="hint">No rodapé, a marca fica logo acima do nome da conta e da legenda do TikTok. Colada no fundo, ela some.</p>
+          )}
+        </>
+      )}
+      {!w.on && <p className="hint">Sem marca d'água, ative o selo "Conteúdo gerado por IA" do TikTok ao publicar (obrigatório).</p>}
+    </>
+  );
+}
+
+function Locked() {
+  return <p className="muted">Selecione um produto liberado na análise de cadastro para gerar o conteúdo.</p>;
+}
+
+function Output({ title, text }: { title: string; text: string }) {
+  return (
+    <div className="out">
+      <div className="out-head">
+        <b>{title}</b>
+        <CopyButton text={text} />
+      </div>
+      <pre>{text}</pre>
+    </div>
+  );
+}
+
+function QuickCheck({ text, field }: { text: string; field: 'roteiro' | 'legenda' | 'hashtags' }) {
+  const { policies } = useStore();
+  const f = useMemo(() => scanText(text, field, policies), [text, field, policies]);
+  if (!f.length) return <p className="ok sm">✅ Verificação rápida do texto: nenhum termo de risco.</p>;
+  return (
+    <div>
+      <p className="blocked sm">Verificação rápida encontrou {f.length} ponto(s):</p>
+      {f.map((x) => (
+        <FindingCard key={x.id} f={x} />
+      ))}
+    </div>
+  );
+}
+
+function usePid() {
+  const { param, draft } = useStore();
+  return useState<string | undefined>(param?.startsWith('prd_') ? param : draft?.productId);
+}
+
+// ─────────────── Imagem
+export function ImageStudio() {
+  const [pid, setPid] = usePid();
+  const { product, ok } = useGate(pid);
+  const [o, setO] = useState<ImagePromptOptions>({ purpose: 'lifestyle', scene: '', lighting: '', aspect: '9:16', showPerson: false });
+  const out = product && ok ? imagePrompt(product, o) : null;
+  return (
+    <>
+      <PageHead title="Criar imagem" sub="Prompts para ferramentas externas, travando a identidade visual do produto real." />
+      <div className="grid2 wide-left">
+        <Card title="Configuração">
+          <ProductPicker value={pid} onChange={setPid} />
+          {product && ok && (
+            <div className="form">
+              <div className="thumbs">
+                {product.photos.map((ph) => (
+                  <figure key={ph.id}>
+                    <img src={ph.dataUrl} alt={ph.name} />
+                  </figure>
+                ))}
+              </div>
+              <Field label="Finalidade">
+                <Choice
+                  value={o.purpose}
+                  onChange={(v) => setO({ ...o, purpose: v })}
+                  options={[['vitrine', 'Vitrine'], ['lifestyle', 'Em uso'], ['detalhe', 'Detalhe'], ['capa_video', 'Capa de vídeo']]}
+                />
+              </Field>
+              <Field label="Formato">
+                <Choice value={o.aspect} onChange={(v) => setO({ ...o, aspect: v })} options={[['9:16', '9:16'], ['4:5', '4:5'], ['1:1', '1:1']]} />
+              </Field>
+              <Field label="Cenário (em inglês ou português)">
+                <input value={o.scene} onChange={(e) => setO({ ...o, scene: e.target.value })} placeholder="kitchen counter, morning" />
+              </Field>
+              <Field label="Iluminação">
+                <input value={o.lighting} onChange={(e) => setO({ ...o, lighting: e.target.value })} placeholder="soft daylight" />
+              </Field>
+              <label className="check">
+                <input type="checkbox" checked={o.showPerson} onChange={(e) => setO({ ...o, showPerson: e.target.checked })} /> Mostrar mãos/pessoa usando
+              </label>
+            </div>
+          )}
+        </Card>
+        <Card title="Prompt">
+          {out ? (
+            <>
+              <Output title="Prompt (inglês)" text={out.en} />
+              <Output title="Instruções e avisos" text={out.pt} />
+              <div className="notice">
+                <b>Integração com gerador de imagens:</b> não está ativa. Gerar imagens dentro do app exige uma API externa paga (por exemplo,
+                Google Gemini/Imagen ou similar) e credenciais próprias. A arquitetura já está preparada (ver docs/ARQUITETURA.md). Por enquanto,
+                use o prompt em Google Flow, Gemini, ChatGPT ou outra ferramenta.
+              </div>
+            </>
+          ) : (
+            <Locked />
+          )}
+        </Card>
+      </div>
+    </>
+  );
+}
+
+// ─────────────── Vídeo
+export function VideoStudio() {
+  const [pid, setPid] = usePid();
+  const { product, ok } = useGate(pid);
+  const { setDraft, go, items, policies } = useStore();
+  const [o, setO] = useState<VideoPromptOptions>({ style: 'pov', duration: 8, scene: '', camera: '', lighting: '', person: 'maos', action: '', noSample: true, variant: '', tool: 'flow' });
+  const out = product && ok ? videoPrompt(product, o, items) : null;
+  const [h, setH] = useState<HybridOptions | null>(null);
+  const hy = product && ok ? (h && h.speech !== undefined ? h : hybridDefaults(product, items)) : null;
+  const hyRisks = useMemo(
+    () =>
+      hy
+        ? [
+            ...scanText([hy.speech, hy.hook ?? '', hy.labelText].join('\n'), 'roteiro', policies),
+            ...scanText([hy.hook ?? '', ...(hy.closing ?? []), hy.captionBase ?? '', hy.hashtags ?? ''].join('\n'), 'legenda', policies),
+          ].filter((x, i, a) => a.findIndex((y) => y.title === x.title) === i)
+        : [],
+    [hy, policies],
+  );
+  const wear = hy?.container === 'roupa';
+  const wm = hy?.wm ?? WATERMARK_DEFAULT;
+  const hyOut = product && ok && hy && !hyRisks.length ? hybridPrompts(product, hy, items) : null;
+  return (
+    <>
+      <PageHead title="Gerar prompt de vídeo" sub="Google Flow, Gemini, Kling, Runway, Hailuo, YouTube Create ou outra IA. Vertical 9:16, movimento natural, fidelidade total ao produto." />
+      <div className="grid2 wide-left">
+        <Card title="Configuração">
+          <ProductPicker value={pid} onChange={setPid} />
+          {product && ok && (
+            <div className="form">
+              <Field label="Ferramenta de vídeo">
+                <select value={o.tool} onChange={(e) => setO({ ...o, tool: e.target.value as VideoTool })}>
+                  {Object.entries(VIDEO_TOOLS).map(([k, v]) => (
+                    <option key={k} value={k}>{v.label}</option>
+                  ))}
+                </select>
+              </Field>
+              <label className="check">
+                <input type="checkbox" checked={!!o.noSample} onChange={(e) => setO({ ...o, noSample: e.target.checked })} /> Não tenho amostra (vídeo por IA fiel ao anúncio)
+              </label>
+              {o.noSample && (
+                <Field label="Cor/variação vinculada" hint="Exatamente como está na variação do anúncio.">
+                  <input value={o.variant ?? ''} onChange={(e) => setO({ ...o, variant: e.target.value })} placeholder="Ex.: rosa, tamanho M" />
+                </Field>
+              )}
+              <Field label="Estilo">
+                <Choice
+                  value={o.style}
+                  onChange={(v) => setO({ ...o, style: v })}
+                  options={[['pov', 'POV'], ['demonstracao', 'Demonstração'], ['apresentacao', 'Apresentação'], ['afiliado', 'Afiliado']]}
+                />
+              </Field>
+              <Field label={`Duração: ${o.duration}s`}>
+                <input type="range" min={4} max={30} value={o.duration} onChange={(e) => setO({ ...o, duration: +e.target.value })} />
+              </Field>
+              <Field label="Pessoa em cena">
+                <Choice
+                  value={o.person}
+                  onChange={(v) => setO({ ...o, person: v })}
+                  options={[['nenhuma', 'Só produto'], ['maos', 'Só mãos'], ['modelo_virtual', 'Modelo virtual']]}
+                />
+              </Field>
+              <Field label="Ação (o que acontece)">
+                <input value={o.action} onChange={(e) => setO({ ...o, action: e.target.value })} placeholder="pouring hot coffee into the bottle and closing the lid" />
+              </Field>
+              <Field label="Cenário">
+                <input value={o.scene} onChange={(e) => setO({ ...o, scene: e.target.value })} />
+              </Field>
+              <Field label="Câmera">
+                <input value={o.camera} onChange={(e) => setO({ ...o, camera: e.target.value })} placeholder="slow push-in, eye level" />
+              </Field>
+              <Field label="Iluminação">
+                <input value={o.lighting} onChange={(e) => setO({ ...o, lighting: e.target.value })} />
+              </Field>
+            </div>
+          )}
+        </Card>
+        <Card title="Prompt para o Flow">
+          {out ? (
+            <>
+              <Output title={`Prompt principal (inglês) — ${out.tool}`} text={out.en} />
+              {out.negative && <Output title="Prompt negativo / restrições" text={out.negative} />}
+              <Output title="Narração e avisos" text={out.pt} />
+              <button
+                type="button"
+                className="btn primary"
+                onClick={() => {
+                  setDraft({
+                    productId: pid,
+                    title: `Vídeo ${o.style} — ${product!.name}`,
+                    input: { imagemDescricao: out.en, roteiro: out.pt.split('\n')[3] ?? '' },
+                    context: { contentType: 'video', origem: 'ia_total', virtualModel: o.person === 'modelo_virtual' ? 'sim' : 'nao' },
+                  });
+                  go('analisar');
+                }}
+              >
+                Enviar para análise
+              </button>
+              <button type="button" className="btn" onClick={() => go('comparar')}>
+                Conferir anúncio x vídeo
+              </button>
+            </>
+          ) : (
+            <Locked />
+          )}
+        </Card>
+      </div>
+      {product && ok && hy && (
+        <div className="grid2 wide-left">
+          <Card title="Modelo híbrido (cena travada) — recomendado">
+            <p className="hint">IA só para a pessoa e o ambiente; produto parado; close com a foto real. Evita letras trocadas e itens sumindo.</p>
+            <div className="form">
+              <Field label="Tipo de produto">
+                <Choice
+                  value={hy.container}
+                  onChange={(v) =>
+                    setH({
+                      ...hy,
+                      container: v,
+                      pose: v === 'kit' ? 'bancada' : hy.pose,
+                      ...(v === 'roupa' && !hy.closing ? { closing: ['', '', '', 'Toque no link do produto'], captionBase: product!.listingTitle || product!.name, hashtags: '#modafeminina #lookdodia #tiktokshop' } : {}),
+                    })
+                  }
+                  options={[['pote', 'Pote'], ['pacote', 'Pacote'], ['kit', 'Kit (vários itens)'], ['roupa', 'Roupa / acessório']]}
+                />
+              </Field>
+              {wear && (
+                <>
+                  <p className="hint">Sem fala, só música. 2 clipes de 8 s (parada com meio giro + caminhando) e fechamento com os textos do anúncio.</p>
+                  <Field label="Nome da modelo fixa (opcional)" hint="Use sempre a mesma modelo na loja. Ex.: Bella">
+                    <input value={hy.modelName ?? ''} onChange={(e) => setH({ ...hy, modelName: e.target.value })} />
+                  </Field>
+                  <Field label="Peça em inglês (como é no anúncio)" hint="Ex.: long tropical print dress, cream background with parrots and palm trees, twisted knot halter top, waist cut-out">
+                    <textarea rows={3} value={hy.outfitEn ?? ''} onChange={(e) => setH({ ...hy, outfitEn: e.target.value })} />
+                  </Field>
+                  <Field label="Cenário em inglês" hint="Ex.: tropical beach house terrace at golden hour · minimalist bedroom with soft daylight">
+                    <input value={hy.scene ?? ''} onChange={(e) => setH({ ...hy, scene: e.target.value })} />
+                  </Field>
+                  <label className="check">
+                    <input type="checkbox" checked={!!hy.blurBg} onChange={(e) => setH({ ...hy, blurBg: e.target.checked })} /> Fundo bem borrado (ex.: loja com araras)
+                  </label>
+                  <label className="check">
+                    <input type="checkbox" checked={!!hy.handSwipe} onChange={(e) => setH({ ...hy, handSwipe: e.target.checked })} /> Gancho "mão na tela" entre os 2 clipes
+                  </label>
+                  <HookPicker container="roupa" value={hy.hook ?? ''} onChange={(v) => setH({ ...hy, hook: v })} />
+                  <Field label="Gancho (só na capa)">
+                    <input value={hy.hook ?? ''} onChange={(e) => setH({ ...hy, hook: e.target.value })} />
+                  </Field>
+                  <Field label="Textos do fechamento (um por vez)" hint="Só o que o anúncio diz: tecido, bojo/forro, tamanhos, 'diversas cores'. Nada de 'não amassa'.">
+                    {(hy.closing ?? ['', '', '', '']).map((t, i) => (
+                      <input
+                        key={i}
+                        value={t}
+                        placeholder={['Ex.: Tecido modal', 'Ex.: Amarração nas costas', 'Ex.: Tamanhos P ao GG', 'Toque no link do produto'][i]}
+                        onChange={(e) => {
+                          const c = [...(hy.closing ?? ['', '', '', ''])];
+                          c[i] = e.target.value;
+                          setH({ ...hy, closing: c });
+                        }}
+                      />
+                    ))}
+                  </Field>
+                  <Field label="Legenda (base)" hint="Descrição curta com dados do anúncio. Se houver várias cores, não cite a cor.">
+                    <textarea rows={2} value={hy.captionBase ?? ''} onChange={(e) => setH({ ...hy, captionBase: e.target.value })} />
+                  </Field>
+                  <Field label="Hashtags" hint="4 a 6, sem nomes de marca.">
+                    <input value={hy.hashtags ?? ''} onChange={(e) => setH({ ...hy, hashtags: e.target.value })} />
+                  </Field>
+                </>
+              )}
+              {!wear && hy.container !== 'kit' && (
+                <Field label="Posição">
+                  <Choice value={hy.pose} onChange={(v) => setH({ ...hy, pose: v })} options={[['segurando', 'Segurando'], ['bancada', 'Apoiado na bancada']]} />
+                </Field>
+              )}
+              {!wear && hy.container !== 'kit' && hy.pose === 'segurando' && (
+                <label className="check">
+                  <input type="checkbox" checked={!!hy.angled} onChange={(e) => setH({ ...hy, angled: e.target.checked })} /> Produto inclinado na imagem
+                </label>
+              )}
+              {!wear && (
+              <>
+              <Field label="Produto em inglês" hint="Ex.: black protein jar · red protein bag">
+                <input value={hy.productEn} onChange={(e) => setH({ ...hy, productEn: e.target.value })} />
+              </Field>
+              {hy.container === 'kit' && (
+                <>
+                  <Field label="Itens do kit (inglês)" hint="Ex.: 2 white and purple STRONGHORN bags, 1 purple STRONGHORN shaker">
+                    <input value={hy.kitItems ?? ''} onChange={(e) => setH({ ...hy, kitItems: e.target.value })} />
+                  </Field>
+                  <Field label="Total de itens no kit">
+                    <input type="number" min={2} value={hy.kitCount ?? 2} onChange={(e) => setH({ ...hy, kitCount: +e.target.value })} />
+                  </Field>
+                </>
+              )}
+              <Field label="Textos visíveis do rótulo" hint="Copie como aparecem na embalagem. A IA é instruída a não trocar nenhuma letra.">
+                <input value={hy.labelText} onChange={(e) => setH({ ...hy, labelText: e.target.value })} />
+              </Field>
+              <Field label="Fala (português)" hint="Só nome, sabor, peso. Nada de resultado, músculo, emagrecer, preço.">
+                <input value={hy.speech} onChange={(e) => setH({ ...hy, speech: e.target.value })} />
+              </Field>
+              <HookPicker container={hy.container} value={hy.hook ?? ''} onChange={(v) => setH({ ...hy, hook: v })} />
+              <Field label="Gancho / texto na tela" hint="Ex.: Whey sabor Toddy? · O app bloqueia o prompt se houver termo de risco.">
+                <input value={hy.hook ?? ''} onChange={(e) => setH({ ...hy, hook: e.target.value })} />
+              </Field>
+              </>
+              )}
+              <WatermarkFields w={wm} onChange={(w) => setH({ ...hy, wm: w })} />
+            </div>
+          </Card>
+          <Card title="Prompts do modelo híbrido">
+            {hyOut ? (
+              <>
+                <Output title="1. Prompt de mescla (imagem)" text={hyOut.mix} />
+                {hyOut.video2 ? (
+                  <>
+                    <Output title="2. Clipe 1 — parada, meio giro (Frames to video)" text={hyOut.video} />
+                    <Output title="3. Clipe 2 — caminhando (Frames to video)" text={hyOut.video2} />
+                  </>
+                ) : (
+                  <Output title="2. Prompt do vídeo (Frames to video)" text={hyOut.video} />
+                )}
+                {hy.hook?.trim() && <Output title="Gancho (só na capa, primeiro segundo)" text={hy.hook.trim()} />}
+                {hyOut.closing.length > 0 && <Output title="Textos do fechamento (um por vez)" text={hyOut.closing.join('\n')} />}
+                <Output title={wear ? 'Legenda + hashtags' : 'Legenda sugerida'} text={hyOut.caption} />
+                <Output title="Como usar e o que não falar" text={hyOut.pt} />
+              </>
+            ) : (
+              <>
+                <div className="blocked">🔒 Prompt bloqueado: a fala, o gancho, os textos, a legenda ou as hashtags têm termo que pode gerar violação. Corrija o texto para liberar.</div>
+                {hyRisks.map((x) => (
+                  <FindingCard key={x.id} f={x} />
+                ))}
+              </>
+            )}
+          </Card>
+        </div>
+      )}
+    </>
+  );
+}
+
+// ─────────────── Roteiro
+export function ScriptStudio() {
+  const [pid, setPid] = usePid();
+  const { product, ok } = useGate(pid);
+  const { setDraft, go } = useStore();
+  const [hook, setHook] = useState<Hook>('demonstracao');
+  const [sec, setSec] = useState(30);
+  const gen = product && ok ? salesScript(product, hook, sec) : null;
+  const base = gen?.script ?? '';
+  const [text, setText] = useState('');
+  const shown = text || base;
+  return (
+    <>
+      <PageHead title="Criar roteiro de vendas" sub="Usa só características e benefícios comprováveis do cadastro." />
+      <div className="grid2 wide-left">
+        <Card title="Configuração">
+          <ProductPicker value={pid} onChange={(v) => { setPid(v); setText(''); }} />
+          {product && ok && (
+            <div className="form">
+              <Field label="Gancho">
+                <Choice value={hook} onChange={(v) => { setHook(v); setText(''); }} options={[['demonstracao', 'Demonstração'], ['pergunta', 'Pergunta'], ['problema', 'Situação de uso'], ['curiosidade', 'Curiosidade']]} />
+              </Field>
+              <Field label={`Duração: ${sec}s`}>
+                <input type="range" min={8} max={90} step={1} value={sec} onChange={(e) => { setSec(+e.target.value); setText(''); }} />
+              </Field>
+            </div>
+          )}
+        </Card>
+        <Card title="Roteiro" actions={shown ? <CopyButton text={shown} /> : undefined}>
+          {product && ok ? (
+            <>
+              <textarea className="mono" rows={18} value={shown} onChange={(e) => setText(e.target.value)} />
+              <QuickCheck text={shown} field="roteiro" />
+              {gen && <pre className="rules">{gen.tips}</pre>}
+              <button
+                type="button"
+                className="btn primary"
+                onClick={() => {
+                  setDraft({ productId: pid, title: `Roteiro — ${product.name}`, input: { roteiro: shown }, context: { contentType: 'video' } });
+                  go('analisar');
+                }}
+              >
+                Enviar para análise completa
+              </button>
+            </>
+          ) : (
+            <Locked />
+          )}
+        </Card>
+      </div>
+    </>
+  );
+}
+
+// ─────────────── Legenda
+export function CaptionStudio() {
+  const [pid, setPid] = usePid();
+  const { product, ok } = useGate(pid);
+  const { setDraft, go } = useStore();
+  const [extra, setExtra] = useState('');
+  const out = product && ok ? captionAndTags(product, extra) : null;
+  const [cap, setCap] = useState<string | null>(null);
+  const caption = cap ?? out?.caption ?? '';
+  return (
+    <>
+      <PageHead title="Criar legenda e hashtags" />
+      <div className="grid2 wide-left">
+        <Card title="Configuração">
+          <ProductPicker value={pid} onChange={(v) => { setPid(v); setCap(null); }} />
+          {product && ok && (
+            <Field label="Hashtags extras" hint="Separadas por espaço. Hashtags de peso, dieta e marcas de terceiros são filtradas.">
+              <input value={extra} onChange={(e) => setExtra(e.target.value)} placeholder="#cozinha #organizacao" />
+            </Field>
+          )}
+        </Card>
+        <Card title="Resultado">
+          {out ? (
+            <>
+              <Field label="Legenda">
+                <textarea rows={4} value={caption} onChange={(e) => setCap(e.target.value)} />
+              </Field>
+              <div className="row">
+                <CopyButton text={caption} label="Copiar legenda" />
+                <CopyButton text={out.tags} label="Copiar hashtags" />
+              </div>
+              <pre>{out.tags}</pre>
+              {out.removed.length > 0 && (
+                <p className="blocked sm">Removidas por risco: {out.removed.map((x) => '#' + x).join(' ')} (WL-2, PR-4.2)</p>
+              )}
+              <QuickCheck text={caption} field="legenda" />
+              <button
+                type="button"
+                className="btn primary"
+                onClick={() => {
+                  setDraft({ productId: pid, title: `Legenda — ${product!.name}`, input: { legenda: caption, hashtags: out.tags } });
+                  go('analisar');
+                }}
+              >
+                Enviar para análise completa
+              </button>
+            </>
+          ) : (
+            <Locked />
+          )}
+        </Card>
+      </div>
+    </>
+  );
+}

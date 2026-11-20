@@ -1,0 +1,28 @@
+name = "vitrineblindada"
+account_id = "371261f6188046c655a15911ce3b3a1d"
+main = "worker/index.ts"
+compatibility_date = "2026-10-01"
+compatibility_flags = ["nodejs_compat"]
+
+# App (build do Vite) servido pelo próprio Worker. Rotas /api/* passam pelo código.
+[assets]
+directory = "./dist"
+binding = "ASSETS"
+not_found_handling = "single-page-application"
+run_worker_first = ["/api/*"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "vitrine-blindada-ia"
+database_id = "4adc9a23-dbd9-4148-92e3-c4e02dfdd7a6"
+migrations_dir = "migrations"
+
+[vars]
+ADMIN_EMAIL = "nutriandreaoliveira3@gmail.com"
+AI_MODEL = "claude-opus-5-5"
+AI_VISION_MODEL = "claude-sonnet-5-5"
+AI_MONTHLY_LIMIT = "200"
+
+# Segredos (NÃO colocar aqui). Cadastrar no painel da Cloudflare ou com:
+#   npx wrangler secret put GREENN_TOKEN
+#   npx wrangler secret put ANTHROPIC_API_KEY
