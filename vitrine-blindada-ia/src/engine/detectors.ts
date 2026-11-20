@@ -112,6 +112,32 @@ export const DETECTORS: Detector[] = [
     humanReview: true,
   },
   {
+    id: 'D-MARCA-ESTILO',
+    title: 'Nome de marca para vender outra peça (moda)',
+    policyIds: ['PR-4.2', 'PR-4.1', 'CP-3.7'],
+    severity: 'alto',
+    patterns: [
+      /\b(estilo|tipo|modelo|igual (a|ao|a da|ao da|da|do)|parecid\w* com|lembra (a|o)|inspirad\w* n[ao]|look) (a |o |da |do |na |no )?(farm|zara|shein|animale|schutz|arezzo|chanel|gucci|prada|dior|louis vuitton|balenciaga|hermes|versace|fendi|osklen|colcci|lacoste|ralph lauren|dolce|valentino|bottega|miu miu|carolina herrera|skims|cea|renner|riachuelo|amaro|lez a lez|maria filo|le lis|dress to)\b/,
+      /#(farm|farmrio|zara|shein|animale|schutz|arezzo|chanel|gucci|prada|dior|louisvuitton|balenciaga|hermes|versace|fendi|skims)\b/,
+      /\bparece (de )?grife\b/,
+    ],
+    explanation:
+      'Usar o nome de outra marca para vender uma peça ("estilo Farm", "igual da Zara", #zara) indica imitação e infringe propriedade intelectual. Vale para o anúncio, o vídeo, a legenda e as hashtags. Nomes de cor do anúncio (ex.: "Gelo Fendi") não disparam.',
+    fix: { mode: 'manual' },
+    humanReview: true,
+  },
+  {
+    id: 'D-PARECE',
+    title: 'Comparação de valor ou de material ("parece de R$…", "parece seda")',
+    policyIds: ['CP-3.10.1', 'CP-3.10.2'],
+    severity: 'atencao',
+    patterns: [/\bparece (de )?r\$ ?\d+|parece (que )?custou|parece (seda|cetim|couro|linho|cashmere|caxemira|ouro|prata)\b/],
+    explanation:
+      'Comparar com um preço ("parece de R$ 1.000") ou sugerir outro material ("parece seda" numa peça de modal) cria expectativa que o produto não entrega. Prefira opinião de estilo: "cara de rica", "elegante sem esforço".',
+    fix: { mode: 'manual' },
+    humanReview: true,
+  },
+  {
     id: 'D-MEDICO',
     title: 'Alegação médica (cura, tratamento ou prevenção)',
     policyIds: ['CP-3.10.6', 'CP-3.10.5', 'CP-4.1', 'CP-4.2'],

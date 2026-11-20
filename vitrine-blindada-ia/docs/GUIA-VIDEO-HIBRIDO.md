@@ -32,6 +32,26 @@ Violação de 19/11/2026 (-8 pontos, "Promoção de produto inconsistente"): a l
 - No máximo **2 vídeos por dia** por conta; registrar na **Validação**.
 - Nunca o mesmo arquivo em duas contas: usar versões diferentes (ex.: Nyer v1 e v2).
 
+## Roupa e acessório (aprendizados de 20/11/2026)
+Implementado em **Prompt de vídeo → Modelo híbrido → Roupa / acessório**.
+
+| Regra | Por quê |
+|---|---|
+| Sempre a **mesma modelo** na loja (ficha "CHARACTER LOCK") | Identidade e reconhecimento |
+| **Sem fala, só música** (Biblioteca Comercial do TikTok) | Sem boca dessincronizada; é o padrão da moda |
+| 2 clipes de 8 s: parada com meio giro + caminhando | Mostra caimento, costas e movimento |
+| Fundo **sem araras nem outras roupas** (ou bem borrado) | Evita "produto inconsistente" |
+| Tricô/renda vazados: **forro cor da pele** no prompt | Pele aparecendo pode ser lida como conteúdo sexual |
+| Sem colar, brinco, bolsa ou pulseira que não estão à venda | Acessório extra confunde a oferta |
+| Não escrever a cor no prompt: "exactly the same color as the first frame" | A IA puxa o tom (vermelho virou laranja) |
+| Tecido: descrever "matte" quando for modal | A IA deixou brilhante, como cetim |
+| Fechamento: só o que o anúncio diz (tecido, bojo, forro, tamanhos, "diversas cores") | "Não amassa" é promessa |
+| Várias cores no anúncio: não citar a cor e vincular a variante do vídeo | O carrinho precisa mostrar o que o vídeo mostrou |
+| Nunca nome de marca ("estilo Farm") no anúncio, vídeo, legenda ou hashtags | Propriedade intelectual (detector D-MARCA-ESTILO) |
+| Anúncio sem material ou sem tabela de tamanhos: não promover | Devolução e nota baixa |
+| Ganchos de desejo e estilo ("O luxo da delicadeza", "Vestido com cara de rica") | Opinião prende mais e não é promessa; "parece de R$…" é bloqueado (D-PARECE) |
+| Marca d'água configurável (padrão: pequena, rodapé esquerdo, ~74% da altura) | Discreta e fora da área da legenda do TikTok |
+
 ## Produtos a evitar por enquanto
 - **Black Skull Whey Turbo**: selo "Immunity" e "Fast absorption" na embalagem.
 - **Colágeno Revita Beauty**: "beleza e nutrição para o corpo"; a IA também escreveu "COLÁGENC".

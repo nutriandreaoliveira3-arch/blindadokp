@@ -32,3 +32,39 @@ describe('lições de 19/11', () => {
     expect(scanText(r.caption, 'legenda', SEED_POLICIES)).toEqual([]);
   });
 });
+
+import { HOOKS } from '../data/hooks';
+import { watermarkLine } from './generators';
+describe('modo roupa (20/11)', () => {
+  const dress = { id: 'v', name: 'Vestido longo tropical', restrictions: '', components: [] } as unknown as Product;
+  it('gera mescla, 2 clipes sem fala, fechamento e legenda com hashtags', () => {
+    const r = hybridPrompts(dress, {
+      container: 'roupa', pose: 'segurando', productEn: '', labelText: '', speech: '',
+      modelName: 'Bella', outfitEn: 'long tropical print dress', scene: 'terrace', blurBg: true, handSwipe: true,
+      closing: ['Com bojo', '', 'Veste do 36 ao 42', 'Toque no link do produto'], captionBase: 'Vestido longo tropical', hashtags: '#vestidolongo #tiktokshop',
+    });
+    expect(r.mix).toContain('CHARACTER LOCK — BELLA');
+    expect(r.mix).toContain('nude-colored lining');
+    expect(r.video).toContain('no speech');
+    expect(r.video).toContain('covers the camera lens');
+    expect(r.video2).toContain('pulls her hand away');
+    expect(r.video).toContain('heavily blurred');
+    expect(r.closing).toEqual(['Com bojo', 'Veste do 36 ao 42', 'Toque no link do produto']);
+    expect(r.caption).toBe('Vestido longo tropical. Veja os detalhes no link do produto.\n\n#vestidolongo #tiktokshop');
+  });
+  it('marca d\'água configurável', () => {
+    expect(watermarkLine({ on: true, pos: 'rodape-esq', size: 'pequeno', text: 'Conteúdo gerado por IA' })).toContain('74%');
+    expect(watermarkLine({ on: false, pos: 'topo', size: 'medio', text: '' })).toContain('desligada');
+  });
+  it('trava marca de terceiro e comparação, mas não nome de cor', () => {
+    expect(scanText('Vestido estilo Farm', 'legenda', SEED_POLICIES).length).toBeGreaterThan(0);
+    expect(scanText('#zara #modafeminina', 'legenda', SEED_POLICIES).length).toBeGreaterThan(0);
+    expect(scanText('Parece de R$ 1000', 'legenda', SEED_POLICIES).length).toBeGreaterThan(0);
+    expect(scanText('Cor Gelo Fendi', 'legenda', SEED_POLICIES)).toEqual([]);
+    expect(scanText('Vestido com cara de rica', 'legenda', SEED_POLICIES)).toEqual([]);
+  });
+  it('ganchos da biblioteca sem aviso passam limpos', () => {
+    const bad = HOOKS.filter((h) => !h.warn && scanText(h.text, 'legenda', SEED_POLICIES).length > 0).map((h) => h.text);
+    expect(bad).toEqual([]);
+  });
+});

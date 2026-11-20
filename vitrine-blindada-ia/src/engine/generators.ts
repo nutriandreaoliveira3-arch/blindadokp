@@ -316,8 +316,31 @@ export const LIVE_CHECKLIST: ChecklistItem[] = [
 // Aprendizado dos testes reais (11/2026): a IA troca letras e perde/duplica itens quando o produto se mexe.
 // Regra: IA só para a pessoa e o ambiente; produto parado; close sempre com a foto real do anúncio.
 
-export type HybridContainer = 'pote' | 'pacote' | 'kit';
+export type HybridContainer = 'pote' | 'pacote' | 'kit' | 'roupa';
 export type HybridPose = 'segurando' | 'bancada';
+export type WatermarkPos = 'rodape-esq' | 'rodape-dir' | 'topo' | 'centro';
+
+/** Marca d'água "Conteúdo gerado por IA": a cliente escolhe se usa, onde e o tamanho. */
+export interface WatermarkOptions {
+  on: boolean;
+  pos: WatermarkPos;
+  size: 'pequeno' | 'medio' | 'grande';
+  text: string;
+}
+
+export const WATERMARK_DEFAULT: WatermarkOptions = { on: true, pos: 'rodape-esq', size: 'pequeno', text: 'Conteúdo gerado por IA' };
+
+export function watermarkLine(w: WatermarkOptions = WATERMARK_DEFAULT): string {
+  if (!w.on) return 'Marca d\'água: desligada. Mesmo assim, ATIVE o selo "Conteúdo gerado por IA" do TikTok ao publicar (é a regra da plataforma).';
+  const where = {
+    'rodape-esq': 'no canto esquerdo, a cerca de 74% da altura (logo ACIMA do nome da conta e da legenda do TikTok; colada no rodapé ela some)',
+    'rodape-dir': 'no canto direito, a cerca de 60% da altura (abaixo disso ficam os botões de curtir e comentar)',
+    topo: 'centralizada, logo abaixo da barra do topo do TikTok (~12% da altura)',
+    centro: 'centralizada, no meio da tela',
+  }[w.pos];
+  const size = { pequeno: 'fonte pequena, discreta', medio: 'fonte média', grande: 'fonte grande' }[w.size];
+  return `Marca d'água: "${w.text.trim() || WATERMARK_DEFAULT.text}" ${where}, ${size}, do início ao fim do vídeo (CapCut: Texto, duração total). Ative também o selo "Conteúdo gerado por IA" do TikTok.`;
+}
 
 export interface HybridOptions {
   container: HybridContainer;
@@ -329,7 +352,22 @@ export interface HybridOptions {
   speech: string; // fala em português
   hook?: string; // gancho / texto na tela
   angled?: boolean;
+  wm?: WatermarkOptions;
+  // ── modo roupa / acessório (sem fala, só música)
+  modelName?: string; // ex.: Bella (a mesma modelo em todos os vídeos da loja)
+  outfitEn?: string; // descrição da peça em inglês
+  scene?: string; // cenário em inglês
+  blurBg?: boolean; // fundo bem borrado (ex.: loja com araras)
+  handSwipe?: boolean; // gancho "mão na tela" entre os 2 clipes
+  closing?: string[]; // textos do fechamento (só o que o anúncio diz)
+  captionBase?: string;
+  hashtags?: string;
 }
+
+const isFashion = (p: Product) =>
+  /vestido|macaquinho|macac[aã]o|conjunto|saia|blusa|cal[cç]a|short|bermuda|body|cropped|biqu[ií]ni|mai[ôo]|moda|roupa|look|bolsa|acess[óo]rio|colar|brinco/i.test(
+    `${p.name} ${p.listingTitle ?? ''} ${String((p as { category?: string }).category ?? '')}`,
+  );
 
 export function hybridDefaults(p: Product, items: CatalogItem[] = []): HybridOptions {
   const comps = (p.components ?? []).map((c) => ({ ...c, item: items.find((i) => i.id === c.itemId) }));
@@ -337,6 +375,24 @@ export function hybridDefaults(p: Product, items: CatalogItem[] = []): HybridOpt
   const first = comps[0]?.item;
   const say = first?.safeToSay.split('\n').map((x) => x.trim()).filter(Boolean)[0];
   const isKit = total > 1 || comps.length > 1;
+  if (isFashion(p))
+    return {
+      container: 'roupa',
+      pose: 'segurando',
+      productEn: '',
+      labelText: '',
+      speech: '',
+      hook: '',
+      wm: { ...WATERMARK_DEFAULT },
+      modelName: '',
+      outfitEn: '',
+      scene: '',
+      blurBg: false,
+      handSwipe: false,
+      closing: ['', '', '', 'Toque no link do produto'],
+      captionBase: p.listingTitle || p.name,
+      hashtags: '#modafeminina #lookdodia #tiktokshop',
+    };
   return {
     container: isKit ? 'kit' : /pacote|refil|bag/i.test(`${first?.visual ?? ''} ${p.name}`) ? 'pacote' : 'pote',
     pose: isKit ? 'bancada' : 'segurando',
@@ -346,10 +402,74 @@ export function hybridDefaults(p: Product, items: CatalogItem[] = []): HybridOpt
     kitCount: isKit ? total : undefined,
     speech: say ? `Esse é o ${say}.` : `Esse é o ${p.listingTitle || p.name}.`,
     angled: false,
+    wm: { ...WATERMARK_DEFAULT },
   };
 }
 
+/** Roupa e acessório: 2 clipes de 8 s sem fala (parada + caminhando) e fechamento com textos do anúncio. */
+function fashionPrompts(p: Product, o: HybridOptions) {
+  const who = o.modelName?.trim() ? o.modelName.trim() : 'The woman';
+  const outfit = o.outfitEn?.trim() || 'the outfit from image 2';
+  const bg = o.blurBg ? ' The background stays heavily blurred for the entire video, never in focus.' : '';
+  const neg =
+    'NEGATIVE: talking, lip movement, color change, different shade, changed print or texture, different outfit, shorter or longer length, see-through fabric, extra accessories, earrings, necklace, bracelets, bag, sensual pose, other people, outfit changing shape' +
+    (o.blurBg ? ', sharp background, recognizable clothes in background' : ', background changing');
+  const lock = `The outfit keeps exactly the same color, print, texture, details, cut and length as the first frame in every frame. Full body always visible.${bg}`;
+  const tail = [
+    'AUDIO: no speech, no voice. Only soft ambient sound.',
+    'No added text, subtitles, watermark or logos. Vertical 9:16, 8 seconds, realistic, soft natural light.',
+  ];
+
+  const mix = [
+    `CHARACTER LOCK${o.modelName?.trim() ? ` — ${o.modelName.trim().toUpperCase()}` : ''}: use exactly the same woman from image 1. Same face, hair, skin tone, body shape and natural makeup. Do not change her identity.`,
+    `OUTFIT: she wears ONLY the product from image 2, exactly as shown: ${outfit}. Same color, print, pattern placement, texture, cut, length and details. If the fabric is open-knit or lace, add a full nude-colored lining so no skin shows through. Do not add any clothing item, bag, jewelry or accessory that is not the product.`,
+    `BACKGROUND: ${o.scene?.trim() || 'clean, bright room with soft daylight'}. No clothing racks, no other clothes, no shelves with products, no other people.${o.blurBg ? ' Strong background blur (shallow depth of field) so the background is only soft shapes of light and color.' : ''}`,
+    'Full body visible, natural elegant standing pose, vertical 9:16, realistic photo.',
+  ];
+
+  const clip1 = [
+    `LOCKED OUTFIT SHOT. ${who} stands in the same place wearing exactly the same outfit as the first frame for the entire 8 seconds: ${outfit}. She does not speak.`,
+    o.handSwipe
+      ? '0-6s: she smiles at the camera and makes a slow half-turn to show the side and the back, then returns to the front. 6-8s: she walks toward the camera and gently covers the camera lens with her open hand until the screen is fully covered.'
+      : 'She smiles at the camera, then makes a slow half-turn to show the side and the back and returns to the front, one hand on her waist. Very slight slow push-in.',
+    lock,
+    ...tail,
+    `${neg}, full spin.`,
+  ];
+
+  const clip2 = [
+    o.handSwipe
+      ? `LOCKED OUTFIT SHOT. The video starts with ${who === 'The woman' ? 'her' : `${who}'s`} open hand covering the camera lens; in the first second she pulls her hand away, revealing her wearing exactly the same outfit as the first frame: ${outfit}. She does not speak.`
+      : `LOCKED OUTFIT SHOT. ${who} wears exactly the same outfit as the first frame for the entire 8 seconds: ${outfit}. She does not speak. 0-1s: she turns her head to the camera with a confident smile.`,
+    '1-6s: she walks slowly toward the camera, elegant and relaxed. 6-8s: she stops, puts one hand on her waist and smiles.',
+    lock,
+    ...tail,
+    `${neg}, spinning, close-up that crops the outfit.`,
+  ];
+
+  const closing = (o.closing ?? []).map((x) => x.trim()).filter(Boolean);
+  const base = (o.captionBase ?? '').trim().replace(/[.!]+$/, '');
+  const caption = [`${base ? `${base}. ` : ''}Veja os detalhes no link do produto.`, (o.hashtags ?? '').trim()].filter(Boolean).join('\n\n');
+
+  const pt = [
+    'COMO USAR (roupa / acessório — sem fala, só música)',
+    '1. Mescla: imagem 1 = sua modelo fixa (sempre a mesma na loja); imagem 2 = foto do ANÚNCIO. Confira estampa, cor, comprimento e detalhes. Fundo sem araras nem outras roupas (ou bem borrado).',
+    '2. Gere os 2 clipes com a imagem aprovada como primeiro quadro. Confira: estampa igual, sem colar/bolsa/brinco, comprimento igual, tecido sem transparência.',
+    `3. Monte: clipe 1 + clipe 2${o.handSwipe ? ' (cortados no ponto em que a mão cobre a câmera)' : ''} + fechamento (~8 s) com a foto real do anúncio ou um quadro de frente da modelo, zoom lento e os textos abaixo, um por vez.`,
+    '4. Gancho: só na CAPA (primeiro segundo). Use gancho de desejo ou estilo (opinião), nunca promessa, preço ou marca.',
+    '5. Textos: centralizados, entre ~12% e ~75% da altura, sem cobrir o rosto.',
+    `6. ${watermarkLine(o.wm)}`,
+    '7. Música: adicione pela Biblioteca de Música Comercial do TikTok (conta de loja). Tire o som gerado pela IA.',
+    '8. Cor: se o anúncio tem várias cores, não cite a cor; vincule a variante igual à do vídeo.',
+    '9. Anúncio sem material ou sem tabela de tamanhos: não promova (devolução e nota baixa).',
+    '10. Nunca cite marcas ("estilo Farm", "igual da Zara") nem em hashtags. No máximo 2 vídeos por dia; registre na Validação.',
+  ];
+
+  return { mix: mix.join('\n'), video: clip1.join('\n'), video2: clip2.join('\n'), closing, pt: pt.join('\n'), caption };
+}
+
 export function hybridPrompts(p: Product, o: HybridOptions, items: CatalogItem[] = []) {
+  if (o.container === 'roupa') return fashionPrompts(p, o);
   const avoid = [...kitAvoid(p, items), ...lines(p.restrictions)];
   const label = o.labelText.trim() ? ` Visible label text, copied letter by letter: ${o.labelText.trim()}.` : '';
   const what = o.productEn.trim() || (o.container === 'pacote' ? 'protein bag' : 'protein jar');
@@ -394,7 +514,7 @@ export function hybridPrompts(p: Product, o: HybridOptions, items: CatalogItem[]
     `2. Vídeo: use a imagem aprovada como primeiro quadro${isKit ? ' E como último quadro (trava a contagem)' : ''}. Gere com áudio ligado.`,
     '3. Confira quadro a quadro: letras iguais, sem tradução, sem itens a mais ou a menos.',
     '4. Close do produto: sempre com a FOTO REAL do anúncio (zoom lento + textos), nunca com close de IA.',
-    '5. Marca d\'água: coloque "Conteúdo gerado por IA" no topo do vídeo, do início ao fim (CapCut: Texto, duração total).',
+    `5. ${watermarkLine(o.wm)}`,
     '6. Legenda: só nome, sabor, peso e "veja no link". Nunca ganchos de treino, necessidade ou duração (ex.: "Treina?", "proteína suficiente?", "acaba rápido").',
     '   Gancho: só na CAPA (primeiro segundo); some quando a pessoa começa a falar. Capa = primeiro quadro.',
     '   Textos na tela: linhas centralizadas, abaixo da barra do topo do TikTok (~12% da altura) e acima da legenda (~75%).',
@@ -405,5 +525,5 @@ export function hybridPrompts(p: Product, o: HybridOptions, items: CatalogItem[]
   ].filter(Boolean);
 
   const caption = `${o.speech.trim().replace(/^esse [ée] (o|a) /i, '').replace(/[.!]+$/, '')}. Veja os detalhes no link do produto.`;
-  return { mix: mix.join('\n'), video: video.join('\n'), pt: pt.join('\n'), caption: caption.charAt(0).toUpperCase() + caption.slice(1) };
+  return { mix: mix.join('\n'), video: video.join('\n'), video2: undefined as string | undefined, closing: [] as string[], pt: pt.join('\n'), caption: caption.charAt(0).toUpperCase() + caption.slice(1) };
 }

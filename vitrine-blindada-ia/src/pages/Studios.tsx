@@ -5,6 +5,8 @@ import {
   hybridDefaults,
   hybridPrompts,
   type HybridOptions,
+  type WatermarkOptions,
+  WATERMARK_DEFAULT,
   captionAndTags,
   imagePrompt,
   salesScript,
@@ -16,6 +18,71 @@ import {
   VIDEO_TOOLS,
 } from '../engine/generators';
 import { useStore } from '../store';
+import { HOOK_NEVER, HOOKS, hookGroupsFor } from '../data/hooks';
+
+function HookPicker({ container, value, onChange }: { container: string; value: string; onChange: (v: string) => void }) {
+  const groups = hookGroupsFor(container);
+  const warn = HOOKS.find((h) => h.text === value)?.warn;
+  return (
+    <>
+      <Field label="Biblioteca de ganchos" hint="Escolha um gancho pronto (só na capa) ou escreva o seu abaixo.">
+        <select value="" onChange={(e) => e.target.value && onChange(e.target.value)}>
+          <option value="">Escolher gancho…</option>
+          {groups.map((g) => (
+            <optgroup key={g} label={g}>
+              {HOOKS.filter((h) => h.group === g).map((h) => (
+                <option key={h.text} value={h.text}>
+                  {h.warn ? '⚠️ ' : ''}
+                  {h.text}
+                </option>
+              ))}
+            </optgroup>
+          ))}
+        </select>
+      </Field>
+      {warn && <div className="notice">⚠️ {warn}</div>}
+      <details className="hint">
+        <summary>O que nunca usar no gancho</summary>
+        <ul>
+          {HOOK_NEVER.map((x) => (
+            <li key={x}>{x}</li>
+          ))}
+        </ul>
+      </details>
+    </>
+  );
+}
+
+function WatermarkFields({ w, onChange }: { w: WatermarkOptions; onChange: (w: WatermarkOptions) => void }) {
+  return (
+    <>
+      <label className="check">
+        <input type="checkbox" checked={w.on} onChange={(e) => onChange({ ...w, on: e.target.checked })} /> Marca d'água "Conteúdo gerado por IA" no vídeo
+      </label>
+      {w.on && (
+        <>
+          <Field label="Posição da marca d'água">
+            <Choice
+              value={w.pos}
+              onChange={(v) => onChange({ ...w, pos: v })}
+              options={[['rodape-esq', 'Rodapé esquerdo'], ['rodape-dir', 'Rodapé direito'], ['topo', 'Topo'], ['centro', 'Centro']]}
+            />
+          </Field>
+          <Field label="Tamanho">
+            <Choice value={w.size} onChange={(v) => onChange({ ...w, size: v })} options={[['pequeno', 'Pequeno'], ['medio', 'Médio'], ['grande', 'Grande']]} />
+          </Field>
+          <Field label="Texto da marca d'água">
+            <input value={w.text} onChange={(e) => onChange({ ...w, text: e.target.value })} />
+          </Field>
+          {w.pos !== 'topo' && w.pos !== 'centro' && (
+            <p className="hint">No rodapé, a marca fica logo acima do nome da conta e da legenda do TikTok. Colada no fundo, ela some.</p>
+          )}
+        </>
+      )}
+      {!w.on && <p className="hint">Sem marca d'água, ative o selo "Conteúdo gerado por IA" do TikTok ao publicar (obrigatório).</p>}
+    </>
+  );
+}
 
 function Locked() {
   return <p className="muted">Selecione um produto liberado na análise de cadastro para gerar o conteúdo.</p>;
@@ -124,7 +191,18 @@ export function VideoStudio() {
   const out = product && ok ? videoPrompt(product, o, items) : null;
   const [h, setH] = useState<HybridOptions | null>(null);
   const hy = product && ok ? (h && h.speech !== undefined ? h : hybridDefaults(product, items)) : null;
-  const hyRisks = useMemo(() => (hy ? scanText([hy.speech, hy.hook ?? '', hy.labelText].join('\n'), 'roteiro', policies) : []), [hy, policies]);
+  const hyRisks = useMemo(
+    () =>
+      hy
+        ? [
+            ...scanText([hy.speech, hy.hook ?? '', hy.labelText].join('\n'), 'roteiro', policies),
+            ...scanText([hy.hook ?? '', ...(hy.closing ?? []), hy.captionBase ?? '', hy.hashtags ?? ''].join('\n'), 'legenda', policies),
+          ].filter((x, i, a) => a.findIndex((y) => y.title === x.title) === i)
+        : [],
+    [hy, policies],
+  );
+  const wear = hy?.container === 'roupa';
+  const wm = hy?.wm ?? WATERMARK_DEFAULT;
   const hyOut = product && ok && hy && !hyRisks.length ? hybridPrompts(product, hy, items) : null;
   return (
     <>
@@ -216,19 +294,76 @@ export function VideoStudio() {
           <Card title="Modelo híbrido (cena travada) — recomendado">
             <p className="hint">IA só para a pessoa e o ambiente; produto parado; close com a foto real. Evita letras trocadas e itens sumindo.</p>
             <div className="form">
-              <Field label="Embalagem">
-                <Choice value={hy.container} onChange={(v) => setH({ ...hy, container: v, pose: v === 'kit' ? 'bancada' : hy.pose })} options={[['pote', 'Pote'], ['pacote', 'Pacote'], ['kit', 'Kit (vários itens)']]} />
+              <Field label="Tipo de produto">
+                <Choice
+                  value={hy.container}
+                  onChange={(v) =>
+                    setH({
+                      ...hy,
+                      container: v,
+                      pose: v === 'kit' ? 'bancada' : hy.pose,
+                      ...(v === 'roupa' && !hy.closing ? { closing: ['', '', '', 'Toque no link do produto'], captionBase: product!.listingTitle || product!.name, hashtags: '#modafeminina #lookdodia #tiktokshop' } : {}),
+                    })
+                  }
+                  options={[['pote', 'Pote'], ['pacote', 'Pacote'], ['kit', 'Kit (vários itens)'], ['roupa', 'Roupa / acessório']]}
+                />
               </Field>
-              {hy.container !== 'kit' && (
+              {wear && (
+                <>
+                  <p className="hint">Sem fala, só música. 2 clipes de 8 s (parada com meio giro + caminhando) e fechamento com os textos do anúncio.</p>
+                  <Field label="Nome da modelo fixa (opcional)" hint="Use sempre a mesma modelo na loja. Ex.: Bella">
+                    <input value={hy.modelName ?? ''} onChange={(e) => setH({ ...hy, modelName: e.target.value })} />
+                  </Field>
+                  <Field label="Peça em inglês (como é no anúncio)" hint="Ex.: long tropical print dress, cream background with parrots and palm trees, twisted knot halter top, waist cut-out">
+                    <textarea rows={3} value={hy.outfitEn ?? ''} onChange={(e) => setH({ ...hy, outfitEn: e.target.value })} />
+                  </Field>
+                  <Field label="Cenário em inglês" hint="Ex.: tropical beach house terrace at golden hour · minimalist bedroom with soft daylight">
+                    <input value={hy.scene ?? ''} onChange={(e) => setH({ ...hy, scene: e.target.value })} />
+                  </Field>
+                  <label className="check">
+                    <input type="checkbox" checked={!!hy.blurBg} onChange={(e) => setH({ ...hy, blurBg: e.target.checked })} /> Fundo bem borrado (ex.: loja com araras)
+                  </label>
+                  <label className="check">
+                    <input type="checkbox" checked={!!hy.handSwipe} onChange={(e) => setH({ ...hy, handSwipe: e.target.checked })} /> Gancho "mão na tela" entre os 2 clipes
+                  </label>
+                  <HookPicker container="roupa" value={hy.hook ?? ''} onChange={(v) => setH({ ...hy, hook: v })} />
+                  <Field label="Gancho (só na capa)">
+                    <input value={hy.hook ?? ''} onChange={(e) => setH({ ...hy, hook: e.target.value })} />
+                  </Field>
+                  <Field label="Textos do fechamento (um por vez)" hint="Só o que o anúncio diz: tecido, bojo/forro, tamanhos, 'diversas cores'. Nada de 'não amassa'.">
+                    {(hy.closing ?? ['', '', '', '']).map((t, i) => (
+                      <input
+                        key={i}
+                        value={t}
+                        placeholder={['Ex.: Tecido modal', 'Ex.: Amarração nas costas', 'Ex.: Tamanhos P ao GG', 'Toque no link do produto'][i]}
+                        onChange={(e) => {
+                          const c = [...(hy.closing ?? ['', '', '', ''])];
+                          c[i] = e.target.value;
+                          setH({ ...hy, closing: c });
+                        }}
+                      />
+                    ))}
+                  </Field>
+                  <Field label="Legenda (base)" hint="Descrição curta com dados do anúncio. Se houver várias cores, não cite a cor.">
+                    <textarea rows={2} value={hy.captionBase ?? ''} onChange={(e) => setH({ ...hy, captionBase: e.target.value })} />
+                  </Field>
+                  <Field label="Hashtags" hint="4 a 6, sem nomes de marca.">
+                    <input value={hy.hashtags ?? ''} onChange={(e) => setH({ ...hy, hashtags: e.target.value })} />
+                  </Field>
+                </>
+              )}
+              {!wear && hy.container !== 'kit' && (
                 <Field label="Posição">
                   <Choice value={hy.pose} onChange={(v) => setH({ ...hy, pose: v })} options={[['segurando', 'Segurando'], ['bancada', 'Apoiado na bancada']]} />
                 </Field>
               )}
-              {hy.container !== 'kit' && hy.pose === 'segurando' && (
+              {!wear && hy.container !== 'kit' && hy.pose === 'segurando' && (
                 <label className="check">
                   <input type="checkbox" checked={!!hy.angled} onChange={(e) => setH({ ...hy, angled: e.target.checked })} /> Produto inclinado na imagem
                 </label>
               )}
+              {!wear && (
+              <>
               <Field label="Produto em inglês" hint="Ex.: black protein jar · red protein bag">
                 <input value={hy.productEn} onChange={(e) => setH({ ...hy, productEn: e.target.value })} />
               </Field>
@@ -248,23 +383,35 @@ export function VideoStudio() {
               <Field label="Fala (português)" hint="Só nome, sabor, peso. Nada de resultado, músculo, emagrecer, preço.">
                 <input value={hy.speech} onChange={(e) => setH({ ...hy, speech: e.target.value })} />
               </Field>
+              <HookPicker container={hy.container} value={hy.hook ?? ''} onChange={(v) => setH({ ...hy, hook: v })} />
               <Field label="Gancho / texto na tela" hint="Ex.: Whey sabor Toddy? · O app bloqueia o prompt se houver termo de risco.">
                 <input value={hy.hook ?? ''} onChange={(e) => setH({ ...hy, hook: e.target.value })} />
               </Field>
+              </>
+              )}
+              <WatermarkFields w={wm} onChange={(w) => setH({ ...hy, wm: w })} />
             </div>
           </Card>
           <Card title="Prompts do modelo híbrido">
             {hyOut ? (
               <>
                 <Output title="1. Prompt de mescla (imagem)" text={hyOut.mix} />
-                <Output title="2. Prompt do vídeo (Frames to video)" text={hyOut.video} />
-                {hy.hook?.trim() && <Output title="3. Gancho (só na capa, primeiro segundo)" text={hy.hook.trim()} />}
-                <Output title="4. Legenda sugerida" text={hyOut.caption} />
+                {hyOut.video2 ? (
+                  <>
+                    <Output title="2. Clipe 1 — parada, meio giro (Frames to video)" text={hyOut.video} />
+                    <Output title="3. Clipe 2 — caminhando (Frames to video)" text={hyOut.video2} />
+                  </>
+                ) : (
+                  <Output title="2. Prompt do vídeo (Frames to video)" text={hyOut.video} />
+                )}
+                {hy.hook?.trim() && <Output title="Gancho (só na capa, primeiro segundo)" text={hy.hook.trim()} />}
+                {hyOut.closing.length > 0 && <Output title="Textos do fechamento (um por vez)" text={hyOut.closing.join('\n')} />}
+                <Output title={wear ? 'Legenda + hashtags' : 'Legenda sugerida'} text={hyOut.caption} />
                 <Output title="Como usar e o que não falar" text={hyOut.pt} />
               </>
             ) : (
               <>
-                <div className="blocked">🔒 Prompt bloqueado: a fala, o gancho ou o texto do rótulo têm termo que pode gerar violação. Corrija o texto para liberar.</div>
+                <div className="blocked">🔒 Prompt bloqueado: a fala, o gancho, os textos, a legenda ou as hashtags têm termo que pode gerar violação. Corrija o texto para liberar.</div>
                 {hyRisks.map((x) => (
                   <FindingCard key={x.id} f={x} />
                 ))}
