@@ -165,13 +165,55 @@ print(zp, len(LOOKS), 'looks')
 
 # ───────── página única com botão "Copiar" em cada bloco (abre no navegador; nada de anexar .txt no Flow)
 import json, re
+
+# ───────── identificação visual: número do print/fotos na pasta ROUPAS-FOTOS + miniaturas
+import base64, io, subprocess as sp
+from PIL import Image
+SC = '/tmp/claude-0/-home-user-blindadokp/1ee8f564-c481-5f05-98a2-fb44b8e2bb97/scratchpad'
+PNGS = [6716,6718,6720,6723,6726,6729,6732,6735,6738,6741,6743,6745,6749,6752,6756,6758,6761,6764,6766,6769,6771,6773,6775,6777,6780,6784,6786,6790,6797,6800,6803,6806,6809,6812,6816,6818,6823,6831,6838,6841,6843]
+PRINT = {'08':6843,'09':6841,'10':6838,'11':6823,'12':6806,'13':6800,'14':6797,'15':6790,'16':6786,'17':6784,'18':6775,'19':6773,'20':6773,'21':6771,'22':6769,'23':6758,'24':6756,'25':6752,'26':6749,'27':6745,'28':6743,'29':6741,'30':6738,'31':6729,'32':6726,'33':6723,'34':6720,'35':6718,'36':6812,'37':6809,'38':6818,'39':6803}
+# a numeração do arquivo "08-..." na lista DRIVE não é a do print: mapeia pelo id completo
+PRINT_BY_ID = {}
+def ref_for(lid):
+    k = lid[:2]
+    n = {'08':6843,'09':6841,'10':6838,'11':6823,'12':6806,'13':6800,'14':6797,'15':6790,'16':6786,'17':6784,'18':6780,'19':6777,'20':6773,'21':6771,'22':6769,'23':6758,'24':6756,'25':6752,'26':6749,'27':6745,'28':6743,'29':6741,'30':6738,'31':6729,'32':6726,'33':6723,'34':6720,'35':6718,'36':6812,'37':6809,'38':6818,'39':6803}.get(k)
+    if not n:
+        return 'Print e foto: vieram nos zips que você mandou (galeria + descrição).'
+    prev = max([x for x in PNGS if x < n] or [n - 1])
+    a, b = prev + 1, n - 1
+    fotos = f'IMG_{a}' if a == b else f'IMG_{a} a IMG_{b}'
+    return f'Pasta ROUPAS-FOTOS: print da descrição = IMG_{n}.PNG · fotos do produto = {fotos} (as fotos vêm logo antes do print).'
+def thumb_from(path, crop=None):
+    im = Image.open(path).convert('RGB')
+    if crop: im = im.crop(crop)
+    im.thumbnail((170, 230)); b = io.BytesIO(); im.save(b, 'JPEG', quality=70)
+    return 'data:image/jpeg;base64,' + base64.b64encode(b.getvalue()).decode()
+def frame_thumb(video, t=2.0):
+    sp.run(['ffmpeg','-v','error','-y','-ss',str(t),'-i',video,'-frames:v','1','/tmp/_f.png'])
+    return thumb_from('/tmp/_f.png')
+V = f'{SC}/zips/viol/'; LT = f'{SC}/lotes2/'
+def lot(i):
+    for l in open(f'{LT}uniq.txt'):
+        n, _, _, path = l.rstrip('\n').split('|', 3)
+        if n == i: return LT + path[2:]
+THUMBS = {}
+try:
+    CR = (0, 150, 739, 1250)
+    THUMBS['01'] = thumb_from(V + 'Z7.jpeg', CR); THUMBS['02'] = thumb_from(V + 'Z21.jpeg', CR); THUMBS['03'] = thumb_from(V + 'Z9.jpeg', CR)
+    THUMBS['04'] = thumb_from(V + 'Z23.jpeg', CR); THUMBS['05'] = thumb_from(V + 'Z3.jpeg', CR); THUMBS['06'] = thumb_from(V + 'Z5.jpeg', CR)
+    THUMBS['07'] = thumb_from('/tmp/claude-0/-home-user-blindadokp/1ee8f564-c481-5f05-98a2-fb44b8e2bb97/images/182.png')
+    THUMBS['29'] = thumb_from('/root/.claude/projects/-home-user-blindadokp/1ee8f564-c481-5f05-98a2-fb44b8e2bb97/tool-results/mcp-Google_Drive-blob-1795373374602-guce8p.jpg')
+    THUMBS['33'] = frame_thumb(lot('02')); THUMBS['34'] = frame_thumb(lot('06')); THUMBS['35'] = frame_thumb(lot('07')); THUMBS['30'] = frame_thumb(lot('20'))
+except Exception as e:
+    print('miniaturas parciais:', e)
+
 data = []
 for L in LOOKS:
     txt = open(f"{OUT}/{L['id']}.txt", encoding='utf-8').read()
     head, *secs = re.split(r'\n=== (.+?) ===\n', txt)
     blocks = [(secs[i], secs[i + 1].strip()) for i in range(0, len(secs), 2)]
     avisos = [l[2:] for l in head.split('\n') if l.startswith('- ')]
-    data.append(dict(id=L['id'], nome=L['nome'], status=L['status'], avisos=avisos, blocks=blocks))
+    data.append(dict(id=L['id'], nome=L['nome'], status=L['status'], avisos=avisos, blocks=blocks, thumb=THUMBS.get(L['id'][:2], ''), ref=ref_for(L['id'])))
 HTML = '''<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Prompts dos looks</title><style>
 :root{--bg:#fff;--fg:#1c1c1e;--mut:#6b6b73;--card:#f4f4f6;--bd:#dcdce0;--ac:#d6336c}
@@ -184,19 +226,20 @@ main{padding:16px;max-width:900px;margin:auto}.st{color:var(--mut);margin:4px 0 
 .av li{margin:2px 0}.bl{margin:0 0 16px}.bl h3{font-size:14px;margin:0 0 6px;display:flex;justify-content:space-between;gap:8px;align-items:center}
 button{background:var(--ac);color:#fff;border:0;border-radius:8px;padding:8px 14px;font-size:14px;cursor:pointer}button.ok{background:#2f9e44}
 pre{-webkit-user-select:all;user-select:all;cursor:grab;white-space:pre-wrap;word-break:break-word;background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:12px;margin:0;font:13px/1.45 ui-monospace,monospace}
-.aviso{font-size:13px;color:var(--mut);margin-top:18px}</style></head><body>
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;margin:0 0 20px}.card{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:6px;cursor:pointer;font-size:12px;line-height:1.25;text-align:center}.card img,.card .ph{width:100%;height:150px;object-fit:cover;border-radius:6px;background:var(--bd);display:flex;align-items:center;justify-content:center;color:var(--mut);font-size:11px}.th{height:200px;border-radius:10px;margin:0 0 8px}.aviso{font-size:13px;color:var(--mut);margin-top:18px}</style></head><body>
 <header><h1>Prompts dos looks (loja da Bella)</h1><input id="q" placeholder="Buscar look..." oninput="lista()"><select id="s" onchange="mostra()"></select></header>
-<main><div id="o"></div><p class="aviso"><b>Como usar:</b> clique uma vez no bloco de texto: ele é selecionado inteiro. Depois é só ARRASTAR o texto selecionado para o campo de prompt do Flow (ou use o botão Copiar).  Não anexe arquivos .txt: o Flow só aceita imagem e vídeo. Mescla: suba a foto da Bella e a foto do anúncio. Clipes: use a imagem aprovada como primeiro quadro.</p></main>
+<main><div id="g" class="cards"></div><div id="o"></div><p class="aviso"><b>Como usar:</b> clique uma vez no bloco de texto: ele é selecionado inteiro. Depois é só ARRASTAR o texto selecionado para o campo de prompt do Flow (ou use o botão Copiar).  Não anexe arquivos .txt: o Flow só aceita imagem e vídeo. Mescla: suba a foto da Bella e a foto do anúncio. Clipes: use a imagem aprovada como primeiro quadro.</p></main>
 <script>
 const D=__DATA__;
 function lista(){const q=document.getElementById('q').value.toLowerCase();const s=document.getElementById('s');const cur=s.value;s.innerHTML='';
 D.filter(l=>(l.id+' '+l.nome).toLowerCase().includes(q)).forEach(l=>{const o=document.createElement('option');o.value=l.id;o.textContent=l.id.slice(0,2)+' · '+l.nome;s.appendChild(o)});
-if([...s.options].some(o=>o.value===cur))s.value=cur;mostra()}
+if([...s.options].some(o=>o.value===cur))s.value=cur;grid();mostra()}
+function grid(){const q=document.getElementById('q').value.toLowerCase();const g=document.getElementById('g');g.innerHTML='';D.filter(l=>(l.id+' '+l.nome).toLowerCase().includes(q)).forEach(l=>{const c=document.createElement('div');c.className='card';c.innerHTML=(l.thumb?'<img src="'+l.thumb+'">':'<div class="ph">foto na pasta</div>')+'<b>'+l.id.slice(0,2)+'</b> '+l.nome;c.onclick=()=>{document.getElementById('s').value=l.id;mostra();document.getElementById('o').scrollIntoView({behavior:'smooth'})};g.appendChild(c)})}
 function copia(b,t){const done=()=>{b.textContent='Copiado ✓';b.className='ok';setTimeout(()=>{b.textContent='Copiar';b.className=''},1500)};
 const fb=()=>{const a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();try{document.execCommand('copy');done()}catch(e){}a.remove()};
 if(navigator.clipboard&&window.isSecureContext)navigator.clipboard.writeText(t).then(done,fb);else fb()}
 function mostra(){const l=D.find(x=>x.id===document.getElementById('s').value);const o=document.getElementById('o');o.innerHTML='';if(!l)return;
-const h=document.createElement('div');h.innerHTML='<h2>'+l.nome+'</h2><div class="st">'+l.status+'</div>';
+const h=document.createElement('div');h.innerHTML=(l.thumb?'<img class="th" src="'+l.thumb+'">':'')+'<h2>'+l.nome+'</h2><div class="st">'+l.status+'</div><div class="st">'+l.ref+'</div>';
 if(l.avisos.length){const u=document.createElement('ul');u.className='av';l.avisos.forEach(a=>{const i=document.createElement('li');i.textContent=a;u.appendChild(i)});h.appendChild(u)}o.appendChild(h);
 l.blocks.forEach(([t,x])=>{const d=document.createElement('div');d.className='bl';const hh=document.createElement('h3');const sp=document.createElement('span');sp.textContent=t;const b=document.createElement('button');b.textContent='Copiar';b.onclick=()=>copia(b,x);hh.append(sp,b);const p=document.createElement('pre');p.textContent=x;d.append(hh,p);o.appendChild(d)})}
 lista();
