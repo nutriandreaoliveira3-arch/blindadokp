@@ -252,6 +252,13 @@ l.blocks.forEach(([t,x])=>{const d=document.createElement('div');d.className='bl
 lista();
 </script></body></html>'''
 open(f'{OUT}/prompts-looks.html', 'w', encoding='utf-8').write(HTML.replace('__DATA__', json.dumps(data, ensure_ascii=False)))
+# renomeia cada .txt com o número do print da pasta (ex.: 28-IMG6743-vestido-frente-unica-costas-nuas.txt)
+for L in LOOKS:
+    m = re.search(r'print da descrição = IMG_(\d+)', ref_for(L['id']))
+    if m:
+        old = f"{OUT}/{L['id']}.txt"; new = f"{OUT}/{L['id'][:2]}-IMG{m.group(1)}-{L['id'][3:]}.txt"
+        if os.path.exists(old): os.rename(old, new)
+
 with zipfile.ZipFile(zp, 'w', zipfile.ZIP_DEFLATED) as z:
     for f in sorted(os.listdir(OUT)):
         z.write(f'{OUT}/{f}', f'prompts-looks/{f}')
