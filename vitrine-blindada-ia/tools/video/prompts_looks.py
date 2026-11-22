@@ -161,3 +161,48 @@ with zipfile.ZipFile(zp, 'w', zipfile.ZIP_DEFLATED) as z:
     for f in sorted(os.listdir(OUT)):
         z.write(f'{OUT}/{f}', f'prompts-looks/{f}')
 print(zp, len(LOOKS), 'looks')
+
+
+# ───────── página única com botão "Copiar" em cada bloco (abre no navegador; nada de anexar .txt no Flow)
+import json, re
+data = []
+for L in LOOKS:
+    txt = open(f"{OUT}/{L['id']}.txt", encoding='utf-8').read()
+    head, *secs = re.split(r'\n=== (.+?) ===\n', txt)
+    blocks = [(secs[i], secs[i + 1].strip()) for i in range(0, len(secs), 2)]
+    avisos = [l[2:] for l in head.split('\n') if l.startswith('- ')]
+    data.append(dict(id=L['id'], nome=L['nome'], status=L['status'], avisos=avisos, blocks=blocks))
+HTML = '''<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Prompts dos looks</title><style>
+:root{--bg:#fff;--fg:#1c1c1e;--mut:#6b6b73;--card:#f4f4f6;--bd:#dcdce0;--ac:#d6336c}
+@media(prefers-color-scheme:dark){:root{--bg:#141416;--fg:#f2f2f4;--mut:#a0a0aa;--card:#1f1f23;--bd:#34343a}}
+*{box-sizing:border-box}body{margin:0;font:16px/1.45 system-ui,sans-serif;background:var(--bg);color:var(--fg)}
+header{position:sticky;top:0;background:var(--bg);padding:12px 16px;border-bottom:1px solid var(--bd);z-index:2}
+h1{font-size:18px;margin:0 0 8px}input,select{width:100%;padding:10px;border:1px solid var(--bd);border-radius:10px;background:var(--card);color:var(--fg);font-size:16px}
+main{padding:16px;max-width:900px;margin:auto}.st{color:var(--mut);margin:4px 0 12px}
+.av{background:var(--card);border-left:4px solid var(--ac);padding:10px 12px;border-radius:8px;margin:0 0 14px;font-size:14px}
+.av li{margin:2px 0}.bl{margin:0 0 16px}.bl h3{font-size:14px;margin:0 0 6px;display:flex;justify-content:space-between;gap:8px;align-items:center}
+button{background:var(--ac);color:#fff;border:0;border-radius:8px;padding:8px 14px;font-size:14px;cursor:pointer}button.ok{background:#2f9e44}
+pre{-webkit-user-select:all;user-select:all;cursor:grab;white-space:pre-wrap;word-break:break-word;background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:12px;margin:0;font:13px/1.45 ui-monospace,monospace}
+.aviso{font-size:13px;color:var(--mut);margin-top:18px}</style></head><body>
+<header><h1>Prompts dos looks (loja da Bella)</h1><input id="q" placeholder="Buscar look..." oninput="lista()"><select id="s" onchange="mostra()"></select></header>
+<main><div id="o"></div><p class="aviso"><b>Como usar:</b> clique uma vez no bloco de texto: ele é selecionado inteiro. Depois é só ARRASTAR o texto selecionado para o campo de prompt do Flow (ou use o botão Copiar).  Não anexe arquivos .txt: o Flow só aceita imagem e vídeo. Mescla: suba a foto da Bella e a foto do anúncio. Clipes: use a imagem aprovada como primeiro quadro.</p></main>
+<script>
+const D=__DATA__;
+function lista(){const q=document.getElementById('q').value.toLowerCase();const s=document.getElementById('s');const cur=s.value;s.innerHTML='';
+D.filter(l=>(l.id+' '+l.nome).toLowerCase().includes(q)).forEach(l=>{const o=document.createElement('option');o.value=l.id;o.textContent=l.id.slice(0,2)+' · '+l.nome;s.appendChild(o)});
+if([...s.options].some(o=>o.value===cur))s.value=cur;mostra()}
+function copia(b,t){const done=()=>{b.textContent='Copiado ✓';b.className='ok';setTimeout(()=>{b.textContent='Copiar';b.className=''},1500)};
+const fb=()=>{const a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();try{document.execCommand('copy');done()}catch(e){}a.remove()};
+if(navigator.clipboard&&window.isSecureContext)navigator.clipboard.writeText(t).then(done,fb);else fb()}
+function mostra(){const l=D.find(x=>x.id===document.getElementById('s').value);const o=document.getElementById('o');o.innerHTML='';if(!l)return;
+const h=document.createElement('div');h.innerHTML='<h2>'+l.nome+'</h2><div class="st">'+l.status+'</div>';
+if(l.avisos.length){const u=document.createElement('ul');u.className='av';l.avisos.forEach(a=>{const i=document.createElement('li');i.textContent=a;u.appendChild(i)});h.appendChild(u)}o.appendChild(h);
+l.blocks.forEach(([t,x])=>{const d=document.createElement('div');d.className='bl';const hh=document.createElement('h3');const sp=document.createElement('span');sp.textContent=t;const b=document.createElement('button');b.textContent='Copiar';b.onclick=()=>copia(b,x);hh.append(sp,b);const p=document.createElement('pre');p.textContent=x;d.append(hh,p);o.appendChild(d)})}
+lista();
+</script></body></html>'''
+open(f'{OUT}/prompts-looks.html', 'w', encoding='utf-8').write(HTML.replace('__DATA__', json.dumps(data, ensure_ascii=False)))
+with zipfile.ZipFile(zp, 'w', zipfile.ZIP_DEFLATED) as z:
+    for f in sorted(os.listdir(OUT)):
+        z.write(f'{OUT}/{f}', f'prompts-looks/{f}')
+print('html ok', len(data))
