@@ -129,6 +129,10 @@ DRIVE = [
  ('38-kit-2-regatas', 'Kit com 2 regatas decote quadrado', 'two sleeveless tank tops with a square neckline, closed back, in light soft suplex fabric', 'Peça curinga pra qualquer look', ['Kit com 2 regatas', 'Decote quadrado', 'Suplex fresquinho'], 'Kit com 2 regatas de decote quadrado em suplex leve. Combine com jeans, alfaiataria, shorts ou saias. Veja as cores no link do produto.', '#regata #kitregatas #basico', ['É KIT DE 2: mostre sempre as DUAS peças (uma vestida, outra na mão ou em cabide) e cite "2 regatas".', 'Não escreva "2 pelo preço de 1" nem preço.']),
  ('39-blusa-drapeada', 'Blusa feminina drapeada', 'fitted draped blouse with a gathered drape detail', 'Esse detalhe faz diferença!', ['Detalhe drapeado', 'Tecido macio e elástico', 'Não fica transparente'], 'Blusa feminina drapeada em tecido macio e elástico. Veja os tamanhos e cores no link do produto.', '#blusadrapeada #blusafeminina #lookdodia', ['Vende só a blusa: use calça ou saia lisa e neutra.', 'Sem tamanhos na descrição.']),
 ]
+DRIVE.append(('40-vestido-branco-canelado-costas-cruzadas', 'Vestido longo branco de malha canelada, alças cruzadas nas costas',
+ 'long white ribbed-knit maxi dress with a racerback halter neckline and crossed straps at the back, ankle length', 'O luxo da delicadeza',
+ ['Malha canelada', 'Alças cruzadas nas costas', 'Comprimento longo'], 'Vestido longo de malha canelada com alças cruzadas nas costas. Veja os tamanhos e cores no link do produto.',
+ '#vestidolongo #malhacanelada #lookelegante', ['Foto de referência: modelo real, de costas, peça colada ao corpo. NÃO use como imagem 2 (o Flow recusa): use só a descrição em texto.', 'Confirme de qual anúncio é a foto antes de postar (não é o "Modal Pico" com recorte na cintura).']))
 for (i, nome, outfit, hook, closing, caption, tags, avisos) in DRIVE:
     LOOKS.append(dict(id=i, nome=nome, status='NOVO (da pasta ROUPAS-FOTOS): falta mescla e clipes', outfit=outfit, styling='',
                       scene='bright minimalist room with soft daylight', blur=False, extra_neg='', hook=hook, closing=closing + CT,
