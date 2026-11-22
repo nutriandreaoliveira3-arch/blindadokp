@@ -45,7 +45,7 @@
 - Ganchos de desejo/estilo aprovados pela Andréa, por exemplo "O luxo da delicadeza" (assinatura dela), "Vestido com cara de rica", "Difícil escolher uma cor!" (só com várias cores). Lista de 51 em `src/data/hooks.ts`.
 - Vídeos prontos (scratchpad/bella): tropical, amarelo 2 em 1, macaquinho preto, tricô branco, macaquinho bege, tricô vermelho, conjunto de alfaiataria, vinho (cara de rica), macacão pantalona em 3 cores. Zip com ganchos novos: bella/videos-bella-v2.zip. Pendentes: vestido branco texturizado (aguarda clipes), vinho (confirmar descrição do anúncio), macacão (confirmar as 3 cores e mandar a descrição).
 - Bermuda jeans tirada da vitrine (anúncio sem material e sem tamanho).
-- Scripts: `scratchpad/tools/bella.py <chave>` (2 clipes + fechamento) e `bella3.py` (3 cores com transição pela mão).
+- Scripts de montagem copiados para `vitrine-blindada-ia/tools/video/` (ver LEIA-ME.md). Os vídeos prontos NÃO estão no repositório: estão no computador da Andréa.
 - App (commits 3c07cb4 e ef82a81): modo Roupa/acessório no Modelo híbrido, biblioteca de ganchos, marca d'água configurável (liga/desliga, posição, tamanho, texto), detectores D-MARCA-ESTILO e D-PARECE, guia atualizado. 46 testes passando. Zip: scratchpad/vitrine-blindada-site.zip.
 - Falta: (1) enviar o index.html novo na Cloudflare (Workers & Pages → vitrineblindada); (2) trocar os nameservers no Registro.br e ligar vitrineblindada.com.br; (3) alerta de "anúncio incompleto" como campo próprio; (4) botão de borrar fundo no app; (5) versão com login; (6) validar resultados após 48 h.
 - Economia de créditos: uma sessão por dia/lote, modelo mais barato no dia a dia, desligar conectores sem uso, mandar tudo junto e com poucas imagens, usar o app para gerar prompts.
