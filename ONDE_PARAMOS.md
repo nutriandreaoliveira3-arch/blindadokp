@@ -49,3 +49,10 @@
 - App (commits 3c07cb4 e ef82a81): modo Roupa/acessório no Modelo híbrido, biblioteca de ganchos, marca d'água configurável (liga/desliga, posição, tamanho, texto), detectores D-MARCA-ESTILO e D-PARECE, guia atualizado. 46 testes passando. Zip: scratchpad/vitrine-blindada-site.zip.
 - Falta: (1) enviar o index.html novo na Cloudflare (Workers & Pages → vitrineblindada); (2) trocar os nameservers no Registro.br e ligar vitrineblindada.com.br; (3) alerta de "anúncio incompleto" como campo próprio; (4) botão de borrar fundo no app; (5) versão com login; (6) validar resultados após 48 h.
 - Economia de créditos: uma sessão por dia/lote, modelo mais barato no dia a dia, desligar conectores sem uso, mandar tudo junto e com poucas imagens, usar o app para gerar prompts.
+
+## 22/11/2026 (tarde): pasta ROUPAS-FOTOS no Google Drive
+- Pasta id 15WU82a-TRAAod1oBBtLwzd_zVbcFUWsn, criada em 22/11 14:04. Tem ~38 prints de descrição (PNG) e fotos (JPG, IMG_xxxx).
+- O conector do Drive lê o TEXTO dos prints (read_file_content, barato). As fotos JPG voltam vazias, e baixar imagem pelo conector custa muitos créditos. Listar a pasta também é caro: prefira pedir um zip.
+- Os 39 looks (7 antigos + 32 da pasta) têm prompts prontos em `vitrine-blindada-ia/tools/video/prompts_looks.py` (gera a pasta `prompts-looks` + zip). Cada look: mescla, clipe 1, clipe 2, gancho, textos do fechamento, legenda, avisos.
+- Avisos importantes: usar o anúncio IMG_6738 do vestido canelado (os outros "Agnes" citam manga); body, regatas, blusa e calça lisa vendem uma peça só; kit de 2 regatas mostra as 2; "5 amarrações em 1" nunca mostrar a transformação; "sensualidade" e "sem bojo" nunca citar errado.
+- Vídeos feitos em 22/11: jeans, amarelo (blusa + short saia), rosa (1 clipe), macacão 3 cores (textos reais). Borrão leve de fundo: `BLUR_SIGMA=8`.
