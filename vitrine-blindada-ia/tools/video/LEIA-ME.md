@@ -14,3 +14,7 @@ Os vídeos prontos NÃO estão no repositório (ficam no computador da Andréa).
 
 Requisitos: ffmpeg, python3, fonte DejaVuSans-Bold.
 Regras de conteúdo: `docs/GUIA-VIDEO-HIBRIDO.md`.
+
+## Atualização de 22/11
+- `blurbg.py`: o nível do borrão vem da variável `BLUR_SIGMA` (padrão 22 = forte; **8 = leve**, padrão aprovado pela Andréa para lojas com araras).
+- `bella4.py [jeans|amarelo|rosa|macacao]`: monta 2 clipes + fechamento com textos reais do anúncio (precisa dos zips em `scratchpad/zips`; ajuste os caminhos do topo).

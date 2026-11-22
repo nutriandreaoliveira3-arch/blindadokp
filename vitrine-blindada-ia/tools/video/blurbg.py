@@ -1,5 +1,5 @@
 """Borra o fundo de um vídeo mantendo a pessoa nítida. uso: blurbg.py entrada.mp4 saida.mp4"""
-import sys, cv2, numpy as np, mediapipe as mp
+import os, sys, cv2, numpy as np, mediapipe as mp
 from mediapipe.tasks.python import vision, BaseOptions
 
 M = '/tmp/claude-0/-home-user-blindadokp/1ee8f564-c481-5f05-98a2-fb44b8e2bb97/scratchpad/models/seg.tflite'
@@ -24,7 +24,7 @@ while True:
     if prev is not None:
         person = 0.6 * person + 0.4 * prev  # suaviza tremida da máscara
     prev = person
-    blur = cv2.GaussianBlur(fr, (0, 0), 22)
+    blur = cv2.GaussianBlur(fr, (0, 0), float(os.environ.get('BLUR_SIGMA', 22)))
     m = person[..., None]
     out.write((fr * m + blur * (1 - m)).astype(np.uint8))
     i += 1
