@@ -44,7 +44,8 @@ describe('modo roupa (20/11)', () => {
       closing: ['Com bojo', '', 'Veste do 36 ao 42', 'Toque no link do produto'], captionBase: 'Vestido longo tropical', hashtags: '#vestidolongo #tiktokshop',
     });
     expect(r.mix).toContain('CHARACTER LOCK — BELLA');
-    expect(r.mix).toContain('nude-colored lining');
+    expect(r.mix).toContain('fully lined and opaque');
+    expect(`${r.mix}\n${r.video}\n${r.video2}`).not.toMatch(/nude|sensual|see-through|bare/i);
     expect(r.video).toContain('no speech');
     expect(r.video).toContain('covers the camera lens');
     expect(r.video2).toContain('pulls her hand away');

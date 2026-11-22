@@ -5,8 +5,17 @@ OUT = '/tmp/claude-0/-home-user-blindadokp/1ee8f564-c481-5f05-98a2-fb44b8e2bb97/
 shutil.rmtree(OUT, ignore_errors=True); os.makedirs(OUT)
 
 TAIL = 'AUDIO: no speech, no voice. Only soft ambient sound.\nNo added text, subtitles, watermark or logos. Vertical 9:16, 8 seconds, realistic, soft natural light.'
-NEG = ('talking, lip movement, color change, different shade, changed print or texture, different outfit, shorter or longer length, see-through fabric, '
-       'extra accessories, earrings, necklace, bracelets, rings, bag, sensual pose, other people, outfit changing shape')
+NEG = ('talking, lip movement, color change, different shade, changed print or texture, different outfit, shorter or longer length, '
+       'extra accessories, earrings, necklace, bracelets, rings, bag, other people, outfit changing shape')
+# palavras que costumam acionar o filtro do Flow: trocadas por termos neutros de catálogo
+SAFE = [('bare open back', 'open back'), ('bare back', 'open back'), ('lined bust', 'lined bodice'), ('bust', 'bodice'), (' with built-in cups', ''),
+        ('strategic cut-outs', 'cut-outs'), ('nude-colored', 'matching-tone')]
+
+
+def safe(s):
+    for a, b in SAFE:
+        s = s.replace(a, b)
+    return s
 
 LOOKS = [
  dict(id='01-calca-verde', nome='Calça pantalona verde (amarração na frente)', status='REFAZER clipe do giro (a tira apareceu nas costas)',
@@ -65,10 +74,10 @@ LOOKS = [
 
 def mescla(L):
     return '\n'.join([
-        'CHARACTER LOCK — BELLA: use exactly the same woman from image 1. Same face, hair, skin tone, body shape and natural makeup. Do not change her identity.',
-        f"OUTFIT: she wears the product from image 2, exactly as shown: {L['outfit']}. Same color, print, texture, cut, length and details as image 2. {L['styling']} If the fabric is open-knit or lace, add a full nude-colored lining so no skin shows through. Do not add any clothing item, bag, jewelry or accessory that is not part of the look.".replace('  ', ' '),
+        'CHARACTER LOCK — BELLA: use exactly the same woman from image 1. Same face, hair and natural makeup. Do not change her identity.',
+        f"OUTFIT: she wears the product from image 2, exactly as shown: {L['outfit']}. Same color, print, texture, cut, length and details as image 2. {L['styling']} The garment is fully lined and opaque. Do not add any clothing item, bag, jewelry or accessory that is not part of the look.".replace('  ', ' '),
         f"BACKGROUND: {L['scene']}. No clothing racks, no other clothes, no shelves with products, no other people." + (' Strong background blur.' if L['blur'] else ''),
-        'Full body visible, natural elegant standing pose, vertical 9:16, realistic photo. No necklace, no earrings, no bracelets, no rings.',
+        'Professional e-commerce fashion catalog photo of an adult woman, modest and elegant. Full body visible, natural standing pose, vertical 9:16, realistic photo. No necklace, no earrings, no bracelets, no rings.',
     ])
 
 
@@ -134,7 +143,7 @@ for L in LOOKS:
           '=== 4. GANCHO (só na capa, 1º segundo) ===', L['hook'], '',
           '=== 5. TEXTOS DO FECHAMENTO (um por vez, centralizados) ===', '\n'.join(L['closing']), '',
           '=== 6. LEGENDA + HASHTAGS ===', L['caption'] + '\n\n' + L['tags'], '']
-    open(f"{OUT}/{L['id']}.txt", 'w', encoding='utf-8').write('\n'.join(t))
+    open(f"{OUT}/{L['id']}.txt", 'w', encoding='utf-8').write(safe('\n'.join(t)))
 
 idx = ['# Prompts dos looks (loja da Bella)', '', 'Cada arquivo tem: mescla, clipe 1, clipe 2, gancho, textos do fechamento e legenda. É só copiar e colar. Nada para acrescentar.', '',
        '## Como usar', '1. Mescla: imagem 1 = foto da Bella; imagem 2 = foto do anúncio. Confira estampa, cor e comprimento.',

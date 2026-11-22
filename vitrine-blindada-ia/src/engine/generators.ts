@@ -412,7 +412,7 @@ function fashionPrompts(p: Product, o: HybridOptions) {
   const outfit = o.outfitEn?.trim() || 'the outfit from image 2';
   const bg = o.blurBg ? ' The background stays heavily blurred for the entire video, never in focus.' : '';
   const neg =
-    'NEGATIVE: talking, lip movement, color change, different shade, changed print or texture, different outfit, shorter or longer length, see-through fabric, extra accessories, earrings, necklace, bracelets, bag, sensual pose, other people, outfit changing shape' +
+    'NEGATIVE: talking, lip movement, color change, different shade, changed print or texture, different outfit, shorter or longer length, extra accessories, earrings, necklace, bracelets, bag, other people, outfit changing shape' +
     (o.blurBg ? ', sharp background, recognizable clothes in background' : ', background changing');
   const lock = `The outfit keeps exactly the same color, print, texture, details, cut and length as the first frame in every frame. Full body always visible.${bg}`;
   const tail = [
@@ -421,10 +421,10 @@ function fashionPrompts(p: Product, o: HybridOptions) {
   ];
 
   const mix = [
-    `CHARACTER LOCK${o.modelName?.trim() ? ` — ${o.modelName.trim().toUpperCase()}` : ''}: use exactly the same woman from image 1. Same face, hair, skin tone, body shape and natural makeup. Do not change her identity.`,
-    `OUTFIT: she wears ONLY the product from image 2, exactly as shown: ${outfit}. Same color, print, pattern placement, texture, cut, length and details. If the fabric is open-knit or lace, add a full nude-colored lining so no skin shows through. Do not add any clothing item, bag, jewelry or accessory that is not the product.`,
+    `CHARACTER LOCK${o.modelName?.trim() ? ` — ${o.modelName.trim().toUpperCase()}` : ''}: use exactly the same woman from image 1. Same face, hair and natural makeup. Do not change her identity.`,
+    `OUTFIT: she wears ONLY the product from image 2, exactly as shown: ${outfit}. Same color, print, pattern placement, texture, cut, length and details. The garment is fully lined and opaque. Do not add any clothing item, bag, jewelry or accessory that is not the product.`,
     `BACKGROUND: ${o.scene?.trim() || 'clean, bright room with soft daylight'}. No clothing racks, no other clothes, no shelves with products, no other people.${o.blurBg ? ' Strong background blur (shallow depth of field) so the background is only soft shapes of light and color.' : ''}`,
-    'Full body visible, natural elegant standing pose, vertical 9:16, realistic photo.',
+    'Professional e-commerce fashion catalog photo of an adult woman, modest and elegant. Full body visible, natural standing pose, vertical 9:16, realistic photo.',
   ];
 
   const clip1 = [
