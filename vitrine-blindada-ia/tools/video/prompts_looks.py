@@ -131,8 +131,8 @@ DRIVE = [
 ]
 DRIVE.append(('40-vestido-branco-trico-trancado', 'Vestido branco de tricô modal (Vestido Trançado, Agnes)',
  'long white ribbed-knit maxi dress with a racerback halter neckline and crossed straps at the back, ankle length', 'O luxo da delicadeza',
- ['Tricô modal', 'Amarração nas costas', 'Veste do 38 ao 44'], 'Vestido de tricô modal com amarração nas costas. Veste do 38 ao 44. Veja as cores e detalhes no link do produto.',
- '#vestidodetrico #tricomodal #lookelegante', ['O anúncio diz "manga: 60 cm" mas o vestido não tem manga: NÃO cite manga.', 'Não repita "não esgarça com facilidade" (promessa de durabilidade).', 'Foto de referência: modelo real de costas, peça colada ao corpo. Não use como imagem 2 no Flow: use a descrição em texto.']))
+ ['Tricô modal', 'Alças cruzadas nas costas', 'Veste do 38 ao 44'], 'Vestido de tricô modal com alças cruzadas nas costas. Veste do 38 ao 44. Veja as cores e detalhes no link do produto.',
+ '#vestidodetrico #tricomodal #lookelegante', ['O anúncio diz "manga: 60 cm" mas o vestido não tem manga: NÃO cite manga.', 'Não repita "não esgarça com facilidade" (promessa de durabilidade).', 'Frente do anúncio: decote em V com alças sobre os ombros (as alças cruzam nas costas). O texto do anúncio diz "amarração", mas a foto mostra alças cruzadas: use "alças cruzadas".', 'Foto de referência: modelo real de costas, peça colada ao corpo. Não use como imagem 2 no Flow: use a descrição em texto.']))
 DRIVE.append(('41-vestido-verde-canelado', 'Vestido verde canelado, gola alta frente única (Liso canelado, tricô modal)',
  'long green ribbed-knit maxi dress with a high halter collar', 'Esse look tem presença!',
  ['Tricô modal canelado', 'Amarração nas costas', 'Veste do 38 ao 42'], 'Vestido liso canelado em tricô modal, com amarração nas costas. Veste do 38 ao 42. Veja as cores e detalhes no link do produto.',
