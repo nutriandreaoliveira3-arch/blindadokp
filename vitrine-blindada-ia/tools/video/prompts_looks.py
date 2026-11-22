@@ -207,13 +207,16 @@ try:
 except Exception as e:
     print('miniaturas parciais:', e)
 
+SHORT = [('TESTE · MESCLA CURTA (se esta passar, o gatilho está no prompt longo)', 'Use the woman from image 1. Dress her in the garment from image 2, exactly as shown. Same room, soft daylight, full body, vertical 9:16, professional catalog photo.'),
+         ('TESTE · CLIPE CURTO (primeiro quadro = imagem aprovada)', 'The same woman as the first frame, same outfit, same room. She smiles, makes a slow half-turn and returns to the front. Full body, vertical 9:16, 8 seconds, soft daylight, no speech.')]
+
 data = []
 for L in LOOKS:
     txt = open(f"{OUT}/{L['id']}.txt", encoding='utf-8').read()
     head, *secs = re.split(r'\n=== (.+?) ===\n', txt)
     blocks = [(secs[i], secs[i + 1].strip()) for i in range(0, len(secs), 2)]
     avisos = [l[2:] for l in head.split('\n') if l.startswith('- ')]
-    data.append(dict(id=L['id'], nome=L['nome'], status=L['status'], avisos=avisos, blocks=blocks, thumb=THUMBS.get(L['id'][:2], ''), ref=ref_for(L['id'])))
+    data.append(dict(id=L['id'], nome=L['nome'], status=L['status'], avisos=avisos, blocks=blocks + SHORT, thumb=THUMBS.get(L['id'][:2], ''), ref=ref_for(L['id'])))
 HTML = '''<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Prompts dos looks</title><style>
 :root{--bg:#fff;--fg:#1c1c1e;--mut:#6b6b73;--card:#f4f4f6;--bd:#dcdce0;--ac:#d6336c}
