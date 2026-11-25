@@ -65,3 +65,11 @@
 - Planilha de looks descartada (trabalhosa). Meta da Andréa: 15 vídeos por dia, ela mesma gera. Proposta aberta: editor em lote dentro da Vitrine Blindada, no navegador (aguarda o sim).
 - Vitrine: ainda faltam domínio vitrineblindada.com.br (Cloudflare/Registro.br) e a chave do Gemini (dentro do site, em Configurações, no endereço final).
 - Suplementos: continuar Black Skull 100% HD, Max Whey Pro e FTW; recurso da conta derrubada e da violação EV-10 ainda em aberto.
+
+## 25/11/2026 — suplementos com a avatar Isa (conta Valentina Moretti)
+- Pasta do Drive **SUPLEMENTOS** (~27 produtos, foto + print do anúncio) e pasta da AlwaysFit **13. Briefing dos produtos** (15 briefings com rótulo oficial em PDF). Os briefings trazem tabelas "Dores e aplicações" com queixas/sintomas: NÃO usar.
+- Método que funcionou (a Andréa confirmou que o prompt deixou de ser recusado): foto da Isa em 6 looks/ambientes (edição de imagem mantendo rosto e cabelo) → mescla com a foto do pote (só o pote, sem selos de alegação) → vídeo de 8 s com fala curta (só nome, marca, forma, nº de cápsulas) → close com a foto real do rótulo, gancho só na capa, marca no rodapé esquerdo.
+- Ambientes sem móveis para sentar (a Bella/Isa sentou em "escritório" e "café"); sem academia para produto não esportivo.
+- Triagem de risco: 🟢 whey simples; 🟡 produtos com alegação no texto do anúncio; 🔴 composto antifúngico, Biosil (manipulado), Constilivre, Melatonina e Meno só após a regra oficial da TikTok Shop (a Andréa conferiu a melatonina; guardar o print).
+- Roteiros: gancho de curiosidade sem preço/queda de preço/gramas não confirmadas; formato "carrinho laranja" e POV (ação neutra: abrir, conferir rótulo, escolher). O detector D-MUSCULO pega "funcionamento muscular".
+- Fila: Vitamina D3+K2 e Pro Curcumin com clipes OK; NAC refazer (rótulo trocava); Ômega 3 (60 cáps) e Luteína & Zeaxantina (30 cáps de 500 mg) a gerar. Entregar tudo no fim do dia, em um zip por produto.
