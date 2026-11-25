@@ -56,3 +56,12 @@
 - Os 39 looks (7 antigos + 32 da pasta) têm prompts prontos em `vitrine-blindada-ia/tools/video/prompts_looks.py` (gera a pasta `prompts-looks` + zip). Cada look: mescla, clipe 1, clipe 2, gancho, textos do fechamento, legenda, avisos.
 - Avisos importantes: usar o anúncio IMG_6738 do vestido canelado (os outros "Agnes" citam manga); body, regatas, blusa e calça lisa vendem uma peça só; kit de 2 regatas mostra as 2; "5 amarrações em 1" nunca mostrar a transformação; "sensualidade" e "sem bojo" nunca citar errado.
 - Vídeos feitos em 22/11: jeans, amarelo (blusa + short saia), rosa (1 clipe), macacão 3 cores (textos reais). Borrão leve de fundo: `BLUR_SIGMA=8`.
+
+## 24 e 25/11/2026 — fábrica de vídeos da Bella
+- 12 looks prontos (Jeans 1, 2, 3, 5, 6, laranja, babados, vermelho sem laço, verde tricô, assimétrico, floral, conjunto branco), cada um em 4 versões (A original, B, C, D) para postar em dias alternados. Ferramentas no scratchpad: `tools/lote.py` (edita uma pasta por look), `tools/versoes.py` (gera B, C, D), `tools/looks.json` (ganchos e fechamentos).
+- Marca "Conteúdo gerado por IA" agora no rodapé esquerdo (y=90% da altura). Aviso dado: a legenda da TikTok pode cobrir; testar e subir um pouco se cobrir.
+- Prompt de mesclagem da Andréa funciona bem: só trocar a Description do cenário (arquivo com 12 cenários sem móveis; "escritório" e "café" foram retirados porque a Bella sentava). Clipes de 16 s: `durationSeconds` 16.
+- Jeans 4 (halter com franzido na frente) NÃO saiu: o Flow repete o top de alças com botões. Próximo teste: prompt curto só com frases positivas, ou imagem como primeiro quadro (JEANS4-frente.png). Jeans 3: Andréa vai refazer 3 clipes.
+- Planilha de looks descartada (trabalhosa). Meta da Andréa: 15 vídeos por dia, ela mesma gera. Proposta aberta: editor em lote dentro da Vitrine Blindada, no navegador (aguarda o sim).
+- Vitrine: ainda faltam domínio vitrineblindada.com.br (Cloudflare/Registro.br) e a chave do Gemini (dentro do site, em Configurações, no endereço final).
+- Suplementos: continuar Black Skull 100% HD, Max Whey Pro e FTW; recurso da conta derrubada e da violação EV-10 ainda em aberto.
