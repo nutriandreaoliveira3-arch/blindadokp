@@ -353,6 +353,7 @@ export interface HybridOptions {
   hook?: string; // gancho / texto na tela
   angled?: boolean;
   realSize?: string; // tamanho real do pote em inglês, ex.: "about 6 cm wide and 9 cm tall, roughly the size of a small yogurt cup"
+  sizeRefImage?: boolean; // há uma imagem 3 só de referência de escala do pote
   oneHand?: boolean; // segura com UMA mão (evita a IA aumentar o pote)
   wm?: WatermarkOptions;
   // ── modo roupa / acessório (sem fala, só música)
@@ -492,6 +493,9 @@ export function hybridPrompts(p: Product, o: HybridOptions, items: CatalogItem[]
         `PRODUCT: use the ${what} from image 2 exactly as it is, like a real photo of it placed in her hands. Do NOT redraw, redesign or re-letter the label: same colors, logo, words, numbers and shape.${label} Keep its real size compared to her hands.`,
         ...(o.realSize?.trim()
           ? [`REAL SIZE (mandatory): the product is ${o.realSize.trim()}. It is clearly smaller than her face. Do not enlarge it.`]
+          : []),
+        ...(o.sizeRefImage
+          ? ['Use image 3 only as a size reference for the pot. Do not copy its label. The label must come from image 2.']
           : []),
         o.pose === 'bancada'
           ? 'POSE: the product rests on the counter in front of her, her hands lightly on its sides, label facing the camera, never covering the logo or the product name.'

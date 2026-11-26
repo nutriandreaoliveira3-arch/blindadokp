@@ -83,6 +83,11 @@ describe('suplemento com tamanho real e fala travada (26/11)', () => {
     expect(r.mix).toContain('ONE hand only');
     expect(r.video).toContain('exactly these words and nothing else');
   });
+  it('imagem 3 de referência de tamanho só entra quando pedida', () => {
+    const base = { container: 'pote' as const, pose: 'segurando' as const, productEn: 'jar', labelText: '', speech: 'Olá.' };
+    expect(hybridPrompts(sup, { ...base, sizeRefImage: true }).mix).toContain('Use image 3 only as a size reference');
+    expect(hybridPrompts(sup, base).mix).not.toContain('image 3');
+  });
   it('sem os novos campos o texto antigo continua', () => {
     const r = hybridPrompts(sup, { container: 'pote', pose: 'segurando', productEn: 'jar', labelText: '', speech: 'Olá.' });
     expect(r.mix).not.toContain('REAL SIZE');
