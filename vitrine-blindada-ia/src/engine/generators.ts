@@ -352,6 +352,8 @@ export interface HybridOptions {
   speech: string; // fala em português
   hook?: string; // gancho / texto na tela
   angled?: boolean;
+  realSize?: string; // tamanho real do pote em inglês, ex.: "about 6 cm wide and 9 cm tall, roughly the size of a small yogurt cup"
+  oneHand?: boolean; // segura com UMA mão (evita a IA aumentar o pote)
   wm?: WatermarkOptions;
   // ── modo roupa / acessório (sem fala, só música)
   modelName?: string; // ex.: Bella (a mesma modelo em todos os vídeos da loja)
@@ -488,9 +490,14 @@ export function hybridPrompts(p: Product, o: HybridOptions, items: CatalogItem[]
         'Combine the two reference images into one realistic vertical 9:16 photo.',
         'PERSON: use the woman from image 1 exactly (same face, hair, clothes, same kitchen background and soft natural light).',
         `PRODUCT: use the ${what} from image 2 exactly as it is, like a real photo of it placed in her hands. Do NOT redraw, redesign or re-letter the label: same colors, logo, words, numbers and shape.${label} Keep its real size compared to her hands.`,
+        ...(o.realSize?.trim()
+          ? [`REAL SIZE (mandatory): the product is ${o.realSize.trim()}. It is clearly smaller than her face. Do not enlarge it.`]
+          : []),
         o.pose === 'bancada'
           ? 'POSE: the product rests on the counter in front of her, her hands lightly on its sides, label facing the camera, never covering the logo or the product name.'
-          : `POSE: she holds it with both hands at chest height, ${o.container === 'pacote' ? 'flat and upright, the bag full and not wrinkled' : 'label facing the camera'}, fingers never covering the logo or the product name. She smiles at the camera.`,
+          : o.oneHand
+            ? 'POSE: she holds it with ONE hand only, between her thumb and fingers, at chest height, label facing the camera, fingers never covering the logo or the product name. She smiles at the camera.'
+            : `POSE: she holds it with both hands at chest height, ${o.container === 'pacote' ? 'flat and upright, the bag full and not wrinkled' : 'label facing the camera'}, fingers never covering the logo or the product name. She smiles at the camera.`,
         'Only ONE product. The counter is completely empty: no shaker, no scoop, no powder, no fruit, no glass, no other objects. Do not translate any text. No added text, no watermark.',
       ];
 
@@ -503,7 +510,7 @@ export function hybridPrompts(p: Product, o: HybridOptions, items: CatalogItem[]
   const video = [
     `LOCKED PRODUCT SHOT. ${hold} She only smiles and talks.`,
     `The product keeps exactly the same shape, colors and text as the first frame.${label} Do not translate any text. No scoop, no powder, no shaker use, no drinking. Very slight slow push-in of the camera.`,
-    `AUDIO: She says in Brazilian Portuguese, friendly tone: "${o.speech.trim()}" Soft original upbeat instrumental in the background, low volume, original composition, not based on any existing song.`,
+    `AUDIO: She says in Brazilian Portuguese, friendly tone: "${o.speech.trim()}" She says exactly these words and nothing else. Soft original upbeat instrumental in the background, low volume, original composition, not based on any existing song.`,
     'No added text, subtitles, watermark or logos. Vertical 9:16, 8 seconds, realistic, soft natural light.',
     `NEGATIVE: changed label, English label, product changing shape, ${o.container === 'pacote' ? 'wrinkled or melting bag, ' : ''}${isKit ? 'missing item, extra item, items moving, ' : 'extra products, '}objects on the counter, hands covering the logo.`,
   ];

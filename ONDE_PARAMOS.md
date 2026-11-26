@@ -73,3 +73,8 @@
 - Triagem de risco: 🟢 whey simples; 🟡 produtos com alegação no texto do anúncio; 🔴 composto antifúngico, Biosil (manipulado), Constilivre, Melatonina e Meno só após a regra oficial da TikTok Shop (a Andréa conferiu a melatonina; guardar o print).
 - Roteiros: gancho de curiosidade sem preço/queda de preço/gramas não confirmadas; formato "carrinho laranja" e POV (ação neutra: abrir, conferir rótulo, escolher). O detector D-MUSCULO pega "funcionamento muscular".
 - Fila: Vitamina D3+K2 e Pro Curcumin com clipes OK; NAC refazer (rótulo trocava); Ômega 3 (60 cáps) e Luteína & Zeaxantina (30 cáps de 500 mg) a gerar. Entregar tudo no fim do dia, em um zip por produto.
+
+## 26/11/2026 — prompts de suplemento com tamanho real e fala com gancho
+- `hybridPrompts` ganhou `realSize` (tamanho real do pote em inglês, vira a linha "REAL SIZE (mandatory)") e `oneHand` (segura com uma mão). A linha de áudio agora termina com "She says exactly these words and nothing else." Testes em `hybrid.test.ts` (48 passando).
+- Regra de trabalho: toda mescla nova de suplemento já sai com REAL SIZE, pose de uma mão ou na bancada, resolução 1080x1920 e fala no formato gancho + corpo + CTA (arquivo falas-gancho-cta). Estimativas de tamanho: cápsulas ~6 cm x 9-10 cm; colágeno 200 g ~9 x 11 cm; conta-gotas 30 mL ~3 x 8 cm.
+- Falta ainda expor `realSize` e `oneHand` como campos na tela do app (Studios.tsx).

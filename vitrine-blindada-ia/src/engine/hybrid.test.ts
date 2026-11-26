@@ -69,3 +69,23 @@ describe('modo roupa (20/11)', () => {
     expect(bad).toEqual([]);
   });
 });
+
+describe('suplemento com tamanho real e fala travada (26/11)', () => {
+  const sup = { id: 's', name: 'Ômega 3', restrictions: '', components: [] } as unknown as Product;
+  it('inclui tamanho real, uma mão e fala travada', () => {
+    const r = hybridPrompts(sup, {
+      container: 'pote', pose: 'segurando', productEn: 'small black jar', labelText: '', oneHand: true,
+      realSize: 'about 6 cm wide and 9 cm tall, roughly the size of a small yogurt cup',
+      speech: 'Antes de escolher o seu ômega 3, olha esse rótulo! Toque no carrinho laranja e confira!',
+    });
+    expect(r.mix).toContain('REAL SIZE (mandatory)');
+    expect(r.mix).toContain('clearly smaller than her face');
+    expect(r.mix).toContain('ONE hand only');
+    expect(r.video).toContain('exactly these words and nothing else');
+  });
+  it('sem os novos campos o texto antigo continua', () => {
+    const r = hybridPrompts(sup, { container: 'pote', pose: 'segurando', productEn: 'jar', labelText: '', speech: 'Olá.' });
+    expect(r.mix).not.toContain('REAL SIZE');
+    expect(r.mix).toContain('both hands');
+  });
+});
