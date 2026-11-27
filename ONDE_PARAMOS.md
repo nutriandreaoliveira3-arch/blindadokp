@@ -78,3 +78,5 @@
 - `hybridPrompts` ganhou `realSize` (tamanho real do pote em inglês, vira a linha "REAL SIZE (mandatory)") e `oneHand` (segura com uma mão). A linha de áudio agora termina com "She says exactly these words and nothing else." Testes em `hybrid.test.ts` (48 passando).
 - Regra de trabalho: toda mescla nova de suplemento já sai com REAL SIZE, pose de uma mão ou na bancada, resolução 1080x1920 e fala no formato gancho + corpo + CTA (arquivo falas-gancho-cta). Estimativas de tamanho: cápsulas ~6 cm x 9-10 cm; colágeno 200 g ~9 x 11 cm; conta-gotas 30 mL ~3 x 8 cm.
 - Falta ainda expor `realSize` e `oneHand` como campos na tela do app (Studios.tsx).
+
+- 27-28/11/2026: Whey Protein 80% Vorx removido da linha de vídeos (estratégia de venda errada, decisão da usuária). Não montar, não gerar mais prompts. Prompts e HTML do Vorx apagados do rascunho.
