@@ -80,3 +80,5 @@
 - Falta ainda expor `realSize` e `oneHand` como campos na tela do app (Studios.tsx).
 
 - 27-28/11/2026: Whey Protein 80% Vorx removido da linha de vídeos (estratégia de venda errada, decisão da usuária). Não montar, não gerar mais prompts. Prompts e HTML do Vorx apagados do rascunho.
+
+- 28/11/2026: NAC (2 clips: fala 1 e 2 certas; "nascer" nos outros) e Luteina (LU-4 certo; LU-1/LU-3 dizem "iseaxantina") recebidos. Vorx fora. Linha final para montar: Astana, Isolate, Hydro Whey, Colageno, Prímula, Vit D3+K2, ZzNight, Pro Curcumin, Constilivre, Omega 3, NAC, Luteina. Aguardando "pode montar" da usuária.
